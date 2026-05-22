@@ -1,0 +1,47 @@
+{
+  "id": "smart-disk-replace",
+  "title": {
+    "tr": "SMART Kritik — Disk Değişimi",
+    "en": "SMART Critical — Disk Replacement"
+  },
+  "priority": "KRİTİK",
+  "estimated_time": "Aciliyetli",
+  "risk": "HIGH",
+  "risk_note": {
+    "tr": "Diskte fiziksel hasar var. D-Medic bu sorunu düzeltemez. Yapabileceğiniz EN ÖNEMLİ şey ŞU AN veri yedeği almaktır.",
+    "en": "Physical damage detected. D-Medic cannot fix this. The MOST IMPORTANT thing you can do is take a backup NOW."
+  },
+  "prerequisites": ["harici_disk", "yeni_disk"],
+  "steps": [
+    {
+      "id": 1,
+      "type": "info",
+      "title": { "tr": "ÖNCELİK: Veri yedeği alın", "en": "PRIORITY: Take a backup" },
+      "body": {
+        "tr": "Önemli dosyalarınızı harici bir SSD veya cloud'a kopyalayın. File History veya OneDrive devreye girebilir.",
+        "en": "Copy critical files to an external SSD or cloud. File History or OneDrive can help."
+      }
+    },
+    {
+      "id": 2,
+      "type": "cmd",
+      "title": { "tr": "Detaylı SMART raporu al", "en": "Get detailed SMART report" },
+      "command": "Get-StorageReliabilityCounter -PhysicalDisk (Get-PhysicalDisk) | Format-List"
+    },
+    {
+      "id": 3,
+      "type": "info",
+      "title": { "tr": "Yeni disk seçimi", "en": "Choose new disk" },
+      "body": {
+        "tr": "SSD: minimum 256 GB, NVMe tercih edilir. HDD: 7200 rpm. Garantili marka (Samsung, Crucial, WD, Seagate).",
+        "en": "SSD: 256 GB minimum, prefer NVMe. HDD: 7200 rpm. Reliable brand (Samsung, Crucial, WD, Seagate)."
+      }
+    },
+    {
+      "id": 4,
+      "type": "link",
+      "title": { "tr": "Migration aracı", "en": "Migration tool" },
+      "guide_link": "https://www.macrium.com/reflectfree"
+    }
+  ]
+}

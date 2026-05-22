@@ -1,0 +1,38 @@
+{
+  "id": "cpu-incompatible",
+  "title": {
+    "tr": "CPU Win11 Uyumsuz",
+    "en": "CPU Not Officially Supported for Win11"
+  },
+  "priority": "DÜŞÜK",
+  "estimated_time": "Bilgi amaçlı",
+  "risk": "MEDIUM",
+  "risk_note": {
+    "tr": "Microsoft 'desteklenmeyen' CPU'larda Win11 kurulumuna izin vermez. Bypass yapılabilir ama gelecek güncellemeler garanti değildir.",
+    "en": "Microsoft does not officially allow Win11 install on 'unsupported' CPUs. Bypass possible but future updates are not guaranteed."
+  },
+  "prerequisites": [],
+  "steps": [
+    {
+      "id": 1,
+      "type": "info",
+      "title": { "tr": "Durumunuz", "en": "Your situation" },
+      "body": {
+        "tr": "CPU'nuz Microsoft'un resmi listesinde değil. Windows 10 destek sonuna kadar (Ekim 2025) sorun yok. Sonrasında: Win11 bypass + manuel güncelleme veya yeni donanım.",
+        "en": "Your CPU is not on Microsoft's official list. Until Windows 10 EOL (Oct 2025) you're fine. After that: Win11 bypass + manual updates, or new hardware."
+      }
+    },
+    {
+      "id": 2,
+      "type": "link",
+      "title": { "tr": "Resmi CPU listesi", "en": "Official CPU list" },
+      "guide_link": "https://learn.microsoft.com/tr-tr/windows-hardware/design/minimum/windows-processor-requirements"
+    },
+    {
+      "id": 3,
+      "type": "link",
+      "title": { "tr": "Bypass yöntemi (Rufus)", "en": "Bypass method (Rufus)" },
+      "guide_link": "https://rufus.ie/"
+    }
+  ]
+}

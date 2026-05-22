@@ -1,0 +1,38 @@
+{
+  "id": "efi-partition-resize",
+  "title": {
+    "tr": "EFI Bölümü Yetersiz — Çözüm Yolları",
+    "en": "EFI Partition Too Small — Options"
+  },
+  "priority": "YÜKSEK",
+  "estimated_time": "30-90 dk",
+  "risk": "HIGH",
+  "risk_note": {
+    "tr": "EFI bölümünü büyütmek veri riski taşır. En güvenli yol: temiz kurulum.",
+    "en": "Resizing the EFI partition carries data risk. Safest path: clean install."
+  },
+  "prerequisites": ["tam_yedek"],
+  "steps": [
+    {
+      "id": 1,
+      "type": "cmd",
+      "title": { "tr": "Mevcut EFI boyutunu kontrol et", "en": "Check current EFI size" },
+      "command": "Get-Partition | Where-Object Type -eq System | Select Size, DriveLetter"
+    },
+    {
+      "id": 2,
+      "type": "info",
+      "title": { "tr": "Önerilen yollar", "en": "Recommended paths" },
+      "body": {
+        "tr": "1) Üçüncü parti araç (EaseUS Partition Master, MiniTool Partition Wizard) ile genişlet. 2) Veri yedekle, Windows 11'i temiz kur — kurulum yeni 260 MB EFI oluşturur.",
+        "en": "1) Use a third-party tool (EaseUS Partition Master, MiniTool Partition Wizard) to expand. 2) Back up and clean-install Windows 11 — setup creates a fresh 260 MB EFI."
+      }
+    },
+    {
+      "id": 3,
+      "type": "link",
+      "title": { "tr": "MiniTool Partition Wizard", "en": "MiniTool Partition Wizard" },
+      "guide_link": "https://www.partitionwizard.com/free-partition-manager.html"
+    }
+  ]
+}

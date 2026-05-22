@@ -1,0 +1,64 @@
+{
+  "id": "mbr2gpt",
+  "title": {
+    "tr": "MBR'den GPT'ye Dönüşüm",
+    "en": "Convert MBR to GPT"
+  },
+  "priority": "YÜKSEK",
+  "estimated_time": "15-20 dk",
+  "risk": "MEDIUM",
+  "risk_note": {
+    "tr": "Veri kaybı yaratmaz ancak UEFI ayarı yapılmazsa sistem açılmayabilir. İşlem öncesi tam yedek şart.",
+    "en": "No data loss expected, but the system may not boot if UEFI settings are not applied. Full backup required."
+  },
+  "prerequisites": ["veri_yedegi", "uefi_destekli_sistem"],
+  "steps": [
+    {
+      "id": 1,
+      "type": "info",
+      "title": { "tr": "Yedek alın", "en": "Take a backup" },
+      "body": {
+        "tr": "Tüm önemli verilerinizi harici bir diske yedekleyin. Bu dönüşüm normalde güvenlidir ama BIOS ayarı yanlış yapılırsa sistem açılmayabilir.",
+        "en": "Back up all important data to an external drive. The conversion is normally safe, but the system may not boot if BIOS settings are wrong."
+      }
+    },
+    {
+      "id": 2,
+      "type": "cmd",
+      "title": { "tr": "Doğrulama", "en": "Validation" },
+      "command": "mbr2gpt /validate /disk:0 /allowFullOS",
+      "success_message": "Validation completed successfully",
+      "fail_action": "stop"
+    },
+    {
+      "id": 3,
+      "type": "cmd",
+      "title": { "tr": "Dönüşümü uygulayın", "en": "Apply conversion" },
+      "command": "mbr2gpt /convert /disk:0 /allowFullOS"
+    },
+    {
+      "id": 4,
+      "type": "manual",
+      "title": { "tr": "Bilgisayarı yeniden başlatın", "en": "Reboot the system" }
+    },
+    {
+      "id": 5,
+      "type": "bios",
+      "title": { "tr": "BIOS/UEFI'da Boot Mode'u UEFI yapın", "en": "Set Boot Mode to UEFI in BIOS/UEFI" },
+      "body": {
+        "tr": "POST sırasında F2, F10, Del veya Esc ile BIOS'a girin. Boot Mode veya CSM ayarını 'UEFI' olarak değiştirin.",
+        "en": "Press F2, F10, Del or Esc at POST to enter BIOS. Change Boot Mode or CSM to 'UEFI'."
+      }
+    },
+    {
+      "id": 6,
+      "type": "bios",
+      "title": { "tr": "Secure Boot'u açın", "en": "Enable Secure Boot" }
+    }
+  ],
+  "verification": {
+    "command": "bcdedit /enum",
+    "success_pattern": "path.*efi"
+  },
+  "microsoft_doc": "https://learn.microsoft.com/tr-tr/windows/deployment/mbr-to-gpt"
+}

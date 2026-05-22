@@ -1,0 +1,40 @@
+{
+  "id": "activation-error",
+  "title": {
+    "tr": "Windows Aktivasyon Hatası",
+    "en": "Windows Activation Error"
+  },
+  "priority": "DÜŞÜK",
+  "estimated_time": "5-15 dk",
+  "risk": "NONE",
+  "prerequisites": [],
+  "steps": [
+    {
+      "id": 1,
+      "type": "cmd",
+      "title": { "tr": "Aktivasyon durumunu göster", "en": "Show activation status" },
+      "command": "slmgr.vbs /xpr"
+    },
+    {
+      "id": 2,
+      "type": "cmd",
+      "title": { "tr": "Detaylı bilgi", "en": "Detailed info" },
+      "command": "slmgr.vbs /dlv"
+    },
+    {
+      "id": 3,
+      "type": "info",
+      "title": { "tr": "Hata kodu yorumu", "en": "Error code reading" },
+      "body": {
+        "tr": "0xC004F034: Lisans alınamadı. 0xC004C003: Sunucu key'i reddetti — orijinal olmayabilir. 0xC004C008: Key başka cihazda kullanılmış.",
+        "en": "0xC004F034: Could not retrieve license. 0xC004C003: Server rejected — likely non-genuine. 0xC004C008: Key used on another device."
+      }
+    },
+    {
+      "id": 4,
+      "type": "link",
+      "title": { "tr": "Microsoft Lisans Satın Al", "en": "Buy Microsoft License" },
+      "guide_link": "https://www.microsoft.com/tr-tr/windows/get-windows-11"
+    }
+  ]
+}

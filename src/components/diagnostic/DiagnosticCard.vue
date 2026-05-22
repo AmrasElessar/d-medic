@@ -1,0 +1,70 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { ChevronRight } from 'lucide-vue-next';
+import type { Finding } from '@/types';
+import PriorityBadge from './PriorityBadge.vue';
+import ActionTypeBadge from './ActionTypeBadge.vue';
+import CategoryIcon from './CategoryIcon.vue';
+import GainBadge from './GainBadge.vue';
+
+interface Props {
+  finding: Finding;
+  selected?: boolean;
+  selectable?: boolean;
+}
+const props = withDefaults(defineProps<Props>(), {
+  selected: false,
+  selectable: false,
+});
+
+defineEmits<{
+  (e: 'toggle', id: string): void;
+  (e: 'open', id: string): void;
+}>();
+
+const { locale } = useI18n();
+const title = computed(() => props.finding.title[locale.value as 'tr' | 'en']);
+const desc  = computed(() => props.finding.description[locale.value as 'tr' | 'en']);
+</script>
+
+<template>
+  <article
+    class="border rounded-lg p-4 transition-colors hover:border-border-strong"
+    :class="selected ? 'border-accent bg-accent/5' : 'border-border bg-bg-subtle'"
+  >
+    <div class="flex items-start gap-3">
+      <input
+        v-if="selectable"
+        type="checkbox"
+        :checked="selected"
+        class="mt-1 accent-accent"
+        @change="$emit('toggle', finding.id)"
+      />
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center flex-wrap gap-2 mb-1">
+          <CategoryIcon :category="finding.category" />
+          <h4 class="text-sm font-medium text-fg truncate">{{ title }}</h4>
+          <PriorityBadge :priority="finding.priority" />
+          <ActionTypeBadge :action-type="finding.action_type" />
+        </div>
+        <p class="text-xs text-fg-muted line-clamp-2">{{ desc }}</p>
+        <div class="flex items-center gap-3 mt-2">
+          <GainBadge :gain="finding.estimated_gain" />
+          <span
+            v-if="finding.reboot_required"
+            class="text-xs text-priority-high"
+          >
+            ⟳ Reboot
+          </span>
+        </div>
+      </div>
+      <button
+        class="text-fg-subtle hover:text-fg p-1"
+        @click="$emit('open', finding.id)"
+      >
+        <ChevronRight class="w-4 h-4" />
+      </button>
+    </div>
+  </article>
+</template>

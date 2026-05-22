@@ -1,0 +1,40 @@
+{
+  "id": "bsod-analysis",
+  "title": {
+    "tr": "BSOD Analizi ve Çözüm Yönü",
+    "en": "BSOD Analysis and Resolution Path"
+  },
+  "priority": "ORTA",
+  "estimated_time": "10-20 dk",
+  "risk": "LOW",
+  "prerequisites": [],
+  "steps": [
+    {
+      "id": 1,
+      "type": "cmd",
+      "title": { "tr": "Son BSOD'ları listele", "en": "List recent BSODs" },
+      "command": "Get-WinEvent -FilterHashtable @{LogName='System'; ID=1001} -MaxEvents 10 | Select TimeCreated, Message | Format-Table -Wrap"
+    },
+    {
+      "id": 2,
+      "type": "cmd",
+      "title": { "tr": "Minidump dosyalarını kontrol et", "en": "Inspect minidump files" },
+      "command": "Get-ChildItem 'C:\\Windows\\Minidump' -ErrorAction SilentlyContinue | Sort LastWriteTime -Descending | Select -First 5"
+    },
+    {
+      "id": 3,
+      "type": "info",
+      "title": { "tr": "Stop code yönlendirmesi", "en": "Stop code routing" },
+      "body": {
+        "tr": "MEMORY_MANAGEMENT/PAGE_FAULT → MemTest86. CRITICAL_PROCESS_DIED → SFC + DISM. DRIVER_IRQL → Driver update. NTFS_FILE_SYSTEM → chkdsk. UNEXPECTED_KERNEL_MODE_TRAP → donanım/ısı.",
+        "en": "MEMORY_MANAGEMENT/PAGE_FAULT → MemTest86. CRITICAL_PROCESS_DIED → SFC + DISM. DRIVER_IRQL → driver update. NTFS_FILE_SYSTEM → chkdsk. UNEXPECTED_KERNEL_MODE_TRAP → hardware/thermal."
+      }
+    },
+    {
+      "id": 4,
+      "type": "link",
+      "title": { "tr": "MemTest86 indir", "en": "Download MemTest86" },
+      "guide_link": "https://www.memtest86.com/"
+    }
+  ]
+}

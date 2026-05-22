@@ -1,0 +1,221 @@
+{
+  "app": {
+    "tagline": "Windows 11 Diagnostics & Optimization",
+    "welcome": "Welcome to D-Medic",
+    "bootstrap_note": "Development scaffold loaded successfully."
+  },
+  "common": {
+    "back": "Back",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "continue": "Continue",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading"
+  },
+  "nav": {
+    "section_main": "Main",
+    "section_system": "System",
+    "dashboard": "Dashboard",
+    "scan": "Scan",
+    "plan": "Plan",
+    "execute": "Execute",
+    "guides": "Guides",
+    "history": "History",
+    "settings": "Settings",
+    "about": "About"
+  },
+  "topbar": {
+    "elevated": "Administrator privileges active",
+    "not_elevated": "Standard user — some operations restricted",
+    "toggle_theme": "Toggle theme",
+    "toggle_language": "Toggle language"
+  },
+  "status": {
+    "idle": "Idle",
+    "running": "Scanning",
+    "completed": "Scan completed",
+    "failed": "Scan failed",
+    "last_findings": "{n} findings",
+    "elevated": "Privilege"
+  },
+  "scan": {
+    "quick": "Quick Scan",
+    "deep": "Deep Scan",
+    "starting": "Scan starting",
+    "finished": "Scan complete",
+    "tab_all": "All"
+  },
+  "priority": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "action_type": {
+    "automatic": "Automatic",
+    "guided": "Guided",
+    "reboot": "Reboot",
+    "not_possible": "Not Possible"
+  },
+  "category": {
+    "performance": "Performance",
+    "stability": "Stability",
+    "security": "Security",
+    "compatibility": "Compatibility",
+    "storage": "Storage",
+    "network": "Network",
+    "power": "Power",
+    "data": "Data"
+  },
+  "gain": {
+    "boot": "boot",
+    "disk": "disk",
+    "stability": "Stability improvement",
+    "data_safety": "Data safety"
+  },
+  "profile": {
+    "basic": "Basic",
+    "basic_desc": "Only safe, reversible cleanups. For modern hardware.",
+    "moderate": "Moderate",
+    "moderate_desc": "Balanced for most systems. Disables telemetry and bg services.",
+    "aggressive": "Aggressive",
+    "aggressive_desc": "For old systems. Removes bloatware and VBS — irreversible.",
+    "custom": "Custom",
+    "custom_desc": "Pick actions manually."
+  },
+  "diagnostic": {
+    "empty_title": "No findings yet",
+    "empty_desc": "Start a Quick or Deep Scan to analyze your system."
+  },
+  "guide": {
+    "empty_title": "No guides loaded yet",
+    "empty_desc": "Guides are read from the resources/guides folder.",
+    "prerequisites": "Prerequisites",
+    "steps": "Steps",
+    "official_doc": "Official Microsoft Documentation"
+  },
+  "exec": {
+    "status_pending": "Pending",
+    "status_running": "Running",
+    "status_success": "Success",
+    "status_failed": "Failed",
+    "status_skipped": "Skipped",
+    "show_log": "Detailed log",
+    "success": "Success",
+    "failed": "Failed",
+    "skipped": "Skipped",
+    "empty_selection_title": "Nothing selected",
+    "empty_selection_desc": "At least one action must be selected before execution.",
+    "stub_title": "Scaffold mode",
+    "stub_desc": "Action handlers are not wired yet (Phase 2)."
+  },
+  "reboot": {
+    "title": "Reboot Required",
+    "description": "A reboot is needed for the changes to take effect.",
+    "hint": "Save any open work first.",
+    "postpone": "Later",
+    "now": "Reboot Now"
+  },
+  "view": {
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "System overview and quick access.",
+      "last_scan": "Last Scan",
+      "no_scan": "No scan run yet.",
+      "go_plan": "Go to Plan",
+      "view_findings": "View findings",
+      "run_scan": "Run scan",
+      "browse_guides": "Browse guides",
+      "view_history": "Open history",
+      "quick_actions": "Quick Actions",
+      "tips": "Tips",
+      "tip_1": "Start with a Quick Scan — it gives a 30s overview.",
+      "tip_2": "A System Restore point is created before applying actions.",
+      "tip_3": "Issues that need guidance are collected under 'Guides'."
+    },
+    "scan": {
+      "title": "System Scan",
+      "subtitle": "Quick scan 15-30s, deep scan (SFC + DISM) 2-5 minutes.",
+      "summary": "Scan Summary"
+    },
+    "plan": {
+      "title": "Action Plan",
+      "subtitle": "Pick a profile or select actions manually.",
+      "profile": "Optimization Profile",
+      "selected": "Selected Actions",
+      "select_all": "Select All",
+      "clear": "Clear",
+      "no_eligible_title": "No automatically applicable findings",
+      "no_eligible_desc": "Run a scan and ensure there are auto-fix findings.",
+      "count": "{n} action(s) selected",
+      "needs_reboot": "reboot required",
+      "continue": "Continue to Execute"
+    },
+    "execute": {
+      "title": "Execute",
+      "subtitle": "Apply selected actions in order, watch progress.",
+      "preflight": "Preflight",
+      "preflight_desc": "{n} action(s) ready to apply.",
+      "opt_restore_point": "Create System Restore point",
+      "opt_restore_point_hint": "Recommended — lets you roll back if something goes wrong.",
+      "opt_reg_export": "Export registry",
+      "opt_reg_export_hint": "HKCU\\Software and HKLM\\Software\\Microsoft\\Windows.",
+      "opt_confirm": "Confirm before each action",
+      "warning_uwp": "Debloat (UWP removal) is IRREVERSIBLE. Reinstall via Microsoft Store.",
+      "in_progress": "Execution In Progress",
+      "result": "Result",
+      "start": "Start",
+      "new_plan": "New Plan",
+      "go_plan": "Go to Plan",
+      "empty_title": "No plan yet",
+      "empty_desc": "Select actions in the 'Plan' tab first."
+    },
+    "guides": {
+      "title": "Guides",
+      "subtitle": "Step-by-step guides for things D-Medic cannot do directly."
+    },
+    "history": {
+      "title": "History & Rollback",
+      "subtitle": "Previously captured snapshots — you can roll back any of them.",
+      "empty_title": "No snapshots yet",
+      "empty_desc": "First execution will list snapshots here automatically.",
+      "rollback": "Restore"
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Configure behavior and appearance."
+    },
+    "about": {
+      "title": "About D-Medic",
+      "description": "D-Medic is an open-source (MIT) diagnostics and optimization toolkit for Windows 11. Philosophy: listen first, then act.",
+      "philosophy": "Philosophy",
+      "p1": "Diagnose first, treat second — no blind optimization.",
+      "p2": "Every finding is labeled AUTOMATIC or GUIDED.",
+      "p3": "Estimated gain and risk shown for each action.",
+      "p4": "Anything automatic is reversible.",
+      "p5": "Zero dependencies, zero telemetry.",
+      "links": "Links",
+      "docs": "Technical Docs",
+      "environment": "Environment"
+    }
+  },
+  "settings": {
+    "language": "Language",
+    "theme": "Theme",
+    "theme_dark": "Dark",
+    "theme_light": "Light",
+    "theme_system": "Match system",
+    "auto_scan": "Auto quick scan on startup",
+    "auto_scan_hint": "Triggers a 15-30s scan when the app opens.",
+    "restore_point": "Create System Restore point",
+    "restore_point_hint": "Before each execution. Recommended.",
+    "reg_export": "Export registry",
+    "reg_export_hint": "HKCU\\Software + HKLM\\Software\\Microsoft\\Windows.",
+    "confirm_execute": "Confirm before each action",
+    "log_level": "Log level",
+    "log_path_hint": "Logs are written to:"
+  }
+}

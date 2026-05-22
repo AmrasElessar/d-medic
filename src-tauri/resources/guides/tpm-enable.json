@@ -1,0 +1,50 @@
+{
+  "id": "tpm-enable",
+  "title": {
+    "tr": "TPM 2.0 Etkinleştirme",
+    "en": "Enable TPM 2.0"
+  },
+  "priority": "ORTA",
+  "estimated_time": "5-10 dk",
+  "risk": "LOW",
+  "prerequisites": ["yonetici_yetkisi", "bios_erisimi"],
+  "steps": [
+    {
+      "id": 1,
+      "type": "cmd",
+      "title": { "tr": "Mevcut TPM durumunu kontrol et", "en": "Check current TPM state" },
+      "command": "Get-Tpm"
+    },
+    {
+      "id": 2,
+      "type": "manual",
+      "title": { "tr": "Bilgisayarı yeniden başlat ve BIOS'a gir", "en": "Reboot and enter BIOS" },
+      "body": {
+        "tr": "Üretici tuşları: ASUS/MSI/Gigabyte → Del veya F2; HP → F10; Dell → F2; Lenovo → F1 veya F2; Acer → F2.",
+        "en": "Vendor keys: ASUS/MSI/Gigabyte → Del or F2; HP → F10; Dell → F2; Lenovo → F1 or F2; Acer → F2."
+      }
+    },
+    {
+      "id": 3,
+      "type": "bios",
+      "title": { "tr": "TPM ayarını bulun", "en": "Locate TPM setting" },
+      "body": {
+        "tr": "Intel: PTT (Platform Trust Technology). AMD: fTPM. ASUS: Advanced → Trusted Computing. HP: Security → TPM Embedded Security. Dell: Security → TPM 2.0 Security.",
+        "en": "Intel: PTT. AMD: fTPM. ASUS: Advanced → Trusted Computing. HP: Security → TPM Embedded Security. Dell: Security → TPM 2.0 Security."
+      }
+    },
+    {
+      "id": 4,
+      "type": "bios",
+      "title": { "tr": "Enabled yapın ve kaydedin", "en": "Set to Enabled and save" }
+    },
+    {
+      "id": 5,
+      "type": "cmd",
+      "title": { "tr": "Windows'ta tekrar doğrulayın", "en": "Verify in Windows" },
+      "command": "Get-Tpm | Select TpmPresent, TpmReady, ManufacturerVersion",
+      "success_message": "TpmPresent : True"
+    }
+  ],
+  "microsoft_doc": "https://learn.microsoft.com/tr-tr/windows/security/hardware-security/tpm/initialize-and-configure-ownership-of-the-tpm"
+}

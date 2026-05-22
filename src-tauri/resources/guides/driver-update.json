@@ -1,0 +1,33 @@
+{
+  "id": "driver-update",
+  "title": {
+    "tr": "Sürücü Güncelleme Rehberi",
+    "en": "Driver Update Guide"
+  },
+  "priority": "DÜŞÜK",
+  "estimated_time": "15-30 dk",
+  "risk": "LOW",
+  "prerequisites": [],
+  "steps": [
+    {
+      "id": 1,
+      "type": "cmd",
+      "title": { "tr": "Eski sürücüleri listele", "en": "List old drivers" },
+      "command": "pnputil /enum-drivers"
+    },
+    {
+      "id": 2,
+      "type": "info",
+      "title": { "tr": "Doğru kaynak", "en": "Correct source" },
+      "body": {
+        "tr": "Sırasıyla: 1) Windows Update (opsiyonel sürücü güncellemeleri), 2) anakart/laptop üreticisi sitesi, 3) GPU üreticisi (NVIDIA/AMD/Intel). 3rd party 'driver updater' uygulamalarından KAÇININ.",
+        "en": "Order: 1) Windows Update (optional updates), 2) motherboard/laptop vendor, 3) GPU vendor (NVIDIA/AMD/Intel). AVOID 3rd-party 'driver updater' tools."
+      }
+    },
+    {
+      "id": 3,
+      "type": "manual",
+      "title": { "tr": "Ayarlar → Windows Update → Gelişmiş seçenekler → İsteğe bağlı güncellemeler", "en": "Settings → Windows Update → Advanced options → Optional updates" }
+    }
+  ]
+}

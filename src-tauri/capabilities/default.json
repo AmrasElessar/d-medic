@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/windows-schema.json",
+  "identifier": "default",
+  "description": "Varsayılan yetenek seti — main pencere için temel izinler",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "core:window:default",
+    "core:webview:default",
+    "shell:default",
+    "fs:default",
+    "log:default"
+  ]
+}

@@ -1,0 +1,221 @@
+{
+  "app": {
+    "tagline": "Windows 11 Tanılama & Optimizasyon",
+    "welcome": "D-Medic'e Hoş Geldiniz",
+    "bootstrap_note": "Geliştirme iskeleti başarıyla yüklendi."
+  },
+  "common": {
+    "back": "Geri",
+    "close": "Kapat",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "delete": "Sil",
+    "continue": "Devam",
+    "yes": "Evet",
+    "no": "Hayır",
+    "loading": "Yükleniyor"
+  },
+  "nav": {
+    "section_main": "Ana Menü",
+    "section_system": "Sistem",
+    "dashboard": "Pano",
+    "scan": "Tarama",
+    "plan": "Plan",
+    "execute": "Uygula",
+    "guides": "Kılavuzlar",
+    "history": "Geçmiş",
+    "settings": "Ayarlar",
+    "about": "Hakkında"
+  },
+  "topbar": {
+    "elevated": "Yönetici yetkisi aktif",
+    "not_elevated": "Standart kullanıcı — bazı işlemler kısıtlı",
+    "toggle_theme": "Tema değiştir",
+    "toggle_language": "Dil değiştir"
+  },
+  "status": {
+    "idle": "Beklemede",
+    "running": "Tarama çalışıyor",
+    "completed": "Tarama tamamlandı",
+    "failed": "Tarama başarısız",
+    "last_findings": "{n} bulgu",
+    "elevated": "Yetki"
+  },
+  "scan": {
+    "quick": "Hızlı Tarama",
+    "deep": "Derin Tarama",
+    "starting": "Tarama başlatılıyor",
+    "finished": "Tarama tamamlandı",
+    "tab_all": "Tümü"
+  },
+  "priority": {
+    "critical": "Kritik",
+    "high": "Yüksek",
+    "medium": "Orta",
+    "low": "Düşük"
+  },
+  "action_type": {
+    "automatic": "Otomatik",
+    "guided": "Kılavuz",
+    "reboot": "Yeniden Başlat",
+    "not_possible": "Mümkün Değil"
+  },
+  "category": {
+    "performance": "Performans",
+    "stability": "Kararlılık",
+    "security": "Güvenlik",
+    "compatibility": "Uyumluluk",
+    "storage": "Depolama",
+    "network": "Ağ",
+    "power": "Güç",
+    "data": "Veri"
+  },
+  "gain": {
+    "boot": "boot",
+    "disk": "disk",
+    "stability": "Kararlılık iyileşmesi",
+    "data_safety": "Veri güvenliği"
+  },
+  "profile": {
+    "basic": "Basit",
+    "basic_desc": "Yalnızca güvenli ve geri alınabilir temizlikler. Yeni nesil donanım için.",
+    "moderate": "Orta",
+    "moderate_desc": "Çoğu sistem için dengeli. Telemetry ve arka plan servisleri kapatılır.",
+    "aggressive": "Agresif",
+    "aggressive_desc": "Eski sistemler için. Bloatware ve VBS kalkar — geri alınamaz.",
+    "custom": "Özel",
+    "custom_desc": "Aksiyonları kendiniz seçersiniz."
+  },
+  "diagnostic": {
+    "empty_title": "Henüz bulgu yok",
+    "empty_desc": "Hızlı veya Derin Tarama başlatarak sisteminizi analiz edin."
+  },
+  "guide": {
+    "empty_title": "Henüz kılavuz yüklenmedi",
+    "empty_desc": "Kılavuzlar resources/guides klasöründen okunur.",
+    "prerequisites": "Ön Koşullar",
+    "steps": "Adımlar",
+    "official_doc": "Microsoft Resmi Dökümanı"
+  },
+  "exec": {
+    "status_pending": "Bekliyor",
+    "status_running": "Çalışıyor",
+    "status_success": "Başarılı",
+    "status_failed": "Başarısız",
+    "status_skipped": "Atlandı",
+    "show_log": "Detaylı log",
+    "success": "Başarılı",
+    "failed": "Başarısız",
+    "skipped": "Atlandı",
+    "empty_selection_title": "Seçim yok",
+    "empty_selection_desc": "Yürütme öncesi en az bir aksiyon seçilmeli.",
+    "stub_title": "İskelet mod",
+    "stub_desc": "Action handler'ları henüz bağlanmadı (Faz 2)."
+  },
+  "reboot": {
+    "title": "Yeniden Başlatma Gerekli",
+    "description": "Yapılan değişikliklerin etkili olması için bilgisayarı yeniden başlatmanız gerekiyor.",
+    "hint": "Açık çalışmalarınızı kaydedin.",
+    "postpone": "Sonra",
+    "now": "Şimdi Yeniden Başlat"
+  },
+  "view": {
+    "dashboard": {
+      "title": "Pano",
+      "subtitle": "Sistem durumu ve hızlı erişim.",
+      "last_scan": "Son Tarama",
+      "no_scan": "Henüz tarama yapılmadı.",
+      "go_plan": "Plana Geç",
+      "view_findings": "Bulguları Gör",
+      "run_scan": "Tarama Başlat",
+      "browse_guides": "Kılavuzları Gör",
+      "view_history": "Geçmişi Aç",
+      "quick_actions": "Hızlı Aksiyonlar",
+      "tips": "İpuçları",
+      "tip_1": "Önce 'Hızlı Tarama' çalıştırın — 30 saniyede genel resmi gösterir.",
+      "tip_2": "Aksiyon uygulamadan önce Sistem Geri Yükleme noktası oluşturulur.",
+      "tip_3": "Kılavuz gerektiren sorunlar 'Kılavuzlar' sekmesinde toplanır."
+    },
+    "scan": {
+      "title": "Sistem Taraması",
+      "subtitle": "Hızlı tarama 15-30 sn, derin tarama (SFC + DISM) 2-5 dakika.",
+      "summary": "Tarama Özeti"
+    },
+    "plan": {
+      "title": "Aksiyon Planı",
+      "subtitle": "Bir profil seçin veya manuel olarak işlemleri belirleyin.",
+      "profile": "Optimizasyon Profili",
+      "selected": "Seçili İşlemler",
+      "select_all": "Tümünü Seç",
+      "clear": "Temizle",
+      "no_eligible_title": "Otomatik uygulanabilir bulgu yok",
+      "no_eligible_desc": "Tarama yapıp otomatik düzeltilebilen bulgular olduğundan emin olun.",
+      "count": "{n} işlem seçili",
+      "needs_reboot": "yeniden başlatma gerekecek",
+      "continue": "Yürütmeye Geç"
+    },
+    "execute": {
+      "title": "Yürütme",
+      "subtitle": "Seçilen işlemleri sırayla uygula, ilerlemeyi izle.",
+      "preflight": "Çalıştırma Öncesi",
+      "preflight_desc": "{n} işlem uygulanmak üzere hazır.",
+      "opt_restore_point": "System Restore noktası oluştur",
+      "opt_restore_point_hint": "Önerilir — değişiklikler problem yaratırsa geri dönebilirsiniz.",
+      "opt_reg_export": "Registry export al",
+      "opt_reg_export_hint": "HKCU\\Software ve HKLM\\Software\\Microsoft\\Windows dalları.",
+      "opt_confirm": "Her işlemden önce onay sor",
+      "warning_uwp": "Debloat (UWP kaldırma) GERİ ALINAMAZ. Microsoft Store'dan yeniden yüklenebilir.",
+      "in_progress": "Yürütme Devam Ediyor",
+      "result": "Sonuç",
+      "start": "Başlat",
+      "new_plan": "Yeni Plan",
+      "go_plan": "Plana Dön",
+      "empty_title": "Plan henüz oluşturulmadı",
+      "empty_desc": "Önce 'Plan' sekmesinden işlem seçin."
+    },
+    "guides": {
+      "title": "Kılavuzlar",
+      "subtitle": "D-Medic'in doğrudan uygulayamadığı işlemler için adım adım rehberler."
+    },
+    "history": {
+      "title": "Geçmiş ve Rollback",
+      "subtitle": "Daha önce oluşturulan snapshot'lar — herhangi birine geri dönebilirsiniz.",
+      "empty_title": "Henüz snapshot yok",
+      "empty_desc": "İlk yürütme yaptığınızda otomatik olarak burada listelenir.",
+      "rollback": "Geri Yükle"
+    },
+    "settings": {
+      "title": "Ayarlar",
+      "subtitle": "Uygulama davranışını ve görünümünü ayarlayın."
+    },
+    "about": {
+      "title": "D-Medic Hakkında",
+      "description": "D-Medic, Windows 11 için geliştirilmiş açık kaynak (MIT) bir tanılama ve optimizasyon aracıdır. Felsefe: önce dinler, sonra konuşur.",
+      "philosophy": "Felsefe",
+      "p1": "Önce tanı, sonra tedavi — kör optimizasyon yok.",
+      "p2": "Her bulgu OTOMATİK veya KILAVUZ olarak etiketlenir.",
+      "p3": "Her aksiyon için tahmini kazanım ve risk gösterilir.",
+      "p4": "Otomatik yapılan her şey geri alınabilir.",
+      "p5": "Hiçbir bağımlılık veya telemetry yok.",
+      "links": "Bağlantılar",
+      "docs": "Teknik Döküman",
+      "environment": "Çalışma Ortamı"
+    }
+  },
+  "settings": {
+    "language": "Dil",
+    "theme": "Tema",
+    "theme_dark": "Koyu",
+    "theme_light": "Açık",
+    "theme_system": "Sistem ile aynı",
+    "auto_scan": "Açılışta otomatik hızlı tarama",
+    "auto_scan_hint": "Uygulama açıldığında 15-30 sn sürelik bir tarama otomatik başlar.",
+    "restore_point": "System Restore noktası oluştur",
+    "restore_point_hint": "Her yürütmeden önce. Önerilir.",
+    "reg_export": "Registry export al",
+    "reg_export_hint": "HKCU\\Software + HKLM\\Software\\Microsoft\\Windows.",
+    "confirm_execute": "Her işlemden önce kullanıcıya sor",
+    "log_level": "Log seviyesi",
+    "log_path_hint": "Loglar şu klasöre yazılır:"
+  }
+}

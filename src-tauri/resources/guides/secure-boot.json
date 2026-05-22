@@ -1,0 +1,45 @@
+{
+  "id": "secure-boot",
+  "title": {
+    "tr": "Secure Boot Etkinleştirme",
+    "en": "Enable Secure Boot"
+  },
+  "priority": "ORTA",
+  "estimated_time": "5 dk",
+  "risk": "LOW",
+  "prerequisites": ["uefi_modu", "gpt_disk"],
+  "steps": [
+    {
+      "id": 1,
+      "type": "manual",
+      "title": { "tr": "Ayarlar → Kurtarma → Gelişmiş Başlatma", "en": "Settings → Recovery → Advanced Startup" }
+    },
+    {
+      "id": 2,
+      "type": "manual",
+      "title": { "tr": "Sorun Gider → Gelişmiş Seçenekler → UEFI Üretici Yazılımı Ayarları", "en": "Troubleshoot → Advanced Options → UEFI Firmware Settings" }
+    },
+    {
+      "id": 3,
+      "type": "bios",
+      "title": { "tr": "Security sekmesinde Secure Boot'u Enabled yapın", "en": "Set Secure Boot to Enabled under Security tab" }
+    },
+    {
+      "id": 4,
+      "type": "bios",
+      "title": { "tr": "Secure Boot Mode: Standard seçin", "en": "Pick Secure Boot Mode: Standard" }
+    },
+    {
+      "id": 5,
+      "type": "bios",
+      "title": { "tr": "Kaydedin (F10) ve çıkın", "en": "Save (F10) and exit" }
+    },
+    {
+      "id": 6,
+      "type": "cmd",
+      "title": { "tr": "Windows'ta doğrulayın", "en": "Verify in Windows" },
+      "command": "Confirm-SecureBootUEFI",
+      "success_message": "True"
+    }
+  ]
+}
