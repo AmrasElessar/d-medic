@@ -1,17 +1,21 @@
-//! Registry export — HKCU\Software + HKLM\Software\Microsoft\Windows.
+//! Registry export / import — rollback için kritik HKCU/HKLM dalları.
+//!
+//! Tam hive dump GB'larca olabildiği için sadece D-Medic'in dokunabileceği
+//! sınırlı dalları (HKCU\Software ve HKLM\Software\Microsoft\Windows) export
+//! ediyoruz.
 
-use crate::error::DMedicResult;
+use crate::error::{DMedicError, DMedicResult};
 use crate::paths;
 use crate::ps;
 
-/// Güvenli (rollback'i mümkün) HKCU / HKLM dallarını export eder.
-/// Tüm hive değil; çünkü tam dump GB'larca olabilir ve gereksiz.
+/// Güvenli HKCU/HKLM dallarını .reg dosyasına yaz, snapshot id'siyle isimlendir.
 pub async fn export_safe_hives(snapshot_id: &str) -> DMedicResult<Vec<String>> {
-    let dir = paths::backups_dir().map_err(|e| crate::error::DMedicError::Other(e.to_string()))?;
+    let dir = paths::backups_dir().map_err(|e| DMedicError::Other(e.to_string()))?;
     std::fs::create_dir_all(&dir)?;
     let hkcu = dir.join(format!("{snapshot_id}_hkcu.reg"));
     let hklm = dir.join(format!("{snapshot_id}_hklm-windows.reg"));
 
+    // reg.exe export çıktıyı UTF-16 LE BOM ile yazar — import'ta sorun değil.
     let script = format!(
         "reg.exe export 'HKCU\\Software' '{}' /y; \
          reg.exe export 'HKLM\\Software\\Microsoft\\Windows' '{}' /y",
@@ -24,4 +28,20 @@ pub async fn export_safe_hives(snapshot_id: &str) -> DMedicResult<Vec<String>> {
         hkcu.to_string_lossy().to_string(),
         hklm.to_string_lossy().to_string(),
     ])
+}
+
+/// Bir snapshot'a ait .reg dosyalarını sırayla import et.
+/// reg import destructive değildir — sadece var olan değerleri eski haline döndürür;
+/// snapshot sonrasında eklenen anahtarlar SİLİNMEZ (reg.exe import limitasyonu).
+pub async fn import_safe_hives(paths: &[String]) -> DMedicResult<Vec<(String, bool)>> {
+    let mut results = Vec::new();
+    for p in paths {
+        // HKLM import elevation gerektirir, fail olursa kullanıcıya görünür kalsın.
+        let script = format!("reg.exe import '{}' 2>&1; $LASTEXITCODE", p.replace('\'', "''"));
+        let out = ps::runner::run_script(&script).await?;
+        let success = out.status == 0
+            && out.stdout.lines().last().map(|s| s.trim() == "0").unwrap_or(false);
+        results.push((p.clone(), success));
+    }
+    Ok(results)
 }
