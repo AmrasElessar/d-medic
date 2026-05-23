@@ -7,7 +7,8 @@
 use windows::core::PCWSTR;
 use windows::Win32::Foundation::ERROR_SUCCESS;
 use windows::Win32::System::Registry::{
-    RegGetValueW, HKEY, HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, RRF_RT_REG_DWORD, RRF_RT_REG_SZ,
+    RegCloseKey, RegOpenKeyExW, RegGetValueW, HKEY, HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE,
+    KEY_READ, RRF_RT_REG_DWORD, RRF_RT_REG_SZ,
 };
 
 pub const HKLM: HKEY = HKEY_LOCAL_MACHINE;
@@ -38,6 +39,22 @@ pub fn read_dword(hive: HKEY, subkey: &str, value: &str) -> Option<u32> {
         Some(data)
     } else {
         None
+    }
+}
+
+/// HKLM/HKCU\subkey altında bir anahtarın var olup olmadığını kontrol et.
+/// Pending reboot gibi "değer önemli değil, anahtar varlığı yeter" senaryoları için.
+pub fn key_exists(hive: HKEY, subkey: &str) -> bool {
+    let sk = to_wide(subkey);
+    let mut h: HKEY = HKEY::default();
+    let res = unsafe { RegOpenKeyExW(hive, PCWSTR(sk.as_ptr()), 0, KEY_READ, &mut h) };
+    if res == ERROR_SUCCESS {
+        unsafe {
+            let _ = RegCloseKey(h);
+        }
+        true
+    } else {
+        false
     }
 }
 
