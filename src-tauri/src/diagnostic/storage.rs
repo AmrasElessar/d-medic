@@ -184,7 +184,7 @@ impl Check for DiskFullCheck {
     }
 }
 
-/// #27 — HDD parçalanma > %10.
+/// #27 — HDD parçalanma > %10 (deep scan, sadece HDD'de).
 pub struct FragmentationCheck;
 
 #[async_trait]
@@ -195,8 +195,78 @@ impl Check for FragmentationCheck {
     fn applicable_in(&self, kind: ScanKind) -> bool {
         matches!(kind, ScanKind::Deep)
     }
+
     async fn run(&self) -> DMedicResult<Vec<Finding>> {
-        // TODO Faz 2: defrag /A /C
-        Ok(Vec::new())
+        let snap = wmi_helper::read_snapshot().await?;
+        // SSD'de defrag zararlı + parçalanma anlamsız. Sadece HDD'de çalıştır.
+        if snap.primary_disk_type != "HDD" {
+            return Ok(Vec::new());
+        }
+
+        // defrag /A /V çıktısı: "Total fragmented space = X%" veya "Toplam parçalanmış alan".
+        let out = crate::ps::runner::run_script("defrag C: /A /V")
+            .await
+            .ok();
+        let Some(out) = out else {
+            return Ok(Vec::new());
+        };
+        let stdout = out.stdout;
+
+        // En sağlam parsing: "%" karakteri içeren satırı bul, sayıyı çıkar.
+        let pct: Option<u32> = stdout
+            .lines()
+            .find(|l| {
+                let lc = l.to_lowercase();
+                (lc.contains("fragmented") || lc.contains("parçalanmış")) && lc.contains('%')
+            })
+            .and_then(|l| {
+                let digits: String = l
+                    .chars()
+                    .skip_while(|c| !c.is_ascii_digit())
+                    .take_while(|c| c.is_ascii_digit())
+                    .collect();
+                digits.parse().ok()
+            });
+
+        let Some(pct) = pct else {
+            return Ok(Vec::new());
+        };
+        if pct < 10 {
+            return Ok(Vec::new());
+        }
+
+        let priority = if pct >= 30 {
+            Priority::High
+        } else {
+            Priority::Medium
+        };
+
+        Ok(vec![Finding {
+            id: "fragmentation".to_string(),
+            category: Category::Performance,
+            priority,
+            action_type: ActionType::Automatic,
+            title: LocalizedText::new(
+                format!("HDD parçalanması %{pct}"),
+                format!("HDD fragmentation {pct}%"),
+            ),
+            description: LocalizedText::new(
+                "Sistem diski HDD ve parçalanma seviyesi yüksek; dosya açma süreleri \
+                 belirgin yavaşlar. Birleştirme önerilir (`defrag C: /U /V`)."
+                    .to_string(),
+                "System disk is HDD with significant fragmentation; file access slows down. \
+                 Run `defrag C: /U /V`."
+                    .to_string(),
+            ),
+            estimated_gain: EstimatedGain::CpuPct { value: 5 },
+            risk: RiskLevel::None,
+            reboot_required: false,
+            action_id: Some("defrag-system".to_string()),
+            guide_id: None,
+            evidence: json!({
+                "fragmentation_pct": pct,
+                "disk_type": snap.primary_disk_type,
+            }),
+        }])
     }
 }

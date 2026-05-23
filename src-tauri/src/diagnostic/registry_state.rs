@@ -9,7 +9,7 @@ use crate::models::{
     ActionType, Category, EstimatedGain, Finding, LocalizedText, Priority, RiskLevel,
 };
 
-/// #20 — Windows Recovery Environment devre dışı.
+/// #20 — Windows Recovery Environment devre dışı (rollback için kritik).
 pub struct WindowsReCheck;
 
 #[async_trait]
@@ -17,9 +17,51 @@ impl Check for WindowsReCheck {
     fn id(&self) -> &'static str {
         "windows-re"
     }
+
     async fn run(&self) -> DMedicResult<Vec<Finding>> {
-        // TODO Faz 2: reagentc /info — PS spawn gerekir, batch'le birlikte.
-        Ok(Vec::new())
+        // reagentc /info çıktısı locale-bağımlı: "Windows RE status: Enabled" veya
+        // "Windows RE durumu: Etkin". İngilizce "Enabled" ve Türkçe "Etkin" anahtar
+        // kelimelerine birden bak; başarısızsa devre dışı varsayma.
+        let out = crate::ps::runner::run_script("reagentc /info 2>&1").await.ok();
+        let Some(out) = out else {
+            return Ok(Vec::new());
+        };
+        let stdout = out.stdout.to_lowercase();
+        // Çıktıda "enabled" veya "etkin" geçiyorsa RE aktif kabul ediyoruz.
+        // "disabled"/"devre dışı" var ama "enabled"/"etkin" yoksa pasif.
+        let enabled = stdout.contains("enabled") || stdout.contains("etkin");
+        let disabled = stdout.contains("disabled") || stdout.contains("devre");
+        if enabled && !disabled {
+            return Ok(Vec::new());
+        }
+
+        Ok(vec![Finding {
+            id: "windows-re".to_string(),
+            category: Category::Stability,
+            priority: Priority::Medium,
+            action_type: ActionType::Guided,
+            title: LocalizedText::new(
+                "Windows Recovery devre dışı",
+                "Windows Recovery disabled",
+            ),
+            description: LocalizedText::new(
+                "Windows RE pasif görünüyor. Sistem geri yükleme noktası açma, başlangıç \
+                 onarımı ve sıfırlama gibi recovery yetenekleri çalışmaz. \
+                 `reagentc /enable` ile yeniden etkinleştirilebilir."
+                    .to_string(),
+                "Windows RE appears inactive. Restore points, startup repair and reset \
+                 features won't work. Re-enable with `reagentc /enable`."
+                    .to_string(),
+            ),
+            estimated_gain: EstimatedGain::Stability,
+            risk: RiskLevel::None,
+            reboot_required: false,
+            action_id: Some("enable-windows-re".to_string()),
+            guide_id: None,
+            evidence: json!({
+                "reagentc_output_lower": stdout.lines().take(10).collect::<Vec<_>>().join(" | "),
+            }),
+        }])
     }
 }
 
@@ -230,7 +272,7 @@ fn activation_blocking() -> DMedicResult<Vec<Finding>> {
     }])
 }
 
-/// #26 — Driver güncel değil (kritik).
+/// #26 — Driver güncel değil — 2 yıldan eski signed driver sayısı.
 pub struct DriverFreshnessCheck;
 
 #[async_trait]
@@ -238,8 +280,66 @@ impl Check for DriverFreshnessCheck {
     fn id(&self) -> &'static str {
         "driver-freshness"
     }
+
     async fn run(&self) -> DMedicResult<Vec<Finding>> {
-        // TODO Faz 2: pnputil /enum-drivers — PS spawn gerekiyor.
-        Ok(Vec::new())
+        // CIM standart query, admin gerektirmez. Get-WindowsDriver daha detaylı
+        // ama elevated ister; CIM ile yetiniyoruz.
+        let script = "$cutoff = (Get-Date).AddYears(-2)\n\
+            $drv = Get-CimInstance Win32_PnPSignedDriver -ErrorAction SilentlyContinue\n\
+            $total = @($drv).Count\n\
+            $old = @($drv | Where-Object { $_.DriverDate -and $_.DriverDate -lt $cutoff }).Count\n\
+            \"$total,$old\"";
+        let out = crate::ps::runner::run_script(script).await.ok();
+        let Some(out) = out else {
+            return Ok(Vec::new());
+        };
+        let parts: Vec<&str> = out.stdout.trim().split(',').collect();
+        if parts.len() != 2 {
+            return Ok(Vec::new());
+        }
+        let total: u32 = parts[0].parse().unwrap_or(0);
+        let old: u32 = parts[1].parse().unwrap_or(0);
+        if total == 0 || old < 5 {
+            return Ok(Vec::new());
+        }
+
+        let pct = (old as f32 / total as f32) * 100.0;
+        let priority = if pct >= 30.0 {
+            Priority::High
+        } else if pct >= 15.0 {
+            Priority::Medium
+        } else {
+            Priority::Low
+        };
+
+        Ok(vec![Finding {
+            id: "driver-freshness".to_string(),
+            category: Category::Stability,
+            priority,
+            action_type: ActionType::Guided,
+            title: LocalizedText::new(
+                format!("{old} adet 2 yıldan eski driver (toplam {total})"),
+                format!("{old} drivers older than 2 years (of {total})"),
+            ),
+            description: LocalizedText::new(
+                "Eski driver'lar BSOD, donanım performans kaybı ve güvenlik açığı kaynağıdır. \
+                 Anakart/üretici sitesinden veya Windows Update Catalog'dan güncel sürümlere \
+                 bakın; özellikle chipset/GPU/SSD driver'ları öncelikli."
+                    .to_string(),
+                "Outdated drivers cause BSODs, hardware perf loss and security holes. Check \
+                 vendor sites or Windows Update Catalog; chipset/GPU/SSD drivers first."
+                    .to_string(),
+            ),
+            estimated_gain: EstimatedGain::Stability,
+            risk: RiskLevel::Low,
+            reboot_required: true,
+            action_id: None,
+            guide_id: Some("driver-update".to_string()),
+            evidence: json!({
+                "total_drivers": total,
+                "older_than_2y": old,
+                "old_pct": pct,
+            }),
+        }])
     }
 }
