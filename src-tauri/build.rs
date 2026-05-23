@@ -1,17 +1,29 @@
 fn main() {
+    println!("cargo:rerun-if-changed=app.manifest");
+    println!("cargo:rerun-if-env-changed=PROFILE");
+
+    let mut attrs = tauri_build::Attributes::new();
+
     #[cfg(windows)]
     {
-        // Windows uygulama manifestini gömerek manifest seviyesinde
-        // requireAdministrator yetkisi talep ediyoruz. Bu sayede Tauri
-        // içinden per-komut UAC tetiklenmez, kullanıcı sadece uygulamayı
-        // başlatırken bir kez onay verir.
-        let mut res = winresource::WindowsResource::new();
-        res.set_manifest(include_str!("app.manifest"));
-        if let Err(e) = res.compile() {
-            // tauri-build kendi kaynak embed'ini yapacağı için sessiz uyarı
-            // verip devam ediyoruz; release build'te critical olmamalı.
-            eprintln!("winresource manifest embed başarısız: {e}");
-        }
+        // Dev profilinde requireAdministrator → asInvoker'a indir; cargo run
+        // elevated olmayan terminalden requireAdministrator exe spawn edemez
+        // (os error 740). Release build aynen UAC manifest'iyle çıkar.
+        let raw = include_str!("app.manifest");
+        let manifest_owned;
+        let manifest_ref: &str = if std::env::var("PROFILE").as_deref() == Ok("debug") {
+            manifest_owned = raw.replace(
+                r#"level="requireAdministrator""#,
+                r#"level="asInvoker""#,
+            );
+            &manifest_owned
+        } else {
+            raw
+        };
+
+        let win = tauri_build::WindowsAttributes::new().app_manifest(manifest_ref);
+        attrs = attrs.windows_attributes(win);
     }
-    tauri_build::build();
+
+    tauri_build::try_build(attrs).expect("tauri-build başarısız");
 }

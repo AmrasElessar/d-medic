@@ -14,8 +14,9 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 [build-dependencies]
 tauri-build = { version = "2.0", features = [] }
 
-[target.'cfg(windows)'.build-dependencies]
-winresource = "0.1"
+# Windows manifest embed işi tauri-build'in WindowsAttributes API'sine
+# devredildi (build.rs içinde). Üçüncü taraf resource crate'i gerekmiyor;
+# tek bir resource.res üretilir, duplicate VERSION/MANIFEST çakışmaz.
 
 [dependencies]
 tauri = { version = "2.1", features = [] }
@@ -34,7 +35,10 @@ thiserror = "1.0"
 anyhow = "1.0"
 
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+# default-features=false → "tracing-log" özelliği kapanır; aksi halde
+# tracing-subscriber `log` crate'inin global logger'ını da set eder ve
+# tauri-plugin-log "logger already initialized" hatasıyla panik atar.
+tracing-subscriber = { version = "0.3", default-features = false, features = ["env-filter", "fmt", "json", "registry", "ansi"] }
 tracing-appender = "0.2"
 
 uuid = { version = "1.11", features = ["v4", "serde"] }
