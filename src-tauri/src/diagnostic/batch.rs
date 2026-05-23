@@ -6,7 +6,8 @@
 
 use serde::Deserialize;
 
-use crate::error::DMedicResult;
+use crate::error::{DMedicError, DMedicResult};
+use crate::ps;
 
 /// Quick scan PS batch çıktısının tek bir typed temsili.
 /// Yeni alan eklediğinde hem PS hem buraya ekle.
@@ -33,8 +34,23 @@ pub struct ServiceEntry {
 }
 
 /// Tek batch çalıştır, JSON parse et.
+///
+/// simd-json mutable buffer ister — string'i `into_bytes()` ile owned `Vec<u8>`
+/// olarak veriyoruz. UTF-16 BOM normalize işi `ps::runner::run_script`
+/// içinde yapıldığı için burada saf UTF-8 bekliyoruz.
 pub async fn run_quick_batch() -> DMedicResult<QuickBatch> {
-    // TODO Faz 1: crate::ps::batch::run_quick_scan_script() çağrısı,
-    // çıktıyı UTF-8'e normalize edip simd_json::from_slice ile parse et.
-    Ok(QuickBatch::default())
+    let raw = ps::batch::run_quick_scan_script().await?;
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return Ok(QuickBatch::default());
+    }
+
+    let mut buf = trimmed.to_owned().into_bytes();
+    let parsed: QuickBatch = simd_json::serde::from_slice(&mut buf).map_err(|e| {
+        // Tanı için ilk 200 karakteri logla — büyük JSON akışında debug pratik.
+        let preview: String = trimmed.chars().take(200).collect();
+        tracing::warn!(error = %e, preview = %preview, "QuickBatch parse failed");
+        DMedicError::SimdJson(e)
+    })?;
+    Ok(parsed)
 }

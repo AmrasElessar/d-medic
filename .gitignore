@@ -8,10 +8,11 @@ src-tauri/target/
 src-tauri/gen/
 src-tauri/WixTools/
 
-# Editor
+# Editor / tooling
 .vscode/*
 !.vscode/extensions.json
 .idea/
+.claude/
 *.swp
 *.suo
 *.ntvs*

@@ -57,6 +57,9 @@ windows = { version = "0.58", features = [
     "Win32_Foundation",
     "Win32_Security",
 ] }
+# wmi: windows-rs üzerinde tip-güvenli ergonomik WMI wrapper.
+# PS spawn ilkesini koruyor (native COM), boilerplate'i kısaltıyor.
+wmi = "0.14"
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]

@@ -35,6 +35,7 @@ pub async fn run_script(script: &str) -> DMedicResult<PsOutput> {
 
     #[cfg(windows)]
     {
+        #[allow(unused_imports)]
         use std::os::windows::process::CommandExt;
         cmd.creation_flags(CREATE_NO_WINDOW);
     }

@@ -1,0 +1,53 @@
+{
+  "id": "disk-cleanup",
+  "title": {
+    "tr": "Sistem Diski Temizliği",
+    "en": "System Disk Cleanup"
+  },
+  "priority": "ORTA",
+  "estimated_time": "10-20 dk",
+  "risk": "LOW",
+  "risk_note": {
+    "tr": "Geri alınabilir adımlar. Yalnızca geçici dosyalar ve cache temizleniyor.",
+    "en": "Reversible steps. Only temporary files and caches are cleared."
+  },
+  "prerequisites": [],
+  "steps": [
+    {
+      "id": 1,
+      "type": "cmd",
+      "title": { "tr": "Windows yerleşik disk temizleyici", "en": "Built-in cleanup tool" },
+      "command": "cleanmgr /sageset:1; cleanmgr /sagerun:1"
+    },
+    {
+      "id": 2,
+      "type": "cmd",
+      "title": { "tr": "Geçici dosyalar (kullanıcı)", "en": "Temp files (user)" },
+      "command": "Remove-Item \"$env:TEMP\\*\" -Recurse -Force -ErrorAction SilentlyContinue"
+    },
+    {
+      "id": 3,
+      "type": "cmd",
+      "title": { "tr": "Windows update cache", "en": "Windows update cache" },
+      "command": "Stop-Service wuauserv -Force; Remove-Item C:\\Windows\\SoftwareDistribution\\Download\\* -Recurse -Force -ErrorAction SilentlyContinue; Start-Service wuauserv"
+    },
+    {
+      "id": 4,
+      "type": "info",
+      "title": { "tr": "Büyük dosyaları tespit et", "en": "Find large files" },
+      "body": {
+        "tr": "WizTree veya TreeSize ile disk haritası çıkarın — en çok yer kaplayan klasör ve uygulamaları görerek silinebilir aday seçin.",
+        "en": "Use WizTree or TreeSize to visualize disk usage and identify deletable folders/apps."
+      }
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Hibernation kapatma (opsiyonel)", "en": "Disable hibernation (optional)" },
+      "body": {
+        "tr": "powercfg /h off — RAM kadar disk alanı (hiberfil.sys) açar. Notebook'larda kapatmayın.",
+        "en": "powercfg /h off — frees disk space equal to RAM size (hiberfil.sys). Don't disable on laptops."
+      }
+    }
+  ]
+}
