@@ -16,6 +16,7 @@ pub mod events;
 pub mod network;
 pub mod power;
 pub mod ram;
+pub mod registry;
 pub mod registry_state;
 pub mod security;
 pub mod services;

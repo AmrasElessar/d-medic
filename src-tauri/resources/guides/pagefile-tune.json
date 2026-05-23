@@ -1,0 +1,53 @@
+{
+  "id": "pagefile-tune",
+  "title": {
+    "tr": "Pagefile Boyutunu Sabitleme",
+    "en": "Set Fixed Pagefile Size"
+  },
+  "priority": "YÜKSEK",
+  "estimated_time": "5 dk + yeniden başlatma",
+  "risk": "LOW",
+  "risk_note": {
+    "tr": "Pagefile her zaman geri alınabilir; otomatik moda dönmek tek tıkla yapılır.",
+    "en": "Pagefile changes are reversible; auto mode can be restored anytime."
+  },
+  "prerequisites": [],
+  "steps": [
+    {
+      "id": 1,
+      "type": "info",
+      "title": { "tr": "Önerilen boyut", "en": "Recommended size" },
+      "body": {
+        "tr": "Sabit boyut = RAM × 1.5 (hem başlangıç hem maksimum). 4 GB RAM → 6144 MB. Dosya parçalanmasını önler ve düşük RAM'de OOM riskini azaltır.",
+        "en": "Fixed size = RAM × 1.5 (initial and maximum). 4 GB RAM → 6144 MB. Prevents fragmentation and lowers OOM risk on low RAM."
+      }
+    },
+    {
+      "id": 2,
+      "type": "cmd",
+      "title": { "tr": "Otomatik yönetimi kapat", "en": "Disable auto management" },
+      "command": "wmic computersystem set AutomaticManagedPagefile=False"
+    },
+    {
+      "id": 3,
+      "type": "cmd",
+      "title": { "tr": "Sabit pagefile uygula (örnek: 4 GB RAM → 6144 MB)", "en": "Apply fixed pagefile (example: 4 GB RAM → 6144 MB)" },
+      "command": "wmic pagefileset where name=\"C:\\\\pagefile.sys\" set InitialSize=6144,MaximumSize=6144"
+    },
+    {
+      "id": 4,
+      "type": "info",
+      "title": { "tr": "Yeniden başlat", "en": "Restart" },
+      "body": {
+        "tr": "Değişiklik aktif olması için yeniden başlatma gerekli. Sonrasında C:\\pagefile.sys boyutu sabittir.",
+        "en": "Restart required for changes to take effect. C:\\pagefile.sys size becomes fixed afterward."
+      }
+    },
+    {
+      "id": 5,
+      "type": "cmd",
+      "title": { "tr": "Geri al (otomatik moda dön)", "en": "Revert to auto management" },
+      "command": "wmic computersystem set AutomaticManagedPagefile=True"
+    }
+  ]
+}
