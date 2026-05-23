@@ -10,7 +10,7 @@ use crate::models::{
 };
 
 #[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename = "Win32_Tpm", rename_all = "PascalCase")]
 struct Win32Tpm {
     spec_version: Option<String>,
     is_enabled_initial_value: Option<bool>,

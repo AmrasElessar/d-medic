@@ -10,7 +10,7 @@ use crate::models::{
 };
 
 #[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename = "Win32_PowerPlan", rename_all = "PascalCase")]
 struct Win32PowerPlan {
     element_name: Option<String>,
     instance_id: Option<String>,
@@ -18,7 +18,7 @@ struct Win32PowerPlan {
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename = "Win32_ComputerSystem", rename_all = "PascalCase")]
 struct Win32ComputerSystem {
     automatic_managed_pagefile: Option<bool>,
 }

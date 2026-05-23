@@ -10,7 +10,7 @@ use crate::models::{
 };
 
 #[derive(Deserialize, Clone)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename = "Win32_Service", rename_all = "PascalCase")]
 struct Win32Service {
     name: Option<String>,
     state: Option<String>,

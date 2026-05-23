@@ -24,7 +24,7 @@ impl Check for SysmainHddCheck {
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename = "MSFT_PhysicalDisk", rename_all = "PascalCase")]
 struct MsftPhysicalDiskHealth {
     friendly_name: Option<String>,
     /// 0=Healthy, 1=Warning, 2=Unhealthy, 3=Unknown.

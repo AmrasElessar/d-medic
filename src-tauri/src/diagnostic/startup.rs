@@ -10,7 +10,7 @@ use crate::models::{
 };
 
 #[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename = "Win32_StartupCommand", rename_all = "PascalCase")]
 struct Win32StartupCommand {
     name: Option<String>,
     location: Option<String>,

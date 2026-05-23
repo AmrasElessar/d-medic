@@ -25,26 +25,31 @@ pub struct SystemSnapshot {
     pub vbs_running: bool,
 }
 
+// wmi crate, query<T>() yaparken T'nin Rust adını WMI sınıf adı olarak kullanır.
+// `Win32_PhysicalMemory` gibi underscore'lu WMI isimlerini eşleyebilmek için
+// `#[serde(rename = "...")]` ile gerçek sınıf adını veriyoruz; aksi halde
+// WBEM_E_INVALID_CLASS (0x80041010) hatası.
+
 #[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename = "Win32_PhysicalMemory", rename_all = "PascalCase")]
 struct Win32PhysicalMemory {
     capacity: Option<u64>,
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename = "Win32_OperatingSystem", rename_all = "PascalCase")]
 struct Win32OperatingSystem {
     free_physical_memory: Option<u64>,
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename = "Win32_Processor", rename_all = "PascalCase")]
 struct Win32Processor {
     name: Option<String>,
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename = "Win32_LogicalDisk", rename_all = "PascalCase")]
 struct Win32LogicalDisk {
     device_id: Option<String>,
     drive_type: Option<u32>,
@@ -53,13 +58,13 @@ struct Win32LogicalDisk {
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename = "MSFT_PhysicalDisk", rename_all = "PascalCase")]
 struct MsftPhysicalDisk {
     media_type: Option<u16>,
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename = "Win32_DeviceGuard", rename_all = "PascalCase")]
 struct Win32DeviceGuard {
     /// 0: off, 1: configured but not running, 2: running.
     virtualization_based_security_status: Option<u32>,
