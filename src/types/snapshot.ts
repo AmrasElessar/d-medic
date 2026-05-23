@@ -12,3 +12,10 @@ export interface Snapshot {
   registry_export_paths: string[];
   service_states: ServiceStateRecord[];
 }
+
+/** rollback_snapshot dönüş tipi. registry_imports[i] = (path, success). */
+export interface RollbackReport {
+  snapshot_id: string;
+  registry_imports: [string, boolean][];
+  services_restored: number;
+}
