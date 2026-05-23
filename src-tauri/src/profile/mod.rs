@@ -1,6 +1,9 @@
 //! Profil → action_id eşlemesi. Bkz. Teknik Döküman §5.3.
 //!
-//! Sıralama: Basit ⊂ Orta ⊂ Agresif. Özel kullanıcı tarafından seçilen.
+//! İçe alma kuralı: Basic ⊂ Moderate ⊂ Aggressive. Custom kullanıcı seçimi.
+//!
+//! action_id'ler `action::registry()` ile birebir eşleşmelidir; uyumsuzluk
+//! testlerle yakalanır (`tests::all_profile_actions_exist`).
 
 use serde::Serialize;
 
@@ -17,32 +20,35 @@ pub struct ProfileDefinition {
 }
 
 pub fn definitions() -> Vec<ProfileDefinition> {
+    // Basic: yalnız geri alınabilir + zararsız işlemler.
     let basic_actions = vec![
         "clean-temp",
         "sfc-repair",
         "dism-restore-health",
-        "wu-reset",
+        "reset-windows-update",
         "startup-cleanup",
-        "ultimate-performance",
+        "set-high-performance-plan",
         "enable-windows-re",
     ];
 
+    // Moderate: Basic + servis kapatma + pagefile + görsel efekt.
     let mut moderate_actions = basic_actions.clone();
     moderate_actions.extend_from_slice(&[
         "disable-sysmain",
         "disable-telemetry",
         "pagefile-optimize",
-        "minimal-visual-effects",
-        "limit-search-index",
+        "set-visual-effects-performance",
+        "disable-wsearch",
     ]);
 
+    // Aggressive: Moderate + bloatware kaldırma (KALICI) + VBS off + hibernation + DNS + defrag.
     let mut aggressive_actions = moderate_actions.clone();
     aggressive_actions.extend_from_slice(&[
-        "remove-bloatware",
+        "uninstall-uwp-bloat",
         "disable-vbs",
         "disable-hibernation",
-        "switch-dns",
-        "defrag-hdd",
+        "set-fast-dns",
+        "defrag-system",
     ]);
 
     vec![
@@ -83,4 +89,66 @@ pub fn definitions() -> Vec<ProfileDefinition> {
 
 pub fn for_kind(kind: ProfileKind) -> Option<ProfileDefinition> {
     definitions().into_iter().find(|p| p.kind == kind)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::action;
+    use std::collections::HashSet;
+
+    /// Profil'deki her action_id, action::registry()'de KAYITLI olmalı.
+    /// Aksi halde UI "Düzelt" → NotFound hatası verir.
+    #[test]
+    fn all_profile_actions_exist_in_registry() {
+        let registered: HashSet<&'static str> =
+            action::registry().iter().map(|a| a.id()).collect();
+        for prof in definitions() {
+            for action_id in &prof.action_ids {
+                assert!(
+                    registered.contains(action_id),
+                    "Profile {:?}: action_id '{}' action::registry()'de yok",
+                    prof.kind,
+                    action_id
+                );
+            }
+        }
+    }
+
+    /// Basic ⊂ Moderate ⊂ Aggressive invaryantı.
+    #[test]
+    fn basic_subset_moderate_subset_aggressive() {
+        let defs = definitions();
+        let basic: HashSet<_> = defs
+            .iter()
+            .find(|p| p.kind == ProfileKind::Basic)
+            .unwrap()
+            .action_ids
+            .iter()
+            .collect();
+        let moderate: HashSet<_> = defs
+            .iter()
+            .find(|p| p.kind == ProfileKind::Moderate)
+            .unwrap()
+            .action_ids
+            .iter()
+            .collect();
+        let aggressive: HashSet<_> = defs
+            .iter()
+            .find(|p| p.kind == ProfileKind::Aggressive)
+            .unwrap()
+            .action_ids
+            .iter()
+            .collect();
+        assert!(
+            basic.is_subset(&moderate),
+            "Basic ⊄ Moderate. Eksik: {:?}",
+            basic.difference(&moderate).collect::<Vec<_>>()
+        );
+        assert!(
+            moderate.is_subset(&aggressive),
+            "Moderate ⊄ Aggressive. Eksik: {:?}",
+            moderate.difference(&aggressive).collect::<Vec<_>>()
+        );
+    }
 }
