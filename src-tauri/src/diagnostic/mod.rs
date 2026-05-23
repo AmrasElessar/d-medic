@@ -77,28 +77,70 @@ pub fn registry() -> Vec<Box<dyn Check>> {
     ]
 }
 
+/// Tek check'in başlangıç/bitiş anını dış dünyaya bildiren event.
+/// commands::scan bunu Tauri `emit("scan-progress", ...)`'a çevirir; diagnostic
+/// modülü Tauri'den bağımsız kalsın diye saf callback API.
+#[derive(Debug)]
+pub struct ScanEvent {
+    pub index: usize,
+    pub total: usize,
+    pub check_id: &'static str,
+    pub kind: ScanEventKind,
+}
+
+#[derive(Debug)]
+pub enum ScanEventKind {
+    Started,
+    Finished { success: bool, finding_count: usize },
+}
+
 /// Quick scan: SFC/DISM gibi dakikalar süren işlemler hariç tüm check'leri çalıştır.
 pub async fn run_quick() -> DMedicResult<Vec<Finding>> {
-    run_filtered(ScanKind::Quick).await
+    run_with_progress(ScanKind::Quick, |_| {}).await
 }
 
 /// Deep scan: SFC + DISM dahil tümünü çalıştır.
 pub async fn run_deep() -> DMedicResult<Vec<Finding>> {
-    run_filtered(ScanKind::Deep).await
+    run_with_progress(ScanKind::Deep, |_| {}).await
 }
 
-async fn run_filtered(kind: ScanKind) -> DMedicResult<Vec<Finding>> {
+/// Progress callback'li çekirdek tarama. `on_event` her check öncesi (Started)
+/// ve sonrası (Finished) çağrılır — UI progress bar / step listesi için.
+pub async fn run_with_progress<F>(kind: ScanKind, mut on_event: F) -> DMedicResult<Vec<Finding>>
+where
+    F: FnMut(ScanEvent) + Send,
+{
+    let applicable: Vec<Box<dyn Check>> = registry()
+        .into_iter()
+        .filter(|c| c.applicable_in(kind))
+        .collect();
+    let total = applicable.len();
+
     let mut findings = Vec::new();
-    for check in registry() {
-        if !check.applicable_in(kind) {
-            continue;
-        }
-        match check.run().await {
-            Ok(mut items) => findings.append(&mut items),
+    for (idx, check) in applicable.iter().enumerate() {
+        on_event(ScanEvent {
+            index: idx,
+            total,
+            check_id: check.id(),
+            kind: ScanEventKind::Started,
+        });
+        let (success, count) = match check.run().await {
+            Ok(mut items) => {
+                let n = items.len();
+                findings.append(&mut items);
+                (true, n)
+            }
             Err(e) => {
                 tracing::warn!(check_id = check.id(), error = %e, "Check başarısız");
+                (false, 0)
             }
-        }
+        };
+        on_event(ScanEvent {
+            index: idx,
+            total,
+            check_id: check.id(),
+            kind: ScanEventKind::Finished { success, finding_count: count },
+        });
     }
     Ok(findings)
 }

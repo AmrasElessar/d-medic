@@ -10,6 +10,12 @@ interface ScanState {
   history: ScanResult[];
   error: string | null;
   progress: number;
+  /** Backend `scan-progress` event'lerinden gelen anlık adım sayısı. */
+  currentIndex: number;
+  totalChecks: number;
+  /** Şu an çalışan / az önce biten check kimliği — UI alt yazısında gösterilir. */
+  currentCheckId: string | null;
+  lastFinishedCheckId: string | null;
 }
 
 export const useScanStore = defineStore('scan', {
@@ -20,6 +26,10 @@ export const useScanStore = defineStore('scan', {
     history: [],
     error: null,
     progress: 0,
+    currentIndex: 0,
+    totalChecks: 0,
+    currentCheckId: null,
+    lastFinishedCheckId: null,
   }),
   getters: {
     findings: (s): Finding[] => s.lastResult?.findings ?? [],
@@ -59,9 +69,31 @@ export const useScanStore = defineStore('scan', {
       this.kind = kind;
       this.error = null;
       this.progress = 0;
+      this.currentIndex = 0;
+      this.totalChecks = 0;
+      this.currentCheckId = null;
+      this.lastFinishedCheckId = null;
     },
     setProgress(pct: number): void {
       this.progress = Math.max(0, Math.min(100, pct));
+    },
+    /** Backend `scan-progress` event'inden gelen tick. */
+    handleProgressEvent(payload: {
+      index: number;
+      total: number;
+      check_id: string;
+      status: 'started' | 'finished';
+    }): void {
+      this.totalChecks = payload.total;
+      if (payload.status === 'started') {
+        this.currentIndex = payload.index;
+        this.currentCheckId = payload.check_id;
+      } else {
+        this.lastFinishedCheckId = payload.check_id;
+        // index+1 biten check sayısı; total > 0 garanti.
+        const done = payload.index + 1;
+        this.progress = Math.round((done / Math.max(1, payload.total)) * 100);
+      }
     },
     completeScan(result: ScanResult): void {
       this.status = 'completed';
@@ -69,6 +101,7 @@ export const useScanStore = defineStore('scan', {
       this.history.unshift(result);
       this.history = this.history.slice(0, 20);
       this.progress = 100;
+      this.currentCheckId = null;
     },
     failScan(error: string): void {
       this.status = 'failed';
@@ -79,6 +112,10 @@ export const useScanStore = defineStore('scan', {
       this.kind = null;
       this.error = null;
       this.progress = 0;
+      this.currentIndex = 0;
+      this.totalChecks = 0;
+      this.currentCheckId = null;
+      this.lastFinishedCheckId = null;
     },
   },
 });
