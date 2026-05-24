@@ -190,6 +190,8 @@
       "tools_confirm_long": "Bu işlem birkaç dakika sürebilir. Devam edilsin mi?",
       "tools_success": "Tamamlandı",
       "tools_failed": "Başarısız",
+      "tools_ssd_only": "SSD algılandı ({n}). SSD'lere defrag uygulanması önerilmez.",
+      "tools_mixed_disks": "Sistemde {ssd} SSD + {hdd} HDD var. SSD'ler atlanır; defrag sadece HDD'lere uygulanır.",
       "tips": "İpuçları",
       "tip_1": "Önce 'Hızlı Tarama' çalıştırın — 30 saniyede genel resmi gösterir.",
       "tip_2": "Aksiyon uygulamadan önce Sistem Geri Yükleme noktası oluşturulur.",

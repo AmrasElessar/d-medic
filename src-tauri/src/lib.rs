@@ -35,6 +35,7 @@ pub fn run() {
             system::app_info,
             system::is_elevated,
             system::system_stats,
+            system::list_disks,
             system::reboot_system,
             system::open_logs_folder,
             // scan

@@ -1,3 +1,12 @@
+/** Backend `commands::system::list_disks` dönüş tipi — wmi::PhysicalDiskInfo. */
+export interface PhysicalDiskInfo {
+  friendly_name: string;
+  /** "HDD" | "SSD" | "SCM" | "Unknown" */
+  media_type: string;
+  size_gb: number;
+  device_id: string;
+}
+
 /** Backend `commands::system::system_stats` dönüş tipi — wmi::SystemSnapshot. */
 export interface SystemStats {
   total_ram_gb: number;

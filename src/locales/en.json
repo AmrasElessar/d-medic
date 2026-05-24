@@ -190,6 +190,8 @@
       "tools_confirm_long": "This operation may take several minutes. Continue?",
       "tools_success": "Done",
       "tools_failed": "Failed",
+      "tools_ssd_only": "SSD detected ({n}). Defrag is not recommended on SSDs.",
+      "tools_mixed_disks": "System has {ssd} SSD + {hdd} HDD. SSDs will be skipped; defrag runs only on HDDs.",
       "tips": "Tips",
       "tip_1": "Start with a Quick Scan — it gives a 30s overview.",
       "tip_2": "A System Restore point is created before applying actions.",

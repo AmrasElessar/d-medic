@@ -131,6 +131,62 @@ async fn count_uwp_packages() -> Option<u32> {
     out.stdout.trim().parse::<u32>().ok()
 }
 
+/// Frontend'in disk picker / SSD-aware UI için kullandığı disk listesi.
+/// MSFT_PhysicalDisk üzerinden tüm fiziksel diskleri döner — DefragHdd gibi
+/// işlemler SSD'lerde gri/disabled yapılabilsin diye.
+#[derive(Debug, Clone, Serialize)]
+pub struct PhysicalDiskInfo {
+    pub friendly_name: String,
+    /// "HDD" | "SSD" | "SCM" | "Unknown"
+    pub media_type: String,
+    pub size_gb: f32,
+    /// Get-PhysicalDisk DeviceID — defrag komutu icin (gelecek)
+    pub device_id: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename = "MSFT_PhysicalDisk", rename_all = "PascalCase")]
+struct MsftPhysicalDiskAll {
+    friendly_name: Option<String>,
+    media_type: Option<u16>,
+    size: Option<u64>,
+    device_id: Option<String>,
+}
+
+/// Tüm fiziksel diskleri listele. WMI'a erişilemezse boş döner — fallback
+/// olarak frontend hiçbir uyarı vermez (varsayılan davranış mevcut).
+pub async fn list_physical_disks() -> DMedicResult<Vec<PhysicalDiskInfo>> {
+    tokio::task::spawn_blocking(list_physical_disks_blocking)
+        .await
+        .map_err(|e| DMedicError::Other(format!("list_disks spawn_blocking: {e}")))?
+}
+
+fn list_physical_disks_blocking() -> DMedicResult<Vec<PhysicalDiskInfo>> {
+    let com = init_com_lib();
+    let storage = match WMIConnection::with_namespace_path("ROOT\\Microsoft\\Windows\\Storage", com) {
+        Ok(s) => s,
+        Err(e) => {
+            tracing::warn!(error = %e, "list_physical_disks: Storage namespace connect failed");
+            return Ok(Vec::new());
+        }
+    };
+    let rows: Vec<MsftPhysicalDiskAll> = storage.query().unwrap_or_default();
+    Ok(rows
+        .into_iter()
+        .map(|d| PhysicalDiskInfo {
+            friendly_name: d.friendly_name.unwrap_or_else(|| "Unknown".into()),
+            media_type: match d.media_type {
+                Some(3) => "HDD".into(),
+                Some(4) => "SSD".into(),
+                Some(5) => "SCM".into(),
+                _ => "Unknown".into(),
+            },
+            size_gb: d.size.map(|s| (s as f64 / BYTES_PER_GB) as f32).unwrap_or(0.0),
+            device_id: d.device_id.unwrap_or_default(),
+        })
+        .collect())
+}
+
 /// HKLM + HKCU Uninstall altındaki alt anahtar sayısı = yüklü program sayısı.
 /// Win32_Product YAVAŞ (MSI repair tetikler), bu yöntem ms cinsinden döner.
 fn count_installed_apps_blocking() -> Option<u32> {

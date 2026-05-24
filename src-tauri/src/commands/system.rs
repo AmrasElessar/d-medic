@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::diagnostic::wmi::{read_snapshot, SystemSnapshot};
+use crate::diagnostic::wmi::{list_physical_disks, read_snapshot, PhysicalDiskInfo, SystemSnapshot};
 use crate::error::{DMedicError, DMedicResult};
 use crate::paths;
 
@@ -42,6 +42,13 @@ pub fn is_elevated() -> DMedicResult<bool> {
 #[tauri::command]
 pub async fn system_stats() -> DMedicResult<SystemSnapshot> {
     read_snapshot().await
+}
+
+/// Tüm fiziksel diskleri listele (HDD/SSD tipi dahil). QuickTools'da defrag
+/// butonu SSD-only sistemlerde disabled yapmak için kullanılır.
+#[tauri::command]
+pub async fn list_disks() -> DMedicResult<Vec<PhysicalDiskInfo>> {
+    list_physical_disks().await
 }
 
 /// %APPDATA%\D-Medic\logs klasörünü Windows Explorer'da açar. Klasör yoksa
