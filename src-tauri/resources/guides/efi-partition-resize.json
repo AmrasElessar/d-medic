@@ -1,39 +1,68 @@
 {
   "id": "efi-partition-resize",
   "title": {
-    "tr": "EFI Bölümü Yetersiz — Çözüm Yolları",
-    "en": "EFI Partition Too Small — Options"
+    "tr": "EFI System Partition Microsoft Minimumunun Altinda",
+    "en": "EFI System Partition Below Microsoft Minimum"
   },
-  "priority": "YÜKSEK",
-  "estimated_time": "30-90 dk",
+  "priority": "YUKSEK",
+  "estimated_time": "Temiz kurulum 1-2 saat",
   "risk": "HIGH",
   "risk_note": {
-    "tr": "EFI bölümünü büyütmek veri riski taşır. En güvenli yol: temiz kurulum.",
-    "en": "Resizing the EFI partition carries data risk. Safest path: clean install."
+    "tr": "Adimlar Microsoft Learn 'UEFI/GPT-based hard drive partitions' (18 May 2026 guncel) belgesinden alinmistir. Microsoft alintisi: 'The EFI system partition must meet the following minimum size requirements for the storage device type: 512 native/512e byte sector size: minimum 200 MB; 4K native sector size: minimum 300 MB.' Eskiden 100 MB yeterliydi; Microsoft yeni belgede 200 MB minimum talep ediyor.",
+    "en": "Steps sourced from Microsoft Learn 'UEFI/GPT-based hard drive partitions' (updated 2026-05-18). Microsoft quote: 'The EFI system partition must meet the following minimum size requirements for the storage device type: 512 native/512e byte sector size: minimum 200 MB; 4K native sector size: minimum 300 MB.' Older docs said 100 MB; new Microsoft minimum is 200 MB."
   },
-  "prerequisites": ["tam_yedek"],
+  "prerequisites": [
+    { "tr": "Tam veri yedegi (temiz kurulum sistem diskini siler)", "en": "Full backup (clean install wipes system drive)" }
+  ],
   "steps": [
     {
       "id": 1,
-      "type": "cmd",
-      "title": { "tr": "Mevcut EFI boyutunu kontrol et", "en": "Check current EFI size" },
-      "command": "Get-Partition | Where-Object Type -eq System | Select Size, DriveLetter"
+      "type": "info",
+      "title": { "tr": "Microsoft'un guncel ESP boyut sartlari", "en": "Microsoft's current ESP size requirements" },
+      "body": {
+        "tr": "512-byte sektor disk: en az 200 MB. 4K native sektor disk: en az 300 MB. FAT32 formatli olmali. Microsoft alintisi: 'This partition is managed by the operating system, and should not contain any other files, including Windows RE tools.'",
+        "en": "512-byte sector disk: minimum 200 MB. 4K native sector disk: minimum 300 MB. Must be FAT32. Microsoft quote: 'This partition is managed by the operating system, and should not contain any other files, including Windows RE tools.'"
+      }
     },
     {
       "id": 2,
       "type": "info",
-      "title": { "tr": "Önerilen yollar", "en": "Recommended paths" },
+      "title": { "tr": "Win11 25H2 sorunu (Microsoft Q&A'da belgelendi)", "en": "Win11 25H2 issue (documented in Microsoft Q&A)" },
       "body": {
-        "tr": "Microsoft'un belgelediği minimum ESP boyutu 100 MB'dir. Mevcut bölüm 100 MB'nin altındaysa: (1) Temiz kurulum — Windows kurulumu standart bir ESP oluşturur. (2) Üçüncü parti partition aracı ile genişletme (EaseUS, MiniTool) — desteklenmez ve veri kaybı riski taşır. Microsoft'un desteklediği prosedür temiz kurulumdur.",
-        "en": "Microsoft's documented minimum ESP size is 100 MB. If current partition is below 100 MB: (1) Clean install — Windows setup creates a standard ESP. (2) Third-party partition tools (EaseUS, MiniTool) — unsupported, carries data-loss risk. Microsoft's supported procedure is a clean install."
+        "tr": "100 MB ESP'lerde Win11 25H2 feature update'leri basarisiz oluyor. Microsoft Q&A: 'Windows 11 25H2 upgrade fails on systems with 100MB EFI System Partition'. Microsoft destekli cozum: temiz kurulum.",
+        "en": "Win11 25H2 feature updates fail on 100 MB ESPs. Microsoft Q&A: 'Windows 11 25H2 upgrade fails on systems with 100MB EFI System Partition'. Microsoft-supported resolution: clean install."
       }
     },
     {
       "id": 3,
+      "type": "cmd",
+      "title": { "tr": "Mevcut ESP'nin boyutu ve sektor turu", "en": "Check current ESP size and sector type" },
+      "command": "$p = Get-Partition | Where-Object Type -eq System | Select -First 1; $d = Get-Disk -Number $p.DiskNumber; [PSCustomObject]@{ESP_MB=[int]($p.Size/1MB); SectorBytes=$d.LogicalSectorSize}"
+    },
+    {
+      "id": 4,
+      "type": "info",
+      "title": { "tr": "Microsoft destekli yol: temiz kurulum", "en": "Microsoft-supported path: clean install" },
+      "body": {
+        "tr": "Windows 11 kurulumu otomatik standart bir ESP olusturur. Adimlar: (a) tum veriyi yedekle, (b) Media Creation Tool ile USB bootable yap, (c) USB'den boot et, (d) Custom Install > tum sistem diski partition'larini Delete > New > Next. Microsoft 11 indirme: https://www.microsoft.com/software-download/windows11",
+        "en": "Windows 11 setup auto-creates a standard ESP. Steps: (a) back up all data, (b) make a bootable USB via Media Creation Tool, (c) boot from USB, (d) Custom Install > Delete all system disk partitions > New > Next. Win11 download: https://www.microsoft.com/software-download/windows11"
+      }
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Ucuncu parti araclar (Microsoft destekli DEGIL)", "en": "Third-party tools (NOT Microsoft-supported)" },
+      "body": {
+        "tr": "EaseUS Partition Master, MiniTool Partition Wizard gibi araclar ESP genisletme iddia eder. Microsoft bunlari resmen destekleyemez - donusum sirasinda veri kaybi veya sistem acilmama riski vardir. Ana sistem diskinde DENENMEYIN.",
+        "en": "Tools like EaseUS Partition Master, MiniTool Partition Wizard claim to resize ESP. Microsoft does not officially support these - data loss or boot failure risk during conversion. DO NOT TRY on production system disk."
+      }
+    },
+    {
+      "id": 6,
       "type": "link",
-      "title": { "tr": "MiniTool Partition Wizard", "en": "MiniTool Partition Wizard" },
-      "guide_link": "https://www.partitionwizard.com/free-partition-manager.html"
+      "title": { "tr": "Microsoft resmi belge", "en": "Microsoft official doc" },
+      "guide_link": "https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/configure-uefigpt-based-hard-drive-partitions?view=windows-11"
     }
   ],
-  "microsoft_doc": "https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/configure-uefi-gpt-based-hard-drive-partitions"
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/configure-uefigpt-based-hard-drive-partitions?view=windows-11"
 }

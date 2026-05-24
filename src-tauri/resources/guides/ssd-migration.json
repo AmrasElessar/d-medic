@@ -1,66 +1,78 @@
 {
   "id": "ssd-migration",
   "title": {
-    "tr": "HDD'den SSD'ye Gecis",
-    "en": "HDD to SSD Migration"
+    "tr": "HDD'den SSD'ye Gecis (Microsoft + vendor)",
+    "en": "HDD to SSD Migration (Microsoft + vendor)"
   },
   "priority": "YUKSEK",
   "estimated_time": "1-3 saat",
   "risk": "MEDIUM",
   "risk_note": {
-    "tr": "Disk klonlama yedek almadan yapilirsa kaynak veri risk altinda olabilir. Onemli dosyalari once harici diske yedekleyin.",
-    "en": "Cloning without backup risks source data. Back up important files to external drive first."
+    "tr": "Microsoft sistem-disk klonlama icin resmi arac sunmaz. Bu rehber Microsoft'un destekledigi yolu (temiz kurulum) on plana cikarir; klonlama 3rd-party vendor aracligi ile yapilir. Klonlama oncesi yedek SART.",
+    "en": "Microsoft does not provide an official system-disk cloning tool. This guide highlights Microsoft's supported path (clean install); cloning is done via 3rd-party vendor tools. Backup is MANDATORY before cloning."
   },
   "prerequisites": [
-    { "tr": "Yeni SSD (mevcut diskin kullanilan alanindan buyuk)", "en": "New SSD (larger than used space on current drive)" },
-    { "tr": "USB-SATA kablo veya M.2 enclosure", "en": "USB-SATA cable or M.2 enclosure" },
-    { "tr": "Yedekleme icin harici disk", "en": "External drive for backup" }
+    { "tr": "Yeni SSD (mevcut diskte kullanilan alandan buyuk)", "en": "New SSD (larger than used space on current drive)" },
+    { "tr": "Harici disk (yedek icin)", "en": "External drive (for backup)" },
+    { "tr": "USB-SATA kablo veya M.2 enclosure (klonlama yontemini secerseniz)", "en": "USB-SATA cable or M.2 enclosure (if choosing clone method)" }
   ],
   "steps": [
     {
       "id": 1,
       "type": "info",
-      "title": { "tr": "Yedek al", "en": "Back up first" },
+      "title": { "tr": "Microsoft destekli yol: temiz kurulum", "en": "Microsoft-supported path: clean install" },
       "body": {
-        "tr": "Belgeler, Resimler, masaustu vb. harici diske kopyalayin. File History veya basit Copy-Paste yeterli.",
-        "en": "Copy Documents, Pictures, Desktop, etc. to external drive. File History or simple copy-paste works."
+        "tr": "1) Tum dosyalari OneDrive / File History / harici disk'e yedekle. 2) Yeni SSD'yi tak (HDD'yi cikarmadan, klonlama icin disk olarak). 3) Media Creation Tool ile USB bootable yap. 4) USB'den boot et, Custom Install, hedef olarak SSD'yi sec. 5) Win11 SSD'ye temiz kurulur. 6) Onemli dosyalari yedekten geri yukle. 7) Eski HDD'yi format edip data drive olarak kullan veya cikar. Microsoft destekli ve dogrudan yontem.",
+        "en": "1) Back up all files to OneDrive / File History / external drive. 2) Connect new SSD (without removing HDD, install as disk for cloning context). 3) Make bootable USB via Media Creation Tool. 4) Boot from USB, Custom Install, target SSD. 5) Win11 clean-installs on SSD. 6) Restore important files from backup. 7) Format old HDD as data drive or remove. Microsoft-supported and direct."
       }
     },
     {
       "id": 2,
       "type": "info",
-      "title": { "tr": "SSD'yi bagla", "en": "Connect SSD" },
+      "title": { "tr": "Alternatif: klonlama (3rd-party vendor araclari)", "en": "Alternative: cloning (3rd-party vendor tools)" },
       "body": {
-        "tr": "USB-SATA kablo veya enclosure ile SSD'yi USB'den bagla. Disk Management'ta gorunecek; format gerekmeyecek (klonlama bunu yapar).",
-        "en": "Connect SSD via USB-SATA cable / enclosure. It'll appear in Disk Management; no formatting needed (clone tool does it)."
+        "tr": "Microsoft sistem disk klonlama icin resmi arac saglamaz. Vendor secenekleri (lisans veya ucretsiz): Samsung Data Migration (Samsung SSD'lerine ucretsiz), Acronis True Image (Crucial/WD lisansli surum), Macrium Reflect (Free Edition), Clonezilla (acik kaynak). Hedef SSD; Kaynak C: drive.",
+        "en": "Microsoft does not provide a system-disk cloning tool. Vendor options (licensed or free): Samsung Data Migration (free for Samsung SSDs), Acronis True Image (licensed for Crucial/WD), Macrium Reflect (Free Edition), Clonezilla (open source). Target: SSD; Source: C: drive."
       }
     },
     {
       "id": 3,
       "type": "info",
-      "title": { "tr": "Klonlama araci", "en": "Cloning tool" },
+      "title": { "tr": "Klonlama sonrasi disk degisimi", "en": "Disk swap after cloning" },
       "body": {
-        "tr": "Macrium Reflect Free, Samsung Data Migration (Samsung SSD), Acronis True Image (Crucial/WD), Clonezilla. Hedef: SSD; Kaynak: mevcut C: drive.",
-        "en": "Macrium Reflect Free, Samsung Data Migration (Samsung), Acronis True Image (Crucial/WD), Clonezilla. Target: SSD; Source: current C: drive."
+        "tr": "Klonlama bittikten sonra: bilgisayar kapat, fis cek, eski HDD'yi cikar, SSD'yi onun yerine yerlestir. BIOS/UEFI'ye gir, boot order'i SSD olarak ayarla, kaydet, cik. Acilis HDD'siz SSD'den olmali.",
+        "en": "After cloning completes: power off, unplug, remove old HDD, install SSD in its place. Enter BIOS/UEFI, set boot order to SSD, save, exit. Boot from SSD without HDD."
       }
     },
     {
       "id": 4,
       "type": "info",
-      "title": { "tr": "Disk degistirme", "en": "Physical swap" },
+      "title": { "tr": "TRIM dogrulamasi (Microsoft fsutil)", "en": "Verify TRIM (Microsoft fsutil)" },
       "body": {
-        "tr": "Klonlama biterse bilgisayari kapat, fisi cek, eski HDD'yi cikar, SSD'yi takabilecegin yuvasina yerlestir. BIOS'tan boot order'i SSD'ye al.",
-        "en": "After clone completes, power off, unplug, remove old HDD, insert SSD into its slot. Change BIOS boot order to SSD."
+        "tr": "SSD performansi icin TRIM aktif olmali. Windows otomatik etkinlestirir ama dogrula: 'fsutil behavior query DisableDeleteNotify' = 0 olmali (0 = TRIM aktif). Eger 1 dondurursa: 'fsutil behavior set DisableDeleteNotify NTFS 0' (yonetici).",
+        "en": "TRIM should be active for SSD performance. Windows enables auto, but verify: 'fsutil behavior query DisableDeleteNotify' should return 0 (0 = TRIM active). If returns 1: 'fsutil behavior set DisableDeleteNotify NTFS 0' (admin)."
       }
     },
     {
       "id": 5,
+      "type": "cmd",
+      "title": { "tr": "TRIM durumu sorgu", "en": "Query TRIM state" },
+      "command": "fsutil behavior query DisableDeleteNotify"
+    },
+    {
+      "id": 6,
       "type": "info",
-      "title": { "tr": "Dogrulama ve TRIM", "en": "Verify and TRIM" },
+      "title": { "tr": "Microsoft disk init referans", "en": "Microsoft disk init reference" },
       "body": {
-        "tr": "Windows acildiktan sonra D-Medic > Sistem Detaylari ile disk tipi SSD goruldugunu teyit edin. 'fsutil behavior query DisableDeleteNotify' = 0 olmali (TRIM aktif).",
-        "en": "After Windows boots, confirm disk type SSD via D-Medic > System Details. 'fsutil behavior query DisableDeleteNotify' should return 0 (TRIM enabled)."
+        "tr": "Microsoft Learn 'Initialize new disks' yeni eklenen diskin Initialize - Online - GPT - Format(NTFS, Quick) adimini gosterir. Disk Management (diskmgmt.msc) ile yapilir.",
+        "en": "Microsoft Learn 'Initialize new disks' covers the Initialize - Online - GPT - Format (NTFS, Quick) flow for newly attached disks. Done via Disk Management (diskmgmt.msc)."
       }
+    },
+    {
+      "id": 7,
+      "type": "cmd",
+      "title": { "tr": "Disk Management'i ac (Microsoft yerlesik)", "en": "Open Disk Management (Microsoft built-in)" },
+      "command": "diskmgmt.msc"
     }
   ],
   "microsoft_doc": "https://learn.microsoft.com/en-us/windows-server/storage/disk-management/initialize-new-disks"

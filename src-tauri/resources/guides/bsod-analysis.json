@@ -1,41 +1,75 @@
 {
   "id": "bsod-analysis",
   "title": {
-    "tr": "BSOD Analizi ve Çözüm Yönü",
-    "en": "BSOD Analysis and Resolution Path"
+    "tr": "BSOD / Stop Code Sorun Giderme (Microsoft Learn)",
+    "en": "BSOD / Stop Code Troubleshooting (Microsoft Learn)"
   },
   "priority": "ORTA",
-  "estimated_time": "10-20 dk",
+  "estimated_time": "20-60 dk",
   "risk": "LOW",
+  "risk_note": {
+    "tr": "Adimlar Microsoft Learn 'Stop code error or bug check troubleshooting' (12 Sub 2026 guncel) belgesinden alinmistir. Microsoft'un kok-neden istatistigi: %70 ucuncu parti surucu, %10 donanim, %5 Microsoft kodu, %15 cozulemeyen.",
+    "en": "Steps sourced from Microsoft Learn 'Stop code error or bug check troubleshooting' (updated 2026-02-12). Microsoft's root-cause stats: 70% third-party drivers, 10% hardware, 5% Microsoft code, 15% unknown."
+  },
   "prerequisites": [],
   "steps": [
     {
       "id": 1,
-      "type": "cmd",
-      "title": { "tr": "Son BSOD'ları listele", "en": "List recent BSODs" },
-      "command": "Get-WinEvent -FilterHashtable @{LogName='System'; ID=1001} -MaxEvents 10 | Select TimeCreated, Message | Format-Table -Wrap"
+      "type": "info",
+      "title": { "tr": "Microsoft'un genel adimlari (7 madde)", "en": "Microsoft's general steps (7 items)" },
+      "body": {
+        "tr": "1) Event log'da stop error kodunu bul, online ara. 2) En son Windows cumulative + rollup guncellemelerini yukle. 3) BIOS/firmware'i guncelle. 4) Donanim ve memory testleri calistir. 5) Microsoft Safety Scanner veya virus tarama yap. 6) Disk'te %10-15 bos alan oldugundan emin ol. 7) Hata mesajinda gecen surucu/uygulama icin uretici ile iletisim kur.",
+        "en": "1) Find the stop code in event logs, search online. 2) Install latest cumulative + rollup updates. 3) Update BIOS/firmware. 4) Run hardware and memory tests. 5) Run Microsoft Safety Scanner or antivirus. 6) Ensure 10-15 percent free disk space. 7) Contact vendor of any driver/app named in the error."
+      }
     },
     {
       "id": 2,
-      "type": "cmd",
-      "title": { "tr": "Minidump dosyalarını kontrol et", "en": "Inspect minidump files" },
-      "command": "Get-ChildItem 'C:\\Windows\\Minidump' -ErrorAction SilentlyContinue | Sort LastWriteTime -Descending | Select -First 5"
+      "type": "info",
+      "title": { "tr": "Memory dump konfigurasyonu (Microsoft adimlari)", "en": "Memory dump configuration (Microsoft steps)" },
+      "body": {
+        "tr": "1) Taskbar arama > 'Advanced system settings' > Enter. 2) Advanced sekmesi > Startup and Recovery > Settings. 3) 'Write debugging information' altinda 'Automatic memory dump' sec. 4) OK > Restart. Dump konumlari: Minidump (256 KB) %SystemRoot%\\Minidump\\, Kernel/Automatic %SystemRoot%\\MEMORY.DMP.",
+        "en": "1) Taskbar search > 'Advanced system settings' > Enter. 2) Advanced tab > Startup and Recovery > Settings. 3) Under 'Write debugging information' pick 'Automatic memory dump'. 4) OK > Restart. Locations: Minidump (256 KB) %SystemRoot%\\Minidump\\, Kernel/Automatic %SystemRoot%\\MEMORY.DMP."
+      }
     },
     {
       "id": 3,
       "type": "info",
-      "title": { "tr": "Stop code yönlendirmesi", "en": "Stop code routing" },
+      "title": { "tr": "WinDbg ile dump analizi (Microsoft 8-adim prosedurusu)", "en": "Dump analysis with WinDbg (Microsoft 8-step procedure)" },
       "body": {
-        "tr": "MEMORY_MANAGEMENT/PAGE_FAULT → MemTest86. CRITICAL_PROCESS_DIED → SFC + DISM. DRIVER_IRQL → Driver update. NTFS_FILE_SYSTEM → chkdsk. UNEXPECTED_KERNEL_MODE_TRAP → donanım/ısı.",
-        "en": "MEMORY_MANAGEMENT/PAGE_FAULT → MemTest86. CRITICAL_PROCESS_DIED → SFC + DISM. DRIVER_IRQL → driver update. NTFS_FILE_SYSTEM → chkdsk. UNEXPECTED_KERNEL_MODE_TRAP → hardware/thermal."
+        "tr": "1) memory.dmp dosyasini baska bilgisayara kopyala. 2) Windows 10 SDK indir. 3) Kurulumda 'Debugging Tools for Windows' sec - WinDbg yuklenir. 4) WinDbg > File > Symbol File Path > Microsoft sembol sunucusunu gir: https://msdl.microsoft.com/download/symbols. 5) Open Crash Dump > memory.dmp ac. 6) 'Bugcheck Analysis' altinda '!analyze -v' calistir. 7) Detayli bug check analizi gorulur. 8) STACK_TEXT bolumune in - hangi DLL/servis crash'e sebep oldugunu gosterir.",
+        "en": "1) Copy memory.dmp to another PC. 2) Download Windows 10 SDK. 3) In installer pick 'Debugging Tools for Windows' - WinDbg installs. 4) WinDbg > File > Symbol File Path > enter Microsoft symbol server: https://msdl.microsoft.com/download/symbols. 5) Open Crash Dump > open memory.dmp. 6) Under 'Bugcheck Analysis' run '!analyze -v'. 7) Detailed bug check analysis appears. 8) Scroll to STACK_TEXT - shows the DLL/service that caused the crash."
       }
     },
     {
       "id": 4,
-      "type": "link",
-      "title": { "tr": "MemTest86 indir", "en": "Download MemTest86" },
-      "guide_link": "https://www.memtest86.com/"
+      "type": "info",
+      "title": { "tr": "Microsoft'un belirledigi yaygin stop kodlari + cozumler", "en": "Common stop codes + resolutions per Microsoft" },
+      "body": {
+        "tr": "VIDEO_TDR_TIMEOUT_DETECTED (0x117) - GPU surucu uretici guncelleme. DRIVER_IRQL_NOT_LESS_OR_EQUAL (0xD1) - cumulative update + ag surucusu guncelle. PAGE_FAULT_IN_NONPAGED_AREA (0x50) - hata mesajindaki surucuyu uretici ile guncelle, chkdsk /f /r. NTFS_FILE_SYSTEM (0x24) - donanim diagnostics + scan disk (Properties > Tools > Check now). KMODE_EXCEPTION_NOT_HANDLED (0x1E) - hata mesajindaki surucuyu devre disi birak. DPC_WATCHDOG_VIOLATION (0x133) - dump'tan surucu bul, devre disi birak.",
+        "en": "VIDEO_TDR_TIMEOUT_DETECTED (0x117) - update GPU driver from vendor. DRIVER_IRQL_NOT_LESS_OR_EQUAL (0xD1) - apply cumulative update + update network driver. PAGE_FAULT_IN_NONPAGED_AREA (0x50) - update driver named in error, chkdsk /f /r. NTFS_FILE_SYSTEM (0x24) - hardware diagnostics + scan disk (Properties > Tools > Check now). KMODE_EXCEPTION_NOT_HANDLED (0x1E) - disable the driver named in error. DPC_WATCHDOG_VIOLATION (0x133) - find driver in dump, disable."
+      }
+    },
+    {
+      "id": 5,
+      "type": "cmd",
+      "title": { "tr": "Son BSOD olaylarini listele", "en": "List recent BSOD events" },
+      "command": "Get-WinEvent -FilterHashtable @{LogName='System'; ID=1001} -MaxEvents 10 | Select TimeCreated, Message | Format-Table -Wrap"
+    },
+    {
+      "id": 6,
+      "type": "cmd",
+      "title": { "tr": "Minidump dosyalarini kontrol et", "en": "Inspect minidump files" },
+      "command": "Get-ChildItem 'C:\\Windows\\Minidump' -ErrorAction SilentlyContinue | Sort LastWriteTime -Descending | Select -First 5"
+    },
+    {
+      "id": 7,
+      "type": "info",
+      "title": { "tr": "Driver Verifier (ileri seviye, dikkatli)", "en": "Driver Verifier (advanced, with care)" },
+      "body": {
+        "tr": "Microsoft uyarisi: Driver Verifier CPU'yu yogun kullanir, bilgisayari yavaslatir. Hatali surucu bulunca stop error olusturup proaktif tespit eder. Test tum suruculeri tek seferde acmayin - 10-20 'supheli' surucu gruplari halinde acin. Eger bilgisayar Verifier nedeniyle acilamazsa, Safe Mode'da kapatabilirsiniz.",
+        "en": "Microsoft warning: Driver Verifier consumes lots of CPU and slows the PC. It proactively triggers stop errors on faulty drivers. Don't verify all drivers at once - test 10-20 suspect drivers in groups. If PC can't boot due to Verifier, disable it from Safe Mode."
+      }
     }
   ],
-  "microsoft_doc": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-checks--blue-screens"
+  "microsoft_doc": "https://learn.microsoft.com/en-us/troubleshoot/windows-client/performance/stop-error-or-blue-screen-error-troubleshooting"
 }

@@ -1,54 +1,79 @@
 {
   "id": "pagefile-tune",
   "title": {
-    "tr": "Pagefile Boyutunu Sabitleme",
-    "en": "Set Fixed Pagefile Size"
+    "tr": "Page File / Sanal Bellek Boyutlandirma (Microsoft Learn)",
+    "en": "Page File / Virtual Memory Sizing (Microsoft Learn)"
   },
-  "priority": "YÜKSEK",
-  "estimated_time": "5 dk + yeniden başlatma",
+  "priority": "ORTA",
+  "estimated_time": "10 dk + restart",
   "risk": "LOW",
   "risk_note": {
-    "tr": "Pagefile her zaman geri alınabilir; otomatik moda dönmek tek tıkla yapılır.",
-    "en": "Pagefile changes are reversible; auto mode can be restored anytime."
+    "tr": "Adimlar Microsoft Learn 'How to determine the appropriate page file size for 64-bit versions of Windows' belgesinden alinmistir. Microsoft varsayilani 'system-managed' (dinamik) - cogu kullanici icin ideal. Sabit boyut yalniz spesifik nedenlerle (SSD parcalanmayi onleme, dedicated dump partition) tercih edilir.",
+    "en": "Steps sourced from Microsoft Learn 'How to determine the appropriate page file size for 64-bit versions of Windows'. Microsoft default is 'system-managed' (dynamic) - ideal for most users. Fixed size only for specific reasons (avoid SSD fragmentation, dedicated dump partition)."
   },
-  "prerequisites": [],
+  "prerequisites": [
+    { "tr": "Yonetici yetkisi", "en": "Administrator permissions" }
+  ],
   "steps": [
     {
       "id": 1,
       "type": "info",
-      "title": { "tr": "Önerilen boyut", "en": "Recommended size" },
+      "title": { "tr": "Microsoft'un page file yaklasimi", "en": "Microsoft's page file approach" },
       "body": {
-        "tr": "Sabit boyut = RAM × 1.5 (hem başlangıç hem maksimum). 4 GB RAM → 6144 MB. Dosya parçalanmasını önler ve düşük RAM'de OOM riskini azaltır.",
-        "en": "Fixed size = RAM × 1.5 (initial and maximum). 4 GB RAM → 6144 MB. Prevents fragmentation and lowers OOM risk on low RAM."
+        "tr": "Microsoft alintisi: 'By default, page files are system-managed. This system management means that the page files increase and decrease based on many factors, such as the amount of physical memory installed, the process of accommodating the system commit charge, and the process of accommodating a system crash dump.' Yani Windows kendi optimal boyutu hesaplar - el ile karismadan once nedenini netlestirin.",
+        "en": "Microsoft quote: 'By default, page files are system-managed. This system management means that the page files increase and decrease based on many factors, such as the amount of physical memory installed, the process of accommodating the system commit charge, and the process of accommodating a system crash dump.' Windows auto-calculates optimal - clarify your reason before manual override."
       }
     },
     {
       "id": 2,
-      "type": "cmd",
-      "title": { "tr": "Otomatik yönetimi kapat", "en": "Disable auto management" },
-      "command": "wmic computersystem set AutomaticManagedPagefile=False"
+      "type": "info",
+      "title": { "tr": "Microsoft'un olcum yontemi (RAM*1.5 DEGIL)", "en": "Microsoft's measurement method (NOT RAM*1.5)" },
+      "body": {
+        "tr": "Microsoft 'RAM x 1.5' gibi kural-i-bin onermez. Bunun yerine 'system commit charge' olcumu: Task Manager > Performance > Memory > Committed degeri. Veya performance counter '\\Memory\\Committed Bytes' ve '\\Memory\\Commit Limit'. Microsoft alintisi: 'Use this counter to determine whether the pagefile is an appropriate size. Depending on the volatility of your workload, you probably want the pagefile large enough so that it is no more than 50-75 percent used.'",
+        "en": "Microsoft does NOT recommend a 'RAM x 1.5' rule of thumb. Instead, measure 'system commit charge': Task Manager > Performance > Memory > Committed value. Or performance counters '\\Memory\\Committed Bytes' and '\\Memory\\Commit Limit'. Microsoft quote: 'Use this counter to determine whether the pagefile is an appropriate size. Depending on the volatility of your workload, you probably want the pagefile large enough so that it is no more than 50-75 percent used.'"
+      }
     },
     {
       "id": 3,
       "type": "cmd",
-      "title": { "tr": "Sabit pagefile uygula (örnek: 4 GB RAM → 6144 MB)", "en": "Apply fixed pagefile (example: 4 GB RAM → 6144 MB)" },
-      "command": "wmic pagefileset where name=\"C:\\\\pagefile.sys\" set InitialSize=6144,MaximumSize=6144"
+      "title": { "tr": "Mevcut commit charge'i gor", "en": "View current commit charge" },
+      "command": "Get-Counter '\\Memory\\Committed Bytes','\\Memory\\Commit Limit','\\Paging File(_Total)\\% Usage'"
     },
     {
       "id": 4,
       "type": "info",
-      "title": { "tr": "Yeniden başlat", "en": "Restart" },
+      "title": { "tr": "Crash dump icin boyut", "en": "Size for crash dump" },
       "body": {
-        "tr": "Değişiklik aktif olması için yeniden başlatma gerekli. Sonrasında C:\\pagefile.sys boyutu sabittir.",
-        "en": "Restart required for changes to take effect. C:\\pagefile.sys size becomes fixed afterward."
+        "tr": "Kernel memory dump icin page file >= 800 MB + 5 MB komut bilgisi. Complete memory dump icin >= RAM + 257 MB. Cogu kullanici Automatic memory dump kullanir - Windows kendi yeterli buyukluge ayarlar.",
+        "en": "For kernel memory dump, page file >= 800 MB + 5 MB header. For complete memory dump, >= RAM + 257 MB. Most users use Automatic memory dump - Windows auto-sizes adequately."
       }
     },
     {
       "id": 5,
+      "type": "manual",
+      "title": { "tr": "GUI yolu: Win+R > sysdm.cpl > Advanced > Performance Settings > Advanced > Virtual memory Change", "en": "GUI path: Win+R > sysdm.cpl > Advanced > Performance Settings > Advanced > Virtual memory Change" }
+    },
+    {
+      "id": 6,
+      "type": "info",
+      "title": { "tr": "Sabit boyut secimi (gerekirse)", "en": "Setting fixed size (if needed)" },
+      "body": {
+        "tr": "GUI'da 'Automatically manage paging file size for all drives' kutusunun isaretini kaldir. Disk sec > Custom size > Initial size = Maximum size = olculen commit charge'in %150'si. C: SSD ise pagefile orada kalsin (Windows boylesi optimum). HDD'ye tasimak SADECE SSD asindirma endisesi varsa onerilir - ki modern SSD'lerde gereksiz.",
+        "en": "In GUI, uncheck 'Automatically manage paging file size for all drives'. Select drive > Custom size > Initial size = Maximum size = 150% of measured commit charge. Leave pagefile on C: SSD (Windows optimum). Move to HDD ONLY if SSD wear is a concern - unnecessary on modern SSDs."
+      }
+    },
+    {
+      "id": 7,
       "type": "cmd",
-      "title": { "tr": "Geri al (otomatik moda dön)", "en": "Revert to auto management" },
+      "title": { "tr": "WMIC ile sabit boyut (komut satiri)", "en": "Set fixed size via WMIC (command-line)" },
+      "command": "wmic computersystem set AutomaticManagedPagefile=False"
+    },
+    {
+      "id": 8,
+      "type": "cmd",
+      "title": { "tr": "Geri al (otomatik moda don)", "en": "Revert to auto management" },
       "command": "wmic computersystem set AutomaticManagedPagefile=True"
     }
   ],
-  "microsoft_doc": "https://learn.microsoft.com/en-us/troubleshoot/windows-server/performance/introduction-to-the-page-file"
+  "microsoft_doc": "https://learn.microsoft.com/en-us/troubleshoot/windows-client/performance/how-to-determine-the-appropriate-page-file-size-for-64-bit-versions-of-windows"
 }

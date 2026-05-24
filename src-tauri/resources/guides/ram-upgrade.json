@@ -1,66 +1,78 @@
 {
   "id": "ram-upgrade",
   "title": {
-    "tr": "RAM Yükseltme Rehberi",
-    "en": "RAM Upgrade Guide"
+    "tr": "RAM Yukseltme (Microsoft + vendor referansli)",
+    "en": "RAM Upgrade (Microsoft + vendor-referenced)"
   },
   "priority": "YUKSEK",
   "estimated_time": "30-60 dk (fiziksel)",
   "risk": "MEDIUM",
   "risk_note": {
-    "tr": "Donanım degisikligi. Statik elektrik ve uyumsuz modul riski var. Garantili kanaldan alin.",
-    "en": "Hardware change. Static-discharge and incompatibility risks. Buy from a reputable source."
+    "tr": "RAM yukseltme donanim islemidir; Microsoft fiziksel kurulum belgesi tutmaz. Bu rehberin Microsoft kismi sadece (a) mevcut RAM'i ogrenme, (b) Win11 minimum sartlari (4 GB). Vendor (Crucial, Kingston, ureticinin kendi sayfasi) modul uyumlulugu icin tek dogru kaynaktir.",
+    "en": "RAM upgrade is hardware work; Microsoft does not publish physical install docs. Microsoft portion here covers only (a) checking current RAM, (b) Win11 minimum (4 GB). Vendor (Crucial, Kingston, manufacturer's own page) is the authoritative source for module compatibility."
   },
   "prerequisites": [
     { "tr": "Yildiz tornavida", "en": "Phillips screwdriver" },
-    { "tr": "Antistatik bileklik (opsiyonel)", "en": "Anti-static wrist strap (optional)" }
+    { "tr": "Anakart modeli (vendor uyumluluk listesi icin)", "en": "Motherboard model (for vendor compatibility list)" }
   ],
   "steps": [
     {
       "id": 1,
       "type": "info",
-      "title": { "tr": "Mevcut RAM'i ogren", "en": "Identify current RAM" },
+      "title": { "tr": "Microsoft'un minimum sarti (Win11 requirements)", "en": "Microsoft's minimum (Win11 requirements)" },
       "body": {
-        "tr": "D-Medic > Sistem Detaylari ile RAM miktarini gor. Detay icin: Task Manager > Performance > Memory (Hiz, Slots used, Form factor).",
-        "en": "Check RAM amount via D-Medic > System Details. For details: Task Manager > Performance > Memory (Speed, Slots used, Form factor)."
+        "tr": "Microsoft Learn 'Windows 11 requirements': '4 gigabytes (GB) or greater'. Yukseltme onerisi Microsoft tarafindan yapilmaz - bu kullanim ihtiyacina baglidir (8/16/32 GB kullanima gore).",
+        "en": "Microsoft Learn 'Windows 11 requirements': '4 gigabytes (GB) or greater'. Microsoft does not recommend an upgrade target - it depends on use case (8/16/32 GB based on workload)."
       }
     },
     {
       "id": 2,
       "type": "info",
-      "title": { "tr": "Anakart maksimumu", "en": "Motherboard maximum" },
+      "title": { "tr": "Mevcut RAM bilgisini Microsoft yontemi ile gor", "en": "Check current RAM via Microsoft method" },
       "body": {
-        "tr": "Anakart modelini ogren (msinfo32 > System Model) ve ureticinin spec sayfasinda 'Max Memory' degerine bak. Modulu bu sinirin altinda tut.",
-        "en": "Get motherboard model (msinfo32 > System Model), check vendor spec page for 'Max Memory'. Stay below this limit."
+        "tr": "Task Manager > Performance > Memory: kapasite, hiz (MHz), form factor (DIMM/SODIMM), kullanilan slot sayisi gorulur. msinfo32 > System Summary: anakart modeli (System Model). Bu iki bilgi ureticinin uyumluluk listesinde aranir.",
+        "en": "Task Manager > Performance > Memory: capacity, speed (MHz), form factor (DIMM/SODIMM), slots used. msinfo32 > System Summary: motherboard model (System Model). Both used to look up vendor compatibility list."
       }
     },
     {
       "id": 3,
-      "type": "info",
-      "title": { "tr": "Uyumlu modul sec", "en": "Pick compatible module" },
-      "body": {
-        "tr": "DDR tipi (DDR4/DDR5), hiz (MHz) ve form factor (DIMM/SODIMM) anakartla eslesmeli. Cift kanal icin ayni kapasiteli iki modul tercih edin.",
-        "en": "DDR type (DDR4/DDR5), speed (MHz), and form factor (DIMM/SODIMM) must match. For dual-channel, prefer two equal modules."
-      }
+      "type": "cmd",
+      "title": { "tr": "PowerShell ile detayli RAM modul bilgisi", "en": "Detailed RAM module info via PowerShell" },
+      "command": "Get-CimInstance Win32_PhysicalMemory | Select-Object Manufacturer, PartNumber, Capacity, Speed, ConfiguredClockSpeed, FormFactor, DeviceLocator"
     },
     {
       "id": 4,
       "type": "info",
-      "title": { "tr": "Fiziksel kurulum", "en": "Physical install" },
+      "title": { "tr": "Vendor uyumluluk (Microsoft DEGIL - dogru kaynaklar)", "en": "Vendor compatibility (NOT Microsoft - authoritative sources)" },
       "body": {
-        "tr": "Bilgisayari kapat, fisi cek, statigini bosalt (metal yuzeye dokun). Eski modulu klipsleri acarak cikar, yenisini cantik sesi gelene kadar bastir.",
-        "en": "Power off, unplug, ground yourself (touch metal). Release clips to remove old module, press new one until clips snap."
+        "tr": "Crucial.com 'Memory Advisor' ve Kingston.com 'Configurator' anakart modelinizi girip uyumlu modulleri listeleyen ucretsiz araclardir. Anakart ureticisinin kendi 'QVL' (Qualified Vendor List) sayfasi en kesin kaynaktir.",
+        "en": "Crucial.com 'Memory Advisor' and Kingston.com 'Configurator' are free tools - enter your motherboard model, get compatible modules. Motherboard vendor's own 'QVL' (Qualified Vendor List) page is the most authoritative source."
       }
     },
     {
       "id": 5,
       "type": "info",
-      "title": { "tr": "Dogrulama", "en": "Verify" },
+      "title": { "tr": "Fiziksel kurulum (vendor video'lari + temel guvenlik)", "en": "Physical install (vendor videos + basic safety)" },
       "body": {
-        "tr": "Aciyolda BIOS POST ekraninda yeni toplam RAM gorulur. Windows acilinca D-Medic > Sistem Detaylari ile teyit edin. Stabilite testi icin MemTest86.",
-        "en": "BIOS POST should show new total. After Windows boots, verify via D-Medic > System Details. Run MemTest86 for stability test."
+        "tr": "1) Bilgisayari kapat, gucu cek, kalan elektrigi bosaltmak icin power dugmesine bas. 2) Antistatik onlem: metal kasa yuzeyine dokun veya antistatik bileklik kullan. 3) DIMM slot klipslerini ac, modulu ce kelimei sesi gelene kadar bastir. Cift kanal icin ayni renkteki 2. slot. 4) Kapat, ac. BIOS POST yeni toplam RAM gosterir.",
+        "en": "1) Power off, unplug, press power button to drain residual. 2) Anti-static: touch metal chassis or wear strap. 3) Release DIMM slot clips, press module until clips snap. For dual-channel, use 2nd slot of same color. 4) Close, power on. BIOS POST shows new total."
       }
+    },
+    {
+      "id": 6,
+      "type": "info",
+      "title": { "tr": "Kurulum sonrasi stabilite testi (Microsoft + 3rd-party)", "en": "Post-install stability test (Microsoft + 3rd-party)" },
+      "body": {
+        "tr": "Windows Memory Diagnostic (Microsoft yerlesik): Win+R > mdsched.exe > 'Restart now and check for problems'. Daha kapsamli: MemTest86 (memtest86.com) - 4+ pas onerilir. Hata varsa modul defekt veya uyumsuz.",
+        "en": "Windows Memory Diagnostic (Microsoft built-in): Win+R > mdsched.exe > 'Restart now and check for problems'. More thorough: MemTest86 (memtest86.com) - 4+ passes recommended. Errors mean defective or incompatible module."
+      }
+    },
+    {
+      "id": 7,
+      "type": "cmd",
+      "title": { "tr": "Windows Memory Diagnostic baslat (Microsoft yerlesik)", "en": "Launch Windows Memory Diagnostic (Microsoft built-in)" },
+      "command": "mdsched.exe"
     }
   ],
-  "microsoft_doc": "https://support.microsoft.com/en-us/windows/find-your-ram-memory-info-on-windows-fff7c2c3-d2bd-4b39-1490-b80d7b9cfa07"
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-requirements"
 }

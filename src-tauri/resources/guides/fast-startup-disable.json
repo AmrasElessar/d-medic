@@ -1,44 +1,62 @@
 {
   "id": "fast-startup-disable",
   "title": {
-    "tr": "Hizli Baslangici Kapat",
-    "en": "Disable Fast Startup"
+    "tr": "Hizli Baslangici Kapat (Microsoft resmi yontem)",
+    "en": "Disable Fast Startup (Microsoft official method)"
   },
   "priority": "DUSUK",
-  "estimated_time": "2 dk",
+  "estimated_time": "2-5 dk",
   "risk": "LOW",
   "risk_note": {
-    "tr": "Geri alinabilir. Tam shutdown gerektigi durumlar (dual-boot, donanim degisikligi) icin kapatmak gerekir.",
-    "en": "Reversible. Should be off for true shutdown (dual-boot, hardware changes)."
+    "tr": "Adimlar Microsoft Learn 'Fast startup causes hibernation or shutdown to fail' belgesinden alinmistir. Microsoft notu: 'Fast Startup is enabled by default in Windows, and disabling Fast Startup is not recommended.' Sadece dual-boot, donanim degisikligi, surekli shutdown sorunu gibi durumlarda kapatin.",
+    "en": "Steps sourced from Microsoft Learn 'Fast startup causes hibernation or shutdown to fail'. Microsoft note: 'Fast Startup is enabled by default in Windows, and disabling Fast Startup is not recommended.' Disable only for dual-boot, hardware swap, persistent shutdown issues."
   },
   "prerequisites": [
-    { "tr": "Yonetici PowerShell", "en": "Administrator PowerShell" }
+    { "tr": "Yonetici yetkisi", "en": "Administrator permissions" }
   ],
   "steps": [
     {
       "id": 1,
-      "type": "cmd",
-      "title": { "tr": "Hibernation kapat (Fast Startup'i da kapatir)", "en": "Disable hibernation (also disables Fast Startup)" },
-      "command": "powercfg /h off"
+      "type": "info",
+      "title": { "tr": "Fast Startup nedir (Microsoft alintisi)", "en": "What Fast Startup does (Microsoft quote)" },
+      "body": {
+        "tr": "'Fast Startup is a setting that helps the computer start faster after shutdown, with Windows saving the kernel session and device drivers to the hibernate file instead of closing them when you shut down the computer.' Yani sistem aslinda 'sahte shutdown' yapar - hibernate dosyasina kernel state'i kaydeder.",
+        "en": "'Fast Startup is a setting that helps the computer start faster after shutdown, with Windows saving the kernel session and device drivers to the hibernate file instead of closing them when you shut down the computer.' It's effectively a 'fake shutdown' that saves kernel state to hibernate file."
+      }
     },
     {
       "id": 2,
-      "type": "info",
-      "title": { "tr": "Veya GUI ile", "en": "Or via GUI" },
+      "type": "manual",
+      "title": { "tr": "Microsoft Control Panel yolu (resmi yontem)", "en": "Microsoft Control Panel path (official method)" },
       "body": {
-        "tr": "Control Panel > Power Options > 'Choose what the power buttons do' > 'Change settings that are currently unavailable' > 'Turn on fast startup' kutusunu kaldir.",
-        "en": "Control Panel > Power Options > 'Choose what the power buttons do' > 'Change settings that are currently unavailable' > uncheck 'Turn on fast startup'."
+        "tr": "1) Start'a tikla, arama kutusuna 'Power' yaz. 2) 'Power Options' veya 'Choose what the power buttons do' sec. 3) Pencereninn ustunde 'Change settings that are currently unavailable' linkine tikla (UAC promptu cikar). 4) Sayfa asagisinda 'Shutdown settings' altinda 'Turn on fast startup (recommended)' kutusunun isaretini kaldir. 5) 'Save changes' tikla.",
+        "en": "1) Click Start, type 'Power' in search. 2) Select 'Power Options' or 'Choose what the power buttons do'. 3) At top of window click 'Change settings that are currently unavailable' (UAC prompt). 4) Under 'Shutdown settings', uncheck 'Turn on fast startup (recommended)'. 5) Click 'Save changes'."
       }
     },
     {
       "id": 3,
+      "type": "cmd",
+      "title": { "tr": "Alternatif: powercfg ile hibernation kapatma (Fast Startup'i da kapatir)", "en": "Alternative: disable hibernation via powercfg (also disables Fast Startup)" },
+      "command": "powercfg /h off"
+    },
+    {
+      "id": 4,
       "type": "info",
-      "title": { "tr": "Dogrulama", "en": "Verify" },
+      "title": { "tr": "Registry yontemi (GUI calismazsa)", "en": "Registry method (if GUI fails)" },
       "body": {
-        "tr": "Shutdown sonrasi onyukleme suresi 2-5 sn uzar ama tam kapanma yapildigindan dual-boot, BIOS update, donanim degisikligi guvenli olur.",
-        "en": "Boot time after shutdown will be 2-5s longer, but true power-off means safe dual-boot, BIOS updates, hardware swaps."
+        "tr": "Registry Editor'da HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power yoluna git. HiberbootEnabled DWORD'unu 0 yap. Microsoft Q&A'larda alternatif olarak onerilir.",
+        "en": "In Registry Editor navigate to HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power. Set HiberbootEnabled DWORD to 0. Recommended in Microsoft Q&As as alternative."
+      }
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Ne zaman kapatmali", "en": "When to disable" },
+      "body": {
+        "tr": "Microsoft notu: dual-boot sistemler (sahte shutdown linux mount'i bozar), BIOS guncellemesi yapacak, donanim degistirecekseniz, shutdown calismiyorsa. Aksi halde Microsoft Fast Startup'i acik birakmayi onerir.",
+        "en": "Microsoft note: dual-boot systems (fake shutdown breaks Linux mounts), planning BIOS update or hardware swap, shutdown not working. Otherwise Microsoft recommends keeping Fast Startup enabled."
       }
     }
   ],
-  "microsoft_doc": "https://learn.microsoft.com/en-us/windows-hardware/customize/power-settings/configure-hybrid-shutdown-fast-startup"
+  "microsoft_doc": "https://learn.microsoft.com/en-us/troubleshoot/windows-client/setup-upgrade-and-drivers/fast-startup-causes-system-hibernation-shutdown-fail"
 }

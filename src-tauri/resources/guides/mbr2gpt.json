@@ -1,64 +1,103 @@
 {
   "id": "mbr2gpt",
   "title": {
-    "tr": "MBR'den GPT'ye Dönüşüm",
-    "en": "Convert MBR to GPT"
+    "tr": "MBR'den GPT'ye Donusum (Microsoft MBR2GPT.EXE)",
+    "en": "Convert MBR to GPT (Microsoft MBR2GPT.EXE)"
   },
-  "priority": "YÜKSEK",
-  "estimated_time": "15-20 dk",
+  "priority": "YUKSEK",
+  "estimated_time": "15-30 dk",
   "risk": "MEDIUM",
   "risk_note": {
-    "tr": "Veri kaybı yaratmaz ancak UEFI ayarı yapılmazsa sistem açılmayabilir. İşlem öncesi tam yedek şart.",
-    "en": "No data loss expected, but the system may not boot if UEFI settings are not applied. Full backup required."
+    "tr": "Adimlar Microsoft Learn 'MBR2GPT' (4 Haz 2025 guncel) belgesinden alinmistir. Microsoft alintisi: 'MBR2GPT.EXE converts a disk from MBR to GPT without modifying or deleting data on the disk.' Veri guvenli ama firmware UEFI mode'a alinmazsa sistem acilmaz. Once tam yedek alin.",
+    "en": "Steps sourced from Microsoft Learn 'MBR2GPT' (updated 2025-06-04). Microsoft quote: 'MBR2GPT.EXE converts a disk from MBR to GPT without modifying or deleting data on the disk.' Data is safe, but if firmware not switched to UEFI mode, system won't boot. Take a full backup first."
   },
-  "prerequisites": ["veri_yedegi", "uefi_destekli_sistem"],
+  "prerequisites": [
+    { "tr": "Tam veri yedegi", "en": "Full data backup" },
+    { "tr": "UEFI destekli sistem (Microsoft sarti: 'Make sure the device supports UEFI before attempting to convert')", "en": "UEFI-capable system (Microsoft requirement: 'Make sure the device supports UEFI before attempting to convert')" },
+    { "tr": "Yonetici komut istemi", "en": "Administrator Command Prompt" }
+  ],
   "steps": [
     {
       "id": 1,
       "type": "info",
-      "title": { "tr": "Yedek alın", "en": "Take a backup" },
+      "title": { "tr": "Microsoft'un belirttigi disk on kosullari (validation bunlari kontrol eder)", "en": "Microsoft's disk prerequisites (validation checks these)" },
       "body": {
-        "tr": "Tüm önemli verilerinizi harici bir diske yedekleyin. Bu dönüşüm normalde güvenlidir ama BIOS ayarı yanlış yapılırsa sistem açılmayabilir.",
-        "en": "Back up all important data to an external drive. The conversion is normally safe, but the system may not boot if BIOS settings are wrong."
+        "tr": "1) Disk MBR olmali. 2) Diskin basinda 16 KB + 2 sektor, sonunda 16 KB + 1 sektor bos olmali (GPT metadata icin). 3) En fazla 3 primary partition. 4) Bir partition aktif ve system partition olarak isaretli. 5) Extended/logical partition olmamali. 6) BCD store'da OS partition'a pointer iceren default OS entry olmali.",
+        "en": "1) Disk must currently use MBR. 2) Free space: 16 KB + 2 sectors at front, 16 KB + 1 sector at end of disk (for GPT metadata). 3) At most three primary partitions. 4) One partition active and marked as system. 5) No extended/logical partitions. 6) BCD store must contain a default OS entry pointing to OS partition."
       }
     },
     {
       "id": 2,
       "type": "cmd",
-      "title": { "tr": "Doğrulama", "en": "Validation" },
-      "command": "mbr2gpt /validate /disk:0 /allowFullOS",
-      "success_message": "Validation completed successfully",
-      "fail_action": "stop"
+      "title": { "tr": "Mevcut partition stilini gor (PowerShell)", "en": "Check current partition style (PowerShell)" },
+      "command": "Get-Disk | Format-Table -Auto"
     },
     {
       "id": 3,
       "type": "cmd",
-      "title": { "tr": "Dönüşümü uygulayın", "en": "Apply conversion" },
-      "command": "mbr2gpt /convert /disk:0 /allowFullOS"
+      "title": { "tr": "Dogrulama (donusumu yapmaz, sadece test eder)", "en": "Validate (does not convert, only tests)" },
+      "command": "mbr2gpt.exe /validate /disk:0 /allowFullOS",
+      "success_message": "Validation completed successfully",
+      "fail_action": "stop"
     },
     {
       "id": 4,
-      "type": "manual",
-      "title": { "tr": "Bilgisayarı yeniden başlatın", "en": "Reboot the system" }
+      "type": "info",
+      "title": { "tr": "Microsoft'un alintisi: /allowFullOS ne yapar?", "en": "Microsoft quote: what does /allowFullOS do?" },
+      "body": {
+        "tr": "'By default, MBR2GPT.exe can only run from Windows PE and is blocked from running in full Windows. This option overrides this block and enables disk conversion while running in the full Windows environment. Since the existing MBR system partition is in use while running the full Windows environment, it can't be reused. In this case, a new EFI system partition is created by shrinking the OS partition.'",
+        "en": "'By default, MBR2GPT.exe can only run from Windows PE and is blocked from running in full Windows. This option overrides this block and enables disk conversion while running in the full Windows environment. Since the existing MBR system partition is in use while running the full Windows environment, it can't be reused. In this case, a new EFI system partition is created by shrinking the OS partition.'"
+      }
     },
     {
       "id": 5,
-      "type": "bios",
-      "title": { "tr": "BIOS/UEFI'da Boot Mode'u UEFI yapın", "en": "Set Boot Mode to UEFI in BIOS/UEFI" },
-      "body": {
-        "tr": "POST sırasında F2, F10, Del veya Esc ile BIOS'a girin. Boot Mode veya CSM ayarını 'UEFI' olarak değiştirin.",
-        "en": "Press F2, F10, Del or Esc at POST to enter BIOS. Change Boot Mode or CSM to 'UEFI'."
-      }
+      "type": "cmd",
+      "title": { "tr": "Donusumu uygula", "en": "Apply conversion" },
+      "command": "mbr2gpt.exe /convert /disk:0 /allowFullOS",
+      "success_message": "Conversion completed successfully"
     },
     {
       "id": 6,
       "type": "bios",
-      "title": { "tr": "Secure Boot'u açın", "en": "Enable Secure Boot" }
+      "title": { "tr": "ZORUNLU: Firmware'i UEFI mode'a al (Microsoft 'Important' notu)", "en": "MANDATORY: Switch firmware to UEFI mode (Microsoft 'Important' note)" },
+      "body": {
+        "tr": "Microsoft alintisi: 'After the disk has been converted to GPT partition style, the firmware must be reconfigured to boot in UEFI mode.' BIOS/UEFI'ye gir, Boot Mode veya CSM ayarini UEFI yap, Legacy/CSM kapali, kaydet, cik.",
+        "en": "Microsoft quote: 'After the disk has been converted to GPT partition style, the firmware must be reconfigured to boot in UEFI mode.' Enter BIOS/UEFI, set Boot Mode or CSM to UEFI, disable Legacy/CSM, save, exit."
+      }
+    },
+    {
+      "id": 7,
+      "type": "bios",
+      "title": { "tr": "Secure Boot'u ac (artik desteklenir)", "en": "Enable Secure Boot (now supported)" }
+    },
+    {
+      "id": 8,
+      "type": "cmd",
+      "title": { "tr": "Dogrulama: disk GPT mi?", "en": "Verify: is disk now GPT?" },
+      "command": "Get-Disk | Format-Table -Auto"
+    },
+    {
+      "id": 9,
+      "type": "info",
+      "title": { "tr": "Microsoft return code referansi (hata icin)", "en": "Microsoft return code reference (for errors)" },
+      "body": {
+        "tr": "0 basari. 1 kullanici iptal. 2 ic hata. 3 init hatasi. 4 hatali parametre. 5 disk layout okuma hatasi. 6 sifreli volume. 7 disk layout gereksinim karsilamiyor. 8 EFI partition olusturma hatasi. 9 boot dosyasi yukleme hatasi. 10 GPT layout uygulama hatasi. 100 donusum oldu ama bazi BCD entry'leri geri yuklenemedi.",
+        "en": "0 success. 1 user canceled. 2 internal error. 3 init error. 4 bad command-line params. 5 disk read error. 6 encrypted volume. 7 disk layout doesn't meet requirements. 8 EFI partition creation error. 9 boot file install error. 10 GPT layout apply error. 100 conversion ok but some BCD entries could not be restored."
+      }
+    },
+    {
+      "id": 10,
+      "type": "info",
+      "title": { "tr": "Log dosyalari (sorun cikarsa)", "en": "Log files (if issues arise)" },
+      "body": {
+        "tr": "%windir% altinda 4 log: diagerr.xml, diagwrn.xml, setupact.log, setuperr.log. setupact.log en detayli bilgileri icerir.",
+        "en": "4 logs under %windir%: diagerr.xml, diagwrn.xml, setupact.log, setuperr.log. setupact.log has the most detail."
+      }
     }
   ],
   "verification": {
     "command": "bcdedit /enum",
     "success_pattern": "path.*efi"
   },
-  "microsoft_doc": "https://learn.microsoft.com/tr-tr/windows/deployment/mbr-to-gpt"
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows/deployment/mbr-to-gpt"
 }

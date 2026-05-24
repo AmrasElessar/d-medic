@@ -1,41 +1,62 @@
 {
   "id": "activation-error",
   "title": {
-    "tr": "Windows Aktivasyon Hatası",
-    "en": "Windows Activation Error"
+    "tr": "Windows Aktivasyon Hatasi (Microsoft Support prosedurleri)",
+    "en": "Windows Activation Error (Microsoft Support procedures)"
   },
-  "priority": "DÜŞÜK",
+  "priority": "DUSUK",
   "estimated_time": "5-15 dk",
   "risk": "NONE",
+  "risk_note": {
+    "tr": "Adimlar Microsoft Support 'Get help with Windows activation errors' belgesinden alinmistir. Sadece okuma ve resmi Troubleshooter kullanimi - sisteme zarar vermez.",
+    "en": "Steps sourced from Microsoft Support 'Get help with Windows activation errors'. Read-only and official Troubleshooter usage - no system impact."
+  },
   "prerequisites": [],
   "steps": [
     {
       "id": 1,
-      "type": "cmd",
-      "title": { "tr": "Aktivasyon durumunu göster", "en": "Show activation status" },
-      "command": "slmgr.vbs /xpr"
-    },
-    {
-      "id": 2,
-      "type": "cmd",
-      "title": { "tr": "Detaylı bilgi", "en": "Detailed info" },
-      "command": "slmgr.vbs /dlv"
-    },
-    {
-      "id": 3,
       "type": "info",
-      "title": { "tr": "Hata kodu yorumu", "en": "Error code reading" },
+      "title": { "tr": "Microsoft'un onerilen sirasi", "en": "Microsoft's recommended order" },
       "body": {
-        "tr": "0xC004F034: Lisans alınamadı. 0xC004C003: Sunucu key'i reddetti — orijinal olmayabilir. 0xC004C008: Key başka cihazda kullanılmış.",
-        "en": "0xC004F034: Could not retrieve license. 0xC004C003: Server rejected — likely non-genuine. 0xC004C008: Key used on another device."
+        "tr": "Microsoft Support 4 adim listeliyor: (1) En son Windows guncellemesini yukle, (2) Activation Troubleshooter'i calistir, (3) Hata kodunu kontrol et ve karsiligindaki ozel cozumu uygula, (4) Hata kodunun degisip degismedigini dogrula.",
+        "en": "Microsoft Support lists 4 steps: (1) Verify the device runs the latest Windows update, (2) Run the Activation Troubleshooter, (3) Check the error code and apply its specific resolution, (4) Verify whether the error code changed."
       }
     },
     {
+      "id": 2,
+      "type": "manual",
+      "title": { "tr": "Activation Troubleshooter: Settings > System > Activation > Troubleshoot", "en": "Activation Troubleshooter: Settings > System > Activation > Troubleshoot" }
+    },
+    {
+      "id": 3,
+      "type": "cmd",
+      "title": { "tr": "Mevcut aktivasyon durumunu sorgula", "en": "Query current activation state" },
+      "command": "slmgr.vbs /xpr"
+    },
+    {
       "id": 4,
-      "type": "link",
-      "title": { "tr": "Microsoft Lisans Satın Al", "en": "Buy Microsoft License" },
-      "guide_link": "https://www.microsoft.com/tr-tr/windows/get-windows-11"
+      "type": "cmd",
+      "title": { "tr": "Detayli lisans bilgisi (urun anahtari, kanal, status)", "en": "Detailed license info (product key, channel, status)" },
+      "command": "slmgr.vbs /dlv"
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Microsoft'un belgeledigi yaygin hata kodlari", "en": "Common error codes documented by Microsoft" },
+      "body": {
+        "tr": "0xC004F211 / 0xC004F213: Donanim degisikligi sonrasi yeniden aktivasyon gerekli. 0x803F7001: Gecerli Windows lisansi bulunamadi - urun anahtari girin. 0x800704CF: Gecerli lisans yok - yeni urun anahtari gerekli. 0xC004C003: Urun anahtari baska cihazda kullanildi. 0xC004FC03: Internet baglantisi yok veya guvenlik duvari engeli.",
+        "en": "0xC004F211 / 0xC004F213: Reactivation required after hardware change. 0x803F7001: No valid Windows license - enter product key. 0x800704CF: No valid license - new product key required. 0xC004C003: Product key used on another device. 0xC004FC03: No internet or firewall block."
+      }
+    },
+    {
+      "id": 6,
+      "type": "info",
+      "title": { "tr": "Urun anahtarini nereden bulurum (Microsoft Support listesi)", "en": "Where to find the product key (Microsoft Support list)" },
+      "body": {
+        "tr": "(a) Satin alma onay e-postasi, (b) cihaz ambalajinin ici, (c) cihazin arka/alt yuzundeki Certificate of Authenticity (COA) etiketi.",
+        "en": "(a) Purchase confirmation email, (b) inside the device packaging, (c) Certificate of Authenticity (COA) sticker on back/bottom of device."
+      }
     }
   ],
-  "microsoft_doc": "https://support.microsoft.com/en-us/windows/troubleshoot-activation-errors-when-activating-windows-9ab37dc9-ce0e-c4d3-3c93-ae4bb4c8a4e5"
+  "microsoft_doc": "https://support.microsoft.com/en-us/windows/get-help-with-windows-activation-errors-09d8fb64-6768-4815-0c30-159fa7d89d85"
 }

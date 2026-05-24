@@ -1,55 +1,66 @@
 {
   "id": "defender-full-scan",
   "title": {
-    "tr": "Microsoft Defender Tam Tarama",
-    "en": "Microsoft Defender Full Scan"
+    "tr": "Microsoft Defender ile Tarama (Microsoft Learn prosedurleri)",
+    "en": "Microsoft Defender Scan (Microsoft Learn procedures)"
   },
   "priority": "DUSUK",
-  "estimated_time": "30-90 dk",
+  "estimated_time": "Quick ~5 dk, Full 30-90 dk",
   "risk": "LOW",
   "risk_note": {
-    "tr": "Risk yok. Disk I/O yuksek olabilir, baska is yaparken yavasligi hissedersiniz.",
-    "en": "No risk. High disk I/O may cause sluggishness during scan."
+    "tr": "Adimlar Microsoft Learn 'Run and customize on-demand scans in Microsoft Defender Antivirus' (14 May 2026 guncel) belgesinden alinmistir. Microsoft alintisi: 'In most cases, a quick scan is sufficient and is the recommended option for scheduled or on-demand scans.'",
+    "en": "Steps sourced from Microsoft Learn 'Run and customize on-demand scans in Microsoft Defender Antivirus' (updated 2026-05-14). Microsoft quote: 'In most cases, a quick scan is sufficient and is the recommended option for scheduled or on-demand scans.'"
   },
   "prerequisites": [
-    { "tr": "Yonetici PowerShell", "en": "Administrator PowerShell" }
+    { "tr": "Yonetici PowerShell (cmdlet'ler icin)", "en": "Administrator PowerShell (for cmdlets)" }
   ],
   "steps": [
     {
       "id": 1,
-      "type": "cmd",
-      "title": { "tr": "Tum sistemi tara", "en": "Scan entire system" },
-      "command": "Start-MpScan -ScanType FullScan"
+      "type": "info",
+      "title": { "tr": "Microsoft'un 3 tarama tipi", "en": "Microsoft's 3 scan types" },
+      "body": {
+        "tr": "Microsoft alintisi: 'A quick scan looks at all the locations where there could be malware registered to start with the system, such as registry keys and known Windows startup folders. Combined with always-on, real-time protection, which reviews files when they are opened and closed, and whenever a user navigates to a folder, a quick scan helps provide strong protection against malware that starts with the system and kernel-level malware.' Tipler: Quick (onerilen), Full (tum dosyalar), Custom (belirli klasor).",
+        "en": "Microsoft quote: 'A quick scan looks at all the locations where there could be malware registered to start with the system, such as registry keys and known Windows startup folders. Combined with always-on, real-time protection... a quick scan helps provide strong protection against malware that starts with the system and kernel-level malware.' Types: Quick (recommended), Full (all files), Custom (specific folder)."
+      }
     },
     {
       "id": 2,
-      "type": "info",
-      "title": { "tr": "Veya GUI ile", "en": "Or via GUI" },
-      "body": {
-        "tr": "Settings > Privacy & Security > Windows Security > Virus & threat protection > 'Scan options' > 'Full scan' > 'Scan now'.",
-        "en": "Settings > Privacy & Security > Windows Security > Virus & threat protection > 'Scan options' > 'Full scan' > 'Scan now'."
-      }
+      "type": "cmd",
+      "title": { "tr": "PowerShell: tek satir Quick scan (Microsoft'un onerdigi)", "en": "PowerShell: one-line Quick scan (Microsoft recommended)" },
+      "command": "Start-MpScan"
     },
     {
       "id": 3,
       "type": "cmd",
-      "title": { "tr": "Imza guncelle (tarama oncesi)", "en": "Update signatures first" },
-      "command": "Update-MpSignature"
+      "title": { "tr": "Tam tarama (Full scan)", "en": "Full scan" },
+      "command": "Start-MpScan -ScanType FullScan"
     },
     {
       "id": 4,
       "type": "cmd",
-      "title": { "tr": "Tarama gecmisini gor", "en": "View scan history" },
-      "command": "Get-MpThreatDetection | Select-Object DomainUser, InitialDetectionTime, Resources, ThreatID"
+      "title": { "tr": "Once imza guncelle (onerilen)", "en": "Update signatures first (recommended)" },
+      "command": "Update-MpSignature"
     },
     {
       "id": 5,
       "type": "info",
-      "title": { "tr": "Bulgu sonrasi aksiyon", "en": "Action on findings" },
+      "title": { "tr": "MpCmdRun alternatifi (Command Prompt)", "en": "MpCmdRun alternative (Command Prompt)" },
       "body": {
-        "tr": "Defender otomatik quarantine yapar. Manuel temizlik: Settings > Virus & threat protection > 'Protection history' > tehdit > 'Actions' > Remove. Sonra tekrar tarama yap.",
-        "en": "Defender auto-quarantines. Manual cleanup: Settings > Virus & threat protection > 'Protection history' > threat > 'Actions' > Remove. Then re-scan."
+        "tr": "Yonetici Command Prompt'ta: MpCmdRun.exe -Scan -ScanType 1 (Quick) / -ScanType 2 (Full) / -ScanType 3 (Custom). Microsoft uyarisi: 'Including very large directories in quick scans might significantly increase the time it takes for the quick scan to complete.'",
+        "en": "In elevated Command Prompt: MpCmdRun.exe -Scan -ScanType 1 (Quick) / 2 (Full) / 3 (Custom). Microsoft warning: 'Including very large directories in quick scans might significantly increase the time it takes for the quick scan to complete.'"
       }
+    },
+    {
+      "id": 6,
+      "type": "manual",
+      "title": { "tr": "Windows Security GUI: Settings > Privacy & Security > Windows Security > Virus & threat protection > Scan options", "en": "Windows Security GUI: Settings > Privacy & Security > Windows Security > Virus & threat protection > Scan options" }
+    },
+    {
+      "id": 7,
+      "type": "cmd",
+      "title": { "tr": "Tarama sonucu - tespit edilen tehditleri gor", "en": "View scan results - detected threats" },
+      "command": "Get-MpThreatDetection | Select-Object DomainUser, InitialDetectionTime, Resources, ThreatID"
     }
   ],
   "microsoft_doc": "https://learn.microsoft.com/en-us/defender-endpoint/run-scan-microsoft-defender-antivirus"

@@ -1,56 +1,87 @@
 {
   "id": "bsod-deep-analysis",
   "title": {
-    "tr": "BSOD Derin Analiz",
-    "en": "BSOD Deep Analysis"
+    "tr": "BSOD Derin Analiz - WinDbg ile (Microsoft Learn)",
+    "en": "BSOD Deep Analysis - WinDbg (Microsoft Learn)"
   },
   "priority": "ORTA",
-  "estimated_time": "20-40 dk",
+  "estimated_time": "30-60 dk",
   "risk": "LOW",
   "risk_note": {
-    "tr": "Yalnizca okuma operasyonlari. Dump dosyalari acilir, sistem degisiklik yapilmaz.",
-    "en": "Read-only operations. Dump files inspected, no system changes."
+    "tr": "Adimlar Microsoft Learn 'Analyze a Kernel-Mode Dump File by Using WinDbg' (18 Tem 2025 guncel) belgesinden alinmistir. Yalnizca dump dosyalari acilir, sisteme yazma yoktur. Symbol path Microsoft public sembol sunucusuna baglanir.",
+    "en": "Steps sourced from Microsoft Learn 'Analyze a Kernel-Mode Dump File by Using WinDbg' (updated 2025-07-18). Read-only on dump files, no system writes. Symbol path connects to Microsoft public symbol server."
   },
   "prerequisites": [
-    { "tr": "BSOD sonrasi en az bir minidump (C:\\Windows\\Minidump altinda)", "en": "At least one minidump after a BSOD (in C:\\Windows\\Minidump)" }
+    { "tr": "BSOD sonrasi en az bir minidump (C:\\Windows\\Minidump altinda)", "en": "At least one minidump after a BSOD (in C:\\Windows\\Minidump)" },
+    { "tr": "Windows SDK / Debugging Tools for Windows yuklu", "en": "Windows SDK / Debugging Tools for Windows installed" }
   ],
   "steps": [
     {
       "id": 1,
       "type": "info",
-      "title": { "tr": "BlueScreenView ile hizli ozet", "en": "Quick summary with BlueScreenView" },
+      "title": { "tr": "Dump dosya konumlari (Microsoft tablosu)", "en": "Dump file locations (Microsoft table)" },
       "body": {
-        "tr": "NirSoft BlueScreenView indir, calistir; mini dump'lari listeler. 'Caused By Driver' kolonu suclu surucuyu gosterir. URL: nirsoft.net/utils/blue_screen_view.html",
-        "en": "Download NirSoft BlueScreenView, run; lists minidumps. 'Caused By Driver' column shows the culprit. URL: nirsoft.net/utils/blue_screen_view.html"
+        "tr": "Microsoft: Small (256 KB) %SystemRoot%\\Minidump\\, Kernel/Automatic %SystemRoot%\\MEMORY.DMP, Complete %SystemRoot%\\MEMORY.DMP. Microsoft alintisi: 'Dump files generally end with the extension .dmp or .mdmp. You can use network shares or Universal Naming Convention file names for the memory dump file.'",
+        "en": "Microsoft: Small (256 KB) %SystemRoot%\\Minidump\\, Kernel/Automatic %SystemRoot%\\MEMORY.DMP, Complete %SystemRoot%\\MEMORY.DMP. Microsoft quote: 'Dump files generally end with the extension .dmp or .mdmp. You can use network shares or Universal Naming Convention file names for the memory dump file.'"
       }
     },
     {
       "id": 2,
       "type": "info",
-      "title": { "tr": "WinDbg ile detayli analiz", "en": "Detailed analysis with WinDbg" },
+      "title": { "tr": "WinDbg kurulumu (Microsoft adimlari)", "en": "Install WinDbg (Microsoft steps)" },
       "body": {
-        "tr": "Microsoft Store'dan 'WinDbg Preview' indir. File > Open dump file > C:\\Windows\\Minidump\\*.dmp. Komut: !analyze -v - tam stack ve probable cause verir.",
-        "en": "Install 'WinDbg Preview' from Microsoft Store. File > Open dump file > C:\\Windows\\Minidump\\*.dmp. Command: !analyze -v - gives full stack and probable cause."
+        "tr": "Windows SDK indirici calistir, kurulumda 'Debugging Tools for Windows' kutusunu sec. Veya Microsoft Store'dan 'WinDbg Preview' yukle - daha modern UI ayni motor.",
+        "en": "Run Windows SDK installer, in installer pick 'Debugging Tools for Windows' checkbox. Or install 'WinDbg Preview' from Microsoft Store - modern UI, same engine."
       }
     },
     {
       "id": 3,
       "type": "info",
-      "title": { "tr": "Yaygin BSOD kodlari", "en": "Common BSOD codes" },
+      "title": { "tr": "Symbol path ayarlama (Microsoft public symbol server)", "en": "Configure symbol path (Microsoft public symbol server)" },
       "body": {
-        "tr": "MEMORY_MANAGEMENT > RAM modul testi (MemTest86). DRIVER_IRQL_NOT_LESS_OR_EQUAL > surucu/driver guncelleme veya rollback. CRITICAL_PROCESS_DIED > sistem dosyasi bozulmasi (SFC + DISM).",
-        "en": "MEMORY_MANAGEMENT > test RAM modules (MemTest86). DRIVER_IRQL_NOT_LESS_OR_EQUAL > update/rollback driver. CRITICAL_PROCESS_DIED > corrupt system file (SFC + DISM)."
+        "tr": "WinDbg'de File > Symbol File Path acin. Sunucu adresi: https://msdl.microsoft.com/download/symbols. Yerel cache eklemek isterseniz: srv*c:\\symbols*https://msdl.microsoft.com/download/symbols",
+        "en": "In WinDbg open File > Symbol File Path. Server URL: https://msdl.microsoft.com/download/symbols. To add local cache: srv*c:\\symbols*https://msdl.microsoft.com/download/symbols"
       }
     },
     {
       "id": 4,
+      "type": "cmd",
+      "title": { "tr": "Komut satirindan WinDbg ile dump ac", "en": "Open dump with WinDbg from command line" },
+      "command": "windbg -z C:\\Windows\\MEMORY.DMP"
+    },
+    {
+      "id": 5,
       "type": "info",
-      "title": { "tr": "Donanim stres testi", "en": "Hardware stress test" },
+      "title": { "tr": "Hizli analiz: !analyze -v", "en": "Quick analysis: !analyze -v" },
       "body": {
-        "tr": "BSOD'ler tekrarliyorsa: MemTest86 (RAM, en az 4 pas), Prime95 (CPU, 1 saat), FurMark (GPU, 30 dk), CrystalDiskInfo (SMART). Birden fazla BSOD farkli driver'da > donanim sorunu olabilir.",
-        "en": "If BSODs recurring: MemTest86 (RAM, 4+ passes), Prime95 (CPU, 1h), FurMark (GPU, 30 min), CrystalDiskInfo (SMART). Multiple BSODs across different drivers > likely hardware."
+        "tr": "Microsoft alintisi: 'In most cases, begin by using !analyze. This extension command performs automatic analysis of the dump file, which often provides useful information.' WinDbg prompt'unda yaz: !analyze -v. STACK_TEXT bolumunde crash'e sebep olan DLL/servis gorulur. IMAGE_NAME satiri sucluyu gosterir.",
+        "en": "Microsoft quote: 'In most cases, begin by using !analyze. This extension command performs automatic analysis of the dump file, which often provides useful information.' At WinDbg prompt: !analyze -v. STACK_TEXT section shows the DLL/service that caused the crash. IMAGE_NAME line names the culprit."
       }
+    },
+    {
+      "id": 6,
+      "type": "info",
+      "title": { "tr": "Diger Microsoft-onerilen komutlar", "en": "Other Microsoft-recommended commands" },
+      "body": {
+        "tr": "!analyze (otomatik analiz), .bugcheck (bug check kodu + parametreler), lm (yuklu moduller), !process 0 0 (process listesi), !process 0 7 (detayli process), !vm (sanal bellek), !errlog (sistem error log), !locks (kilitler).",
+        "en": "!analyze (auto analysis), .bugcheck (bug check code + params), lm (loaded modules), !process 0 0 (process list), !process 0 7 (detailed processes), !vm (virtual memory), !errlog (system error log), !locks (locks)."
+      }
+    },
+    {
+      "id": 7,
+      "type": "info",
+      "title": { "tr": "BlueScreenView (alternatif - 3rd-party, Microsoft DEGIL)", "en": "BlueScreenView (alternative - 3rd-party, NOT Microsoft)" },
+      "body": {
+        "tr": "WinDbg agir ise NirSoft BlueScreenView hizli ozet verir. Tablo: 'Caused By Driver' kolonu suclu surucuyu gosterir. Microsoft destekli yontem DEGIL ama populerdir - sonucu Microsoft WinDbg ile dogrulamak iyi olur.",
+        "en": "If WinDbg is heavy, NirSoft BlueScreenView gives a quick summary. Table: 'Caused By Driver' column shows the culprit. NOT a Microsoft-supported method but popular - verify the finding with Microsoft WinDbg."
+      }
+    },
+    {
+      "id": 8,
+      "type": "link",
+      "title": { "tr": "Microsoft Bug Check Code Reference", "en": "Microsoft Bug Check Code Reference" },
+      "guide_link": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-code-reference2"
     }
   ],
-  "microsoft_doc": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/crash-dump-analysis"
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/analyzing-a-kernel-mode-dump-file-with-windbg"
 }

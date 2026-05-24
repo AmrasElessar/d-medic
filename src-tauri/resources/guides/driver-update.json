@@ -1,34 +1,56 @@
 {
   "id": "driver-update",
   "title": {
-    "tr": "Sürücü Güncelleme Rehberi",
-    "en": "Driver Update Guide"
+    "tr": "Surucu Guncelleme (Microsoft Support sirasi)",
+    "en": "Driver Update (Microsoft Support priority order)"
   },
-  "priority": "DÜŞÜK",
+  "priority": "DUSUK",
   "estimated_time": "15-30 dk",
   "risk": "LOW",
+  "risk_note": {
+    "tr": "Adimlar Microsoft Support 'Update drivers manually in Windows' belgesinden alinmistir. Microsoft'un sirali tavsiyesi: (1) Windows Update otomatik, (2) Device Manager manuel, (3) Donanim uretici sitesi. 3rd-party 'driver updater' uygulamalarindan kacinilmali.",
+    "en": "Steps sourced from Microsoft Support 'Update drivers manually in Windows'. Microsoft's priority order: (1) Windows Update auto, (2) Device Manager manual, (3) Hardware vendor site. Avoid 3rd-party 'driver updater' tools."
+  },
   "prerequisites": [],
   "steps": [
     {
       "id": 1,
-      "type": "cmd",
-      "title": { "tr": "Eski sürücüleri listele", "en": "List old drivers" },
-      "command": "pnputil /enum-drivers"
-    },
-    {
-      "id": 2,
       "type": "info",
-      "title": { "tr": "Doğru kaynak", "en": "Correct source" },
+      "title": { "tr": "Microsoft'un BIRINCIL yontemi - Windows Update", "en": "Microsoft's PRIMARY method - Windows Update" },
       "body": {
-        "tr": "Sırasıyla: 1) Windows Update (opsiyonel sürücü güncellemeleri), 2) anakart/laptop üreticisi sitesi, 3) GPU üreticisi (NVIDIA/AMD/Intel). 3rd party 'driver updater' uygulamalarından KAÇININ.",
-        "en": "Order: 1) Windows Update (optional updates), 2) motherboard/laptop vendor, 3) GPU vendor (NVIDIA/AMD/Intel). AVOID 3rd-party 'driver updater' tools."
+        "tr": "Microsoft alintisi: 'The best way to get driver updates in Windows is automatically using Windows Update.' Settings > Windows Update > Check for updates. Ek olarak Settings > Windows Update > Advanced options > Optional updates - opsiyonel driver guncelleyiciler buradadir.",
+        "en": "Microsoft quote: 'The best way to get driver updates in Windows is automatically using Windows Update.' Settings > Windows Update > Check for updates. Additionally Settings > Windows Update > Advanced options > Optional updates - optional driver updates are here."
       }
     },
     {
-      "id": 3,
+      "id": 2,
       "type": "manual",
-      "title": { "tr": "Ayarlar → Windows Update → Gelişmiş seçenekler → İsteğe bağlı güncellemeler", "en": "Settings → Windows Update → Advanced options → Optional updates" }
+      "title": { "tr": "Settings > Windows Update > Advanced options > Optional updates", "en": "Settings > Windows Update > Advanced options > Optional updates" }
+    },
+    {
+      "id": 3,
+      "type": "info",
+      "title": { "tr": "Device Manager ile manuel (Windows Update yetersizse)", "en": "Device Manager manual method (if Windows Update insufficient)" },
+      "body": {
+        "tr": "1) Device Manager'i ac (Win+X > Device Manager). 2) Cihaz kategorisini genislet (Display adapters, Network adapters vb). 3) Cihaza sag tikla > Update driver. 4) 'Search automatically for drivers' (online ara) veya 'Browse my computer for drivers' (yerel klasor) sec. 5) Browse secersen indirilen .inf dosyasinin oldugu klasoru goster.",
+        "en": "1) Open Device Manager (Win+X > Device Manager). 2) Expand device category (Display adapters, Network adapters, etc). 3) Right-click device > Update driver. 4) Pick 'Search automatically for drivers' (online) or 'Browse my computer for drivers' (local folder). 5) If Browse, point to folder containing downloaded .inf file."
+      }
+    },
+    {
+      "id": 4,
+      "type": "cmd",
+      "title": { "tr": "PowerShell ile mevcut suruculeri listele", "en": "List installed drivers via PowerShell" },
+      "command": "pnputil /enum-drivers"
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Microsoft'un kaynak siralamasi", "en": "Microsoft's source priority" },
+      "body": {
+        "tr": "Sirayla guvenilirlik: 1) Windows Update (Microsoft tarafindan imzali + test edilmis), 2) anakart/laptop uretici sitesi (resmi destek), 3) GPU uretici (NVIDIA/AMD/Intel direkt indirme). UYARI: Microsoft 3rd-party 'driver updater' araclarindan kacinilmasini onerir - sahte/kotu amacli surucu riski.",
+        "en": "Trust order: 1) Windows Update (Microsoft-signed + tested), 2) motherboard/laptop vendor site (official support), 3) GPU vendor (NVIDIA/AMD/Intel direct download). WARNING: Microsoft recommends avoiding 3rd-party 'driver updater' tools - risk of fake/malicious drivers."
+      }
     }
   ],
-  "microsoft_doc": "https://support.microsoft.com/en-us/windows/update-drivers-manually-in-windows-ec62f46c-ff14-c91d-eead-d7126dc1f7b6"
+  "microsoft_doc": "https://support.microsoft.com/en-us/windows/update-drivers-through-device-manager-in-windows-ec62f46c-ff14-c91d-eead-d7126dc1f7b6"
 }

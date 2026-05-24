@@ -1,65 +1,75 @@
 {
   "id": "clean-install-win11",
   "title": {
-    "tr": "Windows 11 Temiz Kurulum",
-    "en": "Windows 11 Clean Install"
+    "tr": "Windows 11 Temiz Kurulum (Microsoft resmi araclar)",
+    "en": "Windows 11 Clean Install (Microsoft official tools)"
   },
   "priority": "YUKSEK",
   "estimated_time": "1-2 saat",
   "risk": "HIGH",
   "risk_note": {
-    "tr": "Sistem diski tamamen silinir. Tum dosyalar, programlar, ayarlar kaybolur. Onceden yedek SART.",
-    "en": "System drive is wiped completely. All files, programs, settings lost. Backup is MANDATORY."
+    "tr": "Adimlar Microsoft'un resmi 'Download Windows 11' (microsoft.com/software-download/windows11) sayfasindan alinmistir. Sayfa 25H2 surumune guncel. Temiz kurulum sistem diskini siler - yedek SART. Microsoft'un sundugu 3 yontemden biri secilir; lisansiniz Windows 10/11 ise dijital entitlement otomatik tanir.",
+    "en": "Steps sourced from Microsoft's official 'Download Windows 11' page (microsoft.com/software-download/windows11). Page updated to 25H2. Clean install wipes system drive - backup is MANDATORY. Choose one of Microsoft's 3 methods; if you have a Windows 10/11 license, digital entitlement is auto-detected."
   },
   "prerequisites": [
-    { "tr": "USB bellek (8 GB+)", "en": "USB drive (8 GB+)" },
-    { "tr": "Tum onemli dosyalarin harici diske yedegi", "en": "Backup of all important files to external drive" },
-    { "tr": "Windows lisans bilgisi (genelde donanima bagli)", "en": "Windows license info (usually tied to hardware)" }
+    { "tr": "Mevcut Windows 10 surum 2004+ veya Windows 11 lisansi (Microsoft sarti)", "en": "Existing Windows 10 version 2004+ or Windows 11 license (Microsoft requirement)" },
+    { "tr": "En az 9 GB bos disk alani (kurulum dosyalari)", "en": "At least 9 GB free disk space (for installation files)" },
+    { "tr": "USB bellek 8 GB+ (Media Creation Tool icin)", "en": "USB drive 8 GB+ (for Media Creation Tool)" },
+    { "tr": "Tum onemli dosyalarin harici diske yedegi", "en": "Backup of all important files to external drive" }
   ],
   "steps": [
     {
       "id": 1,
       "type": "info",
-      "title": { "tr": "Yedek listesi", "en": "Backup checklist" },
+      "title": { "tr": "Yedek listesi (kurulum tum disk verisini siler)", "en": "Backup checklist (clean install wipes all disk data)" },
       "body": {
-        "tr": "Belgeler, Resimler, Videolar, Masaustu, Indirilenler, Tarayici bookmarks (export), e-posta (PST), oyun save'leri (Documents/MyGames vb.), lisans key'leri (LicenseCrawler).",
-        "en": "Documents, Pictures, Videos, Desktop, Downloads, browser bookmarks (export), email (PST), game saves (Documents/MyGames etc.), license keys (LicenseCrawler)."
+        "tr": "Belgeler, Resimler, Videolar, Masaustu, Indirilenler, tarayici bookmark'lari (export), e-posta (PST), oyun save'leri, lisans key'leri. File History veya OneDrive senkronizasyonu kontrol edin.",
+        "en": "Documents, Pictures, Videos, Desktop, Downloads, browser bookmarks (export), email (PST), game saves, license keys. Verify File History or OneDrive sync."
       }
     },
     {
       "id": 2,
       "type": "info",
-      "title": { "tr": "Media Creation Tool", "en": "Media Creation Tool" },
+      "title": { "tr": "Yontem 1: Installation Assistant (mevcut PC'ye direkt yukleme)", "en": "Method 1: Installation Assistant (in-place upgrade)" },
       "body": {
-        "tr": "microsoft.com/software-download/windows11 > 'Create Windows 11 installation media' > USB hedef. Arac otomatik ISO indirir + bootable yapar.",
-        "en": "microsoft.com/software-download/windows11 > 'Create Windows 11 installation media' > USB target. Auto-downloads ISO and makes bootable."
+        "tr": "Microsoft sayfasindan 'Windows 11 Installation Assistant' indir, calistir. Mevcut Windows uzerinde yerinde yukseltme yapar - dosyalar korunur (varsa). Hizli ama 'temiz kurulum' degildir.",
+        "en": "Download 'Windows 11 Installation Assistant' from Microsoft. Performs in-place upgrade over current Windows - keeps files (if you choose). Fastest but not a true 'clean install'."
       }
     },
     {
       "id": 3,
       "type": "info",
-      "title": { "tr": "Boot order", "en": "Boot order" },
+      "title": { "tr": "Yontem 2: Media Creation Tool (USB bootable - onerilen temiz kurulum)", "en": "Method 2: Media Creation Tool (bootable USB - recommended for clean install)" },
       "body": {
-        "tr": "USB takili PC'yi yeniden baslat. BIOS/UEFI'ye gir (F2/F12/Del). Boot order'da USB'yi en ust yap, kaydet, cik.",
-        "en": "Boot PC with USB plugged. Enter BIOS/UEFI (F2/F12/Del). Put USB first in boot order, save, exit."
+        "tr": "Microsoft sayfasindan 'Create Windows 11 installation media' indir. Arac otomatik ISO indirir + USB'yi bootable yapar. USB'den boot edip sistem diskini formatlayarak temiz kurulum.",
+        "en": "Download 'Create Windows 11 installation media' from Microsoft. Tool auto-downloads ISO + makes USB bootable. Boot from USB and format system drive for a clean install."
       }
     },
     {
       "id": 4,
       "type": "info",
-      "title": { "tr": "Kurulum: Custom", "en": "Install: Custom" },
+      "title": { "tr": "Yontem 3: ISO direkt indir (x64)", "en": "Method 3: Direct ISO download (x64)" },
       "body": {
-        "tr": "Setup'ta dil/zaman secimi, lisans (lokal hesap secebilirsiniz). 'Custom: Install Windows only' > Sistem diskindeki TUM bolumleri 'Delete' > 'New' > 'Next'.",
-        "en": "Setup: language/time, license (you can pick local account). 'Custom: Install Windows only' > 'Delete' ALL system disk partitions > 'New' > 'Next'."
+        "tr": "Microsoft sayfasindan 'Download Windows 11 Disk Image (ISO)' bolumunden ISO indir. Rufus veya Microsoft'un kendi araciyla USB'ye yaz. Ileri kullanicilar icin - dil/edition secimi gerekir.",
+        "en": "From Microsoft's 'Download Windows 11 Disk Image (ISO)' section. Burn to USB via Rufus or Microsoft's own tool. For advanced users - language/edition selection required."
       }
     },
     {
       "id": 5,
       "type": "info",
+      "title": { "tr": "Boot order ve kurulum", "en": "Boot order and install" },
+      "body": {
+        "tr": "USB'yi tak, PC'yi yeniden baslat. BIOS/UEFI'ye gir (F2/F12/Del - uretici tusu). Boot order'da USB'yi en uste cek, kaydet, cik. Setup: dil/zaman/lisans (lokal hesap secilebilir). 'Custom: Install Windows only' > sistem diskindeki TUM bolumleri Delete > New > Next.",
+        "en": "Plug USB, restart PC. Enter BIOS/UEFI (F2/F12/Del - vendor key). Move USB to top of boot order, save, exit. Setup: language/time/license (local account allowed). 'Custom: Install Windows only' > Delete ALL system disk partitions > New > Next."
+      }
+    },
+    {
+      "id": 6,
+      "type": "info",
       "title": { "tr": "Ilk acilis sonrasi", "en": "First boot tasks" },
       "body": {
-        "tr": "Windows Update tum guncellemeleri yukle (3-5 dk Restart). Anakart sitesinden chipset+LAN driver indir (USB ile). Sonra GPU, audio, diger driver'lar. Son adim: D-Medic yukle.",
-        "en": "Run Windows Update for all updates (3-5 reboots). From motherboard site, install chipset+LAN drivers (via USB). Then GPU, audio, other drivers. Final: install D-Medic."
+        "tr": "1) Windows Update tum guncellemeleri yukle (3-5 restart). 2) Anakart uretici sitesinden chipset + LAN driver indir (USB ile). 3) Sonra GPU, audio, diger driver'lar. 4) Son adim: D-Medic + tercih ettiginiz uygulamalar.",
+        "en": "1) Run Windows Update for all updates (3-5 reboots). 2) From motherboard vendor, install chipset + LAN drivers (via USB). 3) Then GPU, audio, other drivers. 4) Final: D-Medic + your preferred apps."
       }
     }
   ],

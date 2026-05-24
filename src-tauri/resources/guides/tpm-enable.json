@@ -1,50 +1,85 @@
 {
   "id": "tpm-enable",
   "title": {
-    "tr": "TPM 2.0 Etkinleştirme",
-    "en": "Enable TPM 2.0"
+    "tr": "TPM Etkinleştirme (Microsoft Learn prosedürü)",
+    "en": "Enable TPM (Microsoft Learn procedure)"
   },
   "priority": "ORTA",
-  "estimated_time": "5-10 dk",
+  "estimated_time": "5-15 dk",
   "risk": "LOW",
-  "prerequisites": ["yonetici_yetkisi", "bios_erisimi"],
+  "risk_note": {
+    "tr": "Adımlar Microsoft Learn 'Troubleshoot the TPM' (15 Ağu 2025 güncel) belgesinden alınmıştır. Microsoft'un belirttiği gibi: TPM'i UEFI'den doğrudan temizlemeyin, daima işletim sistemi araçlarını kullanın.",
+    "en": "Steps are sourced directly from Microsoft Learn 'Troubleshoot the TPM' (updated 2025-08-15). Per Microsoft: do not clear the TPM directly from UEFI, always use OS-level tools."
+  },
+  "prerequisites": [
+    { "tr": "Yerel Yöneticiler grubunda üyelik (Microsoft minimum şartı)", "en": "Membership in local Administrators group (Microsoft minimum requirement)" }
+  ],
   "steps": [
     {
       "id": 1,
-      "type": "cmd",
-      "title": { "tr": "Mevcut TPM durumunu kontrol et", "en": "Check current TPM state" },
-      "command": "Get-Tpm"
-    },
-    {
-      "id": 2,
-      "type": "manual",
-      "title": { "tr": "Bilgisayarı yeniden başlat ve BIOS'a gir", "en": "Reboot and enter BIOS" },
+      "type": "info",
+      "title": { "tr": "Otomatik başlatma normalidir", "en": "Automatic initialization is normal" },
       "body": {
-        "tr": "Üretici tuşları: ASUS/MSI/Gigabyte → Del veya F2; HP → F10; Dell → F2; Lenovo → F1 veya F2; Acer → F2.",
-        "en": "Vendor keys: ASUS/MSI/Gigabyte → Del or F2; HP → F10; Dell → F2; Lenovo → F1 or F2; Acer → F2."
+        "tr": "Microsoft Learn alıntı: 'Windows automatically initializes and takes ownership of the TPM. There's no need for you to initialize the TPM and create an owner password.' Yani önce hiçbir şey yapmadan kontrol edin.",
+        "en": "Microsoft Learn quote: 'Windows automatically initializes and takes ownership of the TPM. There's no need for you to initialize the TPM and create an owner password.' Verify state before manual action."
       }
     },
     {
+      "id": 2,
+      "type": "cmd",
+      "title": { "tr": "TPM durumunu PowerShell ile sorgula", "en": "Query TPM state via PowerShell" },
+      "command": "Get-Tpm",
+      "success_message": "TpmPresent : True"
+    },
+    {
       "id": 3,
-      "type": "bios",
-      "title": { "tr": "TPM ayarını bulun", "en": "Locate TPM setting" },
+      "type": "info",
+      "title": { "tr": "TpmPresent True ise — işlem tamamdır", "en": "If TpmPresent is True — you are done" },
       "body": {
-        "tr": "Intel: PTT (Platform Trust Technology). AMD: fTPM. ASUS: Advanced → Trusted Computing. HP: Security → TPM Embedded Security. Dell: Security → TPM 2.0 Security.",
-        "en": "Intel: PTT. AMD: fTPM. ASUS: Advanced → Trusted Computing. HP: Security → TPM Embedded Security. Dell: Security → TPM 2.0 Security."
+        "tr": "Cihaz Microsoft gerekliliklerini karşılıyor. Sonraki adımlar yalnızca TpmPresent: False / TpmReady: False durumunda gerekir.",
+        "en": "Device meets Microsoft requirements. The following steps apply only if TpmPresent or TpmReady returns False."
       }
     },
     {
       "id": 4,
-      "type": "bios",
-      "title": { "tr": "Enabled yapın ve kaydedin", "en": "Set to Enabled and save" }
+      "type": "info",
+      "title": { "tr": "TPM 2.0 + Windows algılamıyor → UEFI'yi kontrol et", "en": "TPM 2.0 + not detected by Windows → check UEFI" },
+      "body": {
+        "tr": "Microsoft Learn: 'If the TPM is a TPM 2.0 and isn't detected by Windows, verify that your computer hardware contains a UEFI that is Trusted Computing Group-compliant. Also, ensure that in the UEFI settings, the TPM hasn't been disabled or hidden from the operating system.' UEFI'de aranacak adlar: Intel PTT, AMD fTPM, Trusted Computing, Security Chip.",
+        "en": "Microsoft Learn: 'If the TPM is a TPM 2.0 and isn't detected by Windows, verify that your computer hardware contains a UEFI that is Trusted Computing Group-compliant. Also, ensure that in the UEFI settings, the TPM hasn't been disabled or hidden from the operating system.' UEFI labels: Intel PTT, AMD fTPM, Trusted Computing, Security Chip."
+      }
     },
     {
       "id": 5,
+      "type": "info",
+      "title": { "tr": "TPM 1.2 + Win11 → tpm.msc ile aç (Microsoft önerilen yol)", "en": "TPM 1.2 + Win11 → use tpm.msc (Microsoft preferred path)" },
+      "body": {
+        "tr": "Microsoft Learn 'Turn on the TPM' bölümünden: 1) tpm.msc'yi aç, 2) Action bölmesinde 'Turn TPM On' seçeneğine tıkla, 3) 'Shutdown' (veya 'Restart') seç ve UEFI ekran istemlerini takip et. Yeniden başlatmada Windows'a giriş yapmadan önce TPM yapılandırmasını kabul etmen istenir — bu, fiziksel erişim ve zararlı yazılım koruması içindir.",
+        "en": "From Microsoft Learn 'Turn on the TPM': 1) Open tpm.msc, 2) In the Action pane, select 'Turn TPM On', 3) Select 'Shutdown' (or 'Restart') and follow UEFI screen prompts. After restart, before signing in to Windows, you'll be prompted to accept the reconfiguration of the TPM — this ensures physical access and protection from malicious software."
+      }
+    },
+    {
+      "id": 6,
       "type": "cmd",
-      "title": { "tr": "Windows'ta tekrar doğrulayın", "en": "Verify in Windows" },
-      "command": "Get-Tpm | Select TpmPresent, TpmReady, ManufacturerVersion",
+      "title": { "tr": "tpm.msc'yi aç", "en": "Open tpm.msc" },
+      "command": "tpm.msc"
+    },
+    {
+      "id": 7,
+      "type": "info",
+      "title": { "tr": "Microsoft sürücüsü uyarısı (BitLocker kullanıyorsan)", "en": "Microsoft driver warning (if using BitLocker)" },
+      "body": {
+        "tr": "Microsoft Learn: 'If a non-Microsoft TPM driver is installed, it may prevent the default TPM driver from loading and cause BitLocker to report that a TPM isn't present.' Microsoft dışı TPM sürücüsü varsa kaldır, işletim sistemine TPM'i yeniden başlatmasına izin ver.",
+        "en": "Microsoft Learn: 'If a non-Microsoft TPM driver is installed, it may prevent the default TPM driver from loading and cause BitLocker to report that a TPM isn't present.' If a non-Microsoft driver is present, remove it and let the OS reinitialize the TPM."
+      }
+    },
+    {
+      "id": 8,
+      "type": "cmd",
+      "title": { "tr": "Sonuç doğrulaması", "en": "Verify result" },
+      "command": "Get-Tpm | Select TpmPresent, TpmReady, TpmEnabled, ManufacturerVersion",
       "success_message": "TpmPresent : True"
     }
   ],
-  "microsoft_doc": "https://learn.microsoft.com/tr-tr/windows/security/hardware-security/tpm/initialize-and-configure-ownership-of-the-tpm"
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows/security/hardware-security/tpm/initialize-and-configure-ownership-of-the-tpm"
 }

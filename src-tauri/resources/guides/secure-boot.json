@@ -1,46 +1,87 @@
 {
   "id": "secure-boot",
   "title": {
-    "tr": "Secure Boot Etkinleştirme",
-    "en": "Enable Secure Boot"
+    "tr": "Secure Boot Etkinlestirme (Microsoft Learn yontemi)",
+    "en": "Enable Secure Boot (Microsoft Learn procedure)"
   },
   "priority": "ORTA",
-  "estimated_time": "5 dk",
+  "estimated_time": "5-10 dk",
   "risk": "LOW",
-  "prerequisites": ["uefi_modu", "gpt_disk"],
+  "risk_note": {
+    "tr": "Adimlar Microsoft Learn 'Secure the Windows boot process' ve Microsoft Support 'Windows 11 and Secure Boot' belgelerinden alinmistir. Secure Boot UEFI sartidir; eski Legacy BIOS sistemlerde etkinlestirilemez. GPT disk gereklidir.",
+    "en": "Steps sourced from Microsoft Learn 'Secure the Windows boot process' and Microsoft Support 'Windows 11 and Secure Boot'. Secure Boot is a UEFI requirement; cannot be enabled on Legacy BIOS systems. GPT disk required."
+  },
+  "prerequisites": [
+    { "tr": "UEFI mode (Legacy BIOS desteklemez)", "en": "UEFI mode (Legacy BIOS unsupported)" },
+    { "tr": "GPT disk (MBR'den GPT'ye donusum: mbr2gpt rehberine bakin)", "en": "GPT disk (MBR to GPT: see mbr2gpt guide)" }
+  ],
   "steps": [
     {
       "id": 1,
-      "type": "manual",
-      "title": { "tr": "Ayarlar → Kurtarma → Gelişmiş Başlatma", "en": "Settings → Recovery → Advanced Startup" }
+      "type": "info",
+      "title": { "tr": "Microsoft'un Secure Boot tanimi", "en": "Microsoft's definition of Secure Boot" },
+      "body": {
+        "tr": "Microsoft Learn: 'Secure Boot is a security standard developed by members of the PC industry to help make sure that a device boots using only software that is trusted by the Original Equipment Manufacturer (OEM). It's part of the Unified Extensible Firmware Interface (UEFI) specification.' Firmware her boot bileseninin imzasini kontrol eder - UEFI firmware drivers, EFI applications, OS bootloader, kernel.",
+        "en": "Microsoft Learn: 'Secure Boot is a security standard developed by members of the PC industry to help make sure that a device boots using only software that is trusted by the Original Equipment Manufacturer (OEM). It's part of the Unified Extensible Firmware Interface (UEFI) specification.' Firmware checks signature of every boot component - UEFI firmware drivers, EFI applications, OS bootloader, kernel."
+      }
     },
     {
       "id": 2,
-      "type": "manual",
-      "title": { "tr": "Sorun Gider → Gelişmiş Seçenekler → UEFI Üretici Yazılımı Ayarları", "en": "Troubleshoot → Advanced Options → UEFI Firmware Settings" }
+      "type": "cmd",
+      "title": { "tr": "Mevcut Secure Boot durumu", "en": "Current Secure Boot state" },
+      "command": "Confirm-SecureBootUEFI",
+      "success_message": "True"
     },
     {
       "id": 3,
-      "type": "bios",
-      "title": { "tr": "Security sekmesinde Secure Boot'u Enabled yapın", "en": "Set Secure Boot to Enabled under Security tab" }
+      "type": "info",
+      "title": { "tr": "Microsoft'un Settings yolu (Windows'tan UEFI'ye geciyor)", "en": "Microsoft's Settings path (boot from Windows to UEFI)" },
+      "body": {
+        "tr": "Microsoft Support: 'go to Settings, select System, choose Recovery from the list and select Restart now under Advanced startup. On the next screen, select Troubleshoot and choose Advanced options. Select UEFI Firmware Settings and choose Restart to make changes.'",
+        "en": "Microsoft Support: 'go to Settings, select System, choose Recovery from the list and select Restart now under Advanced startup. On the next screen, select Troubleshoot and choose Advanced options. Select UEFI Firmware Settings and choose Restart to make changes.'"
+      }
     },
     {
       "id": 4,
-      "type": "bios",
-      "title": { "tr": "Secure Boot Mode: Standard seçin", "en": "Pick Secure Boot Mode: Standard" }
+      "type": "manual",
+      "title": { "tr": "Settings > System > Recovery > Advanced startup > Restart now", "en": "Settings > System > Recovery > Advanced startup > Restart now" }
     },
     {
       "id": 5,
-      "type": "bios",
-      "title": { "tr": "Kaydedin (F10) ve çıkın", "en": "Save (F10) and exit" }
+      "type": "manual",
+      "title": { "tr": "Recovery screen: Troubleshoot > Advanced options > UEFI Firmware Settings > Restart", "en": "Recovery screen: Troubleshoot > Advanced options > UEFI Firmware Settings > Restart" }
     },
     {
       "id": 6,
+      "type": "bios",
+      "title": { "tr": "UEFI Security/Boot sekmesinde 'Secure Boot' = Enabled", "en": "In UEFI Security/Boot tab, set 'Secure Boot' to Enabled" }
+    },
+    {
+      "id": 7,
+      "type": "bios",
+      "title": { "tr": "Secure Boot Mode: Standard (Custom degil)", "en": "Secure Boot Mode: Standard (not Custom)" }
+    },
+    {
+      "id": 8,
+      "type": "bios",
+      "title": { "tr": "F10 ile kaydet ve cik", "en": "Save with F10 and exit" }
+    },
+    {
+      "id": 9,
       "type": "cmd",
-      "title": { "tr": "Windows'ta doğrulayın", "en": "Verify in Windows" },
+      "title": { "tr": "Windows'ta sonuc dogrula", "en": "Verify in Windows" },
       "command": "Confirm-SecureBootUEFI",
       "success_message": "True"
+    },
+    {
+      "id": 10,
+      "type": "info",
+      "title": { "tr": "Hata: 'Cmdlet not supported on this platform'", "en": "Error: 'Cmdlet not supported on this platform'" },
+      "body": {
+        "tr": "Microsoft Q&A'lara gore bu mesaj Legacy BIOS modunu gosterir - Secure Boot etkinlestirilemez. Once mbr2gpt ile diski GPT'ye donusturup firmware'i UEFI mode'a alin (mbr2gpt rehberine bakin).",
+        "en": "Per Microsoft Q&A this message indicates Legacy BIOS mode - Secure Boot can't be enabled. First convert disk to GPT via mbr2gpt and switch firmware to UEFI mode (see mbr2gpt guide)."
+      }
     }
   ],
-  "microsoft_doc": "https://learn.microsoft.com/en-us/windows/security/hardware-security/secure-the-windows-10-boot-process"
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows/security/operating-system-security/system-security/secure-the-windows-10-boot-process"
 }

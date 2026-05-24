@@ -1,53 +1,76 @@
 {
   "id": "network-reset",
   "title": {
-    "tr": "Ag Ayarlarini Sifirla",
-    "en": "Reset Network Stack"
+    "tr": "Ag Ayarlarini Sifirla (Microsoft Network Reset)",
+    "en": "Reset Network Settings (Microsoft Network Reset)"
   },
   "priority": "ORTA",
-  "estimated_time": "5-10 dk",
+  "estimated_time": "5-10 dk + restart",
   "risk": "LOW",
   "risk_note": {
-    "tr": "VPN, statik IP ve ozel adapter ayarlari silinir. Yeniden baslatma gerekir.",
-    "en": "VPN, static IP, and custom adapter settings will be removed. Reboot required."
+    "tr": "Adimlar Microsoft Support 'Fix Wi-Fi connection issues in Windows' belgesinden alinmistir. Microsoft alintisi: 'Network reset should be the last step you try.' Tum ag adaptorleri ve ayarlari silinir, varsayilana doner. VPN ve sanal switch'ler yeniden kurulmali.",
+    "en": "Steps sourced from Microsoft Support 'Fix Wi-Fi connection issues in Windows'. Microsoft quote: 'Network reset should be the last step you try.' All network adapters and settings are removed and reset to defaults. VPN and virtual switches must be reinstalled."
   },
   "prerequisites": [
-    { "tr": "Yonetici PowerShell", "en": "Administrator PowerShell" }
+    { "tr": "Yonetici yetkisi", "en": "Administrator permissions" },
+    { "tr": "VPN/wireless sifrelerinin yedegi", "en": "Backup of VPN/wireless passwords" }
   ],
   "steps": [
     {
       "id": 1,
-      "type": "cmd",
-      "title": { "tr": "Winsock catalog sifirla", "en": "Reset Winsock catalog" },
-      "command": "netsh winsock reset"
+      "type": "info",
+      "title": { "tr": "Microsoft uyari: son care", "en": "Microsoft warning: last resort" },
+      "body": {
+        "tr": "Microsoft: 'Network reset should be the last step you try. Consider using it if the steps above don't help to get you connected. Additionally, after using network reset, you might need to reinstall and set up other networking software you might be using, such as VPN client software or virtual switches from Hyper-V.'",
+        "en": "Microsoft: 'Network reset should be the last step you try. Consider using it if the steps above don't help to get you connected. Additionally, after using network reset, you might need to reinstall and set up other networking software you might be using, such as VPN client software or virtual switches from Hyper-V.'"
+      }
     },
     {
       "id": 2,
-      "type": "cmd",
-      "title": { "tr": "IP stack sifirla", "en": "Reset IP stack" },
-      "command": "netsh int ip reset"
+      "type": "manual",
+      "title": { "tr": "Win11: Settings > Network & Internet > Advanced network settings > Network reset", "en": "Win11: Settings > Network & Internet > Advanced network settings > Network reset" }
     },
     {
       "id": 3,
-      "type": "cmd",
-      "title": { "tr": "DNS cache temizle", "en": "Flush DNS cache" },
-      "command": "ipconfig /flushdns; ipconfig /registerdns"
+      "type": "manual",
+      "title": { "tr": "Win10: Settings > Network & Internet > Status > Network reset", "en": "Win10: Settings > Network & Internet > Status > Network reset" }
     },
     {
       "id": 4,
-      "type": "cmd",
-      "title": { "tr": "DHCP yeniden iste", "en": "Renew DHCP lease" },
-      "command": "ipconfig /release; ipconfig /renew"
+      "type": "info",
+      "title": { "tr": "Reset sonrasi neler olur (Microsoft alintisi)", "en": "What happens after reset (Microsoft quote)" },
+      "body": {
+        "tr": "Microsoft: 'Network reset removes any network adapters you have installed and the settings for them. After your PC restarts, any network adapters are reinstalled, and the settings for them are set to the defaults.' PC otomatik 5 dk sonra restart eder.",
+        "en": "Microsoft: 'Network reset removes any network adapters you have installed and the settings for them. After your PC restarts, any network adapters are reinstalled, and the settings for them are set to the defaults.' PC auto-restarts after 5 min."
+      }
     },
     {
       "id": 5,
       "type": "info",
-      "title": { "tr": "Yeniden baslat", "en": "Reboot" },
+      "title": { "tr": "Komut satiri alternatifleri (Microsoft NetShell yontemi)", "en": "Command-line alternatives (Microsoft NetShell method)" },
       "body": {
-        "tr": "Stack degisiklikleri restart sonrasinda etkin olur. Restart sonrasi VPN bagiantilarini yeniden yapilandirmaniz gerekebilir.",
-        "en": "Stack changes take effect after restart. You may need to re-configure VPN connections."
+        "tr": "Microsoft 'How to reset TCP/IP by using the NetShell utility' belgesindeki adimlar. Yonetici PowerShell: netsh winsock reset; netsh int ip reset; ipconfig /flushdns; ipconfig /registerdns. Restart sonrasi geli.",
+        "en": "Steps from Microsoft 'How to reset TCP/IP by using the NetShell utility'. Admin PowerShell: netsh winsock reset; netsh int ip reset; ipconfig /flushdns; ipconfig /registerdns. Reboot after."
       }
+    },
+    {
+      "id": 6,
+      "type": "cmd",
+      "title": { "tr": "Winsock + IP stack sifirla (NetShell)", "en": "Reset Winsock + IP stack (NetShell)" },
+      "command": "netsh winsock reset; netsh int ip reset"
+    },
+    {
+      "id": 7,
+      "type": "cmd",
+      "title": { "tr": "DNS cache flush", "en": "DNS cache flush" },
+      "command": "ipconfig /flushdns; ipconfig /registerdns"
+    },
+    {
+      "id": 8,
+      "type": "cmd",
+      "title": { "tr": "DHCP yeniden iste", "en": "Renew DHCP lease" },
+      "command": "ipconfig /release; ipconfig /renew"
     }
   ],
-  "microsoft_doc": "https://support.microsoft.com/en-us/windows/use-the-network-reset-feature-to-fix-internet-connection-issues-after-upgrading-from-windows-7-or-windows-8-1-to-windows-10-323a8ad8-93e7-7806-8b5e-9c93f8df9a17"
+  "microsoft_doc": "https://support.microsoft.com/en-us/windows/fix-wi-fi-connection-issues-in-windows-9424a1f7-6a3b-65a6-4d78-7f07eee84d2c"
 }

@@ -1,52 +1,54 @@
 {
   "id": "disk-cleanup",
   "title": {
-    "tr": "Sistem Diski Temizliği",
-    "en": "System Disk Cleanup"
+    "tr": "Sistem Diski Temizligi (Microsoft Support adimlari)",
+    "en": "System Disk Cleanup (Microsoft Support steps)"
   },
   "priority": "ORTA",
   "estimated_time": "10-20 dk",
   "risk": "LOW",
   "risk_note": {
-    "tr": "Geri alınabilir adımlar. Yalnızca geçici dosyalar ve cache temizleniyor.",
-    "en": "Reversible steps. Only temporary files and caches are cleared."
+    "tr": "Adimlar Microsoft Support 'Disk cleanup in Windows' belgesinden alinmistir. Geri alinabilir adimlar - yalnizca gecici dosyalar ve cache temizlenir. Win11'de Storage Sense modern alternatifidir.",
+    "en": "Steps sourced from Microsoft Support 'Disk cleanup in Windows'. Reversible - only temporary files and caches are cleared. On Win11, Storage Sense is the modern alternative."
   },
   "prerequisites": [],
   "steps": [
     {
       "id": 1,
-      "type": "cmd",
-      "title": { "tr": "Windows yerleşik disk temizleyici", "en": "Built-in cleanup tool" },
-      "command": "cleanmgr /sageset:1; cleanmgr /sagerun:1"
+      "type": "info",
+      "title": { "tr": "Microsoft'un 4 adimi (klasik Disk Cleanup)", "en": "Microsoft's 4 steps (classic Disk Cleanup)" },
+      "body": {
+        "tr": "1) Gorev cubugu arama kutusuna 'disk cleanup' yaz. 2) Sonuclardan 'Disk Cleanup' sec. 3) Temizlenecek diski (genelde C:) sec, OK. 4) Silinecek dosya turlerinin yanindaki kutulari isaretle, OK. Varsayilan secili: Downloaded Program Files, Temporary Internet Files, Thumbnails.",
+        "en": "1) In Taskbar search, type 'disk cleanup'. 2) Pick 'Disk Cleanup' from results. 3) Select drive to clean (usually C:), OK. 4) Check the boxes next to file types to delete, OK. Defaults selected: Downloaded Program Files, Temporary Internet Files, Thumbnails."
+      }
     },
     {
       "id": 2,
       "type": "cmd",
-      "title": { "tr": "Geçici dosyalar (kullanıcı)", "en": "Temp files (user)" },
-      "command": "Remove-Item \"$env:TEMP\\*\" -Recurse -Force -ErrorAction SilentlyContinue"
+      "title": { "tr": "Disk Cleanup'i komut satirindan ac", "en": "Open Disk Cleanup from command line" },
+      "command": "cleanmgr"
     },
     {
       "id": 3,
-      "type": "cmd",
-      "title": { "tr": "Windows update cache", "en": "Windows update cache" },
-      "command": "Stop-Service wuauserv -Force; Remove-Item C:\\Windows\\SoftwareDistribution\\Download\\* -Recurse -Force -ErrorAction SilentlyContinue; Start-Service wuauserv"
+      "type": "info",
+      "title": { "tr": "'Clean up system files' (ek temizlik)", "en": "'Clean up system files' (extra cleanup)" },
+      "body": {
+        "tr": "Disk Cleanup penceresinde 'Clean up system files' dugmesine bas. Yonetici yetkisi ister. Eklenen kategoriler: Windows Update Cleanup, eski Windows surumu (yukseltme yapildiysa 10 gun icinde), DirectX Shader Cache, Delivery Optimization Files.",
+        "en": "In Disk Cleanup window press 'Clean up system files'. Requires admin. Adds: Windows Update Cleanup, previous Windows installation (within 10 days of upgrade), DirectX Shader Cache, Delivery Optimization Files."
+      }
     },
     {
       "id": 4,
-      "type": "info",
-      "title": { "tr": "Büyük dosyaları tespit et", "en": "Find large files" },
-      "body": {
-        "tr": "WizTree veya TreeSize ile disk haritası çıkarın — en çok yer kaplayan klasör ve uygulamaları görerek silinebilir aday seçin.",
-        "en": "Use WizTree or TreeSize to visualize disk usage and identify deletable folders/apps."
-      }
+      "type": "manual",
+      "title": { "tr": "Win11 modern alternatifi: Settings > System > Storage > Storage Sense", "en": "Win11 modern alternative: Settings > System > Storage > Storage Sense" }
     },
     {
       "id": 5,
       "type": "info",
-      "title": { "tr": "Hibernation kapatma (opsiyonel)", "en": "Disable hibernation (optional)" },
+      "title": { "tr": "Storage Sense ne yapar", "en": "What Storage Sense does" },
       "body": {
-        "tr": "powercfg /h off — RAM kadar disk alanı (hiberfil.sys) açar. Notebook'larda kapatmayın.",
-        "en": "powercfg /h off — frees disk space equal to RAM size (hiberfil.sys). Don't disable on laptops."
+        "tr": "Settings > System > Storage > Storage Sense: otomatik gecici dosya silme, Recycle Bin 30+ gunden eski oge silme, Downloads klasoru 60+ gunden eski dosya silme. 'Cleanup recommendations' (Settings > System > Storage > Cleanup recommendations) buyuk + nadir kullanilan uygulamalari onerir.",
+        "en": "Settings > System > Storage > Storage Sense: auto-delete temp files, Recycle Bin items older than 30+ days, Downloads folder files older than 60+ days. 'Cleanup recommendations' (Settings > System > Storage > Cleanup recommendations) suggests large/rarely-used apps."
       }
     }
   ],

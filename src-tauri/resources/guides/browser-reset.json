@@ -1,54 +1,59 @@
 {
   "id": "browser-reset",
   "title": {
-    "tr": "Tarayici Sifirlama",
-    "en": "Browser Reset"
+    "tr": "Microsoft Edge Sorun Giderme (Repair / Reset)",
+    "en": "Microsoft Edge Troubleshooting (Repair / Reset)"
   },
   "priority": "DUSUK",
   "estimated_time": "5-10 dk",
   "risk": "LOW",
   "risk_note": {
-    "tr": "Cerezler, kaydedilmis sifreler ve eklentiler silinir. Onemli sifreleri once parola yoneticisine alin.",
-    "en": "Cookies, saved passwords, and extensions will be cleared. Move important passwords to a manager first."
+    "tr": "Microsoft Support 'What to do if Microsoft Edge isn't working' belgesindeki resmi yollardir. Repair veriye dokunmaz; Reset mevcut Edge profilini siler. Microsoft sayfasinda 'Reset' yerine 'Repair' on planda. Chrome/Firefox kendi resmi belgeleri varsa onlara bakin (bunlar Microsoft kaynagi degildir).",
+    "en": "Official paths from Microsoft Support 'What to do if Microsoft Edge isn't working'. Repair preserves data; Reset removes the current Edge profile. The Microsoft page highlights Repair over Reset. Chrome/Firefox have their own vendor docs - this guide is Microsoft-sourced only."
   },
   "prerequisites": [],
   "steps": [
     {
       "id": 1,
       "type": "info",
-      "title": { "tr": "Edge sifirlama", "en": "Edge reset" },
+      "title": { "tr": "Once guncelle (Microsoft'un ilk onerisi)", "en": "Update first (Microsoft's first suggestion)" },
       "body": {
-        "tr": "edge://settings/reset > 'Restore settings to their default values'. Bookmark'lar kalir, eklenti ve site izinleri sifirlanir.",
-        "en": "edge://settings/reset > 'Restore settings to their default values'. Bookmarks remain; extensions and site permissions reset."
+        "tr": "edge://settings/help adresine git veya Settings and more (...) > Settings > About Microsoft Edge. Guncelleme varsa otomatik indirir, restart sonrasi cogu sorun cozulur.",
+        "en": "Navigate to edge://settings/help or Settings and more (...) > Settings > About Microsoft Edge. Updates download automatically; restart often resolves issues."
       }
     },
     {
       "id": 2,
       "type": "info",
-      "title": { "tr": "Chrome sifirlama", "en": "Chrome reset" },
+      "title": { "tr": "Tarama gecmisi ve cache temizle", "en": "Clear browsing data and cache" },
       "body": {
-        "tr": "chrome://settings/reset > 'Restore settings to their original defaults'. Eklentileri devre disi birakir (silmez), pinned tablari acilir gosterir.",
-        "en": "chrome://settings/reset > 'Restore settings to their original defaults'. Disables extensions (doesn't remove), unpins tabs."
+        "tr": "Settings and more (...) > History > Delete browsing data. Time range 'All time' secip 'Cookies and other site data' + 'Cached images and files' isaretle.",
+        "en": "Settings and more (...) > History > Delete browsing data. Pick 'All time' for Time range, check 'Cookies and other site data' + 'Cached images and files'."
       }
     },
     {
       "id": 3,
-      "type": "info",
-      "title": { "tr": "Firefox 'Refresh'", "en": "Firefox 'Refresh'" },
-      "body": {
-        "tr": "about:support > 'Refresh Firefox' butonu. Yeni profil olusturup bookmark + sifreleri tasir; eklenti ve ozel ayarlari atar.",
-        "en": "about:support > 'Refresh Firefox' button. Creates new profile, migrates bookmarks + passwords; drops extensions and custom settings."
-      }
+      "type": "manual",
+      "title": { "tr": "Repair (veri korunur) - Start > Settings > Apps > Installed apps > Microsoft Edge > Modify > Repair", "en": "Repair (data preserved) - Start > Settings > Apps > Installed apps > Microsoft Edge > Modify > Repair" }
     },
     {
       "id": 4,
       "type": "info",
-      "title": { "tr": "Profil silme (son care)", "en": "Profile delete (last resort)" },
+      "title": { "tr": "Reset (profil sifirlanir) - sadece son care", "en": "Reset (profile cleared) - last resort only" },
       "body": {
-        "tr": "Sorun reset sonrasi devam ederse: %LOCALAPPDATA%\\Microsoft\\Edge\\User Data klasorunu yeniden adlandir, tarayiciyi ac. Tum kullanici verisi (sifre, gecmis) silinir.",
-        "en": "If issues persist after reset: rename %LOCALAPPDATA%\\Microsoft\\Edge\\User Data folder, open browser. All user data (passwords, history) wiped."
+        "tr": "Microsoft yazisindan: Reset 'gecmis, cerez ve degistirdigin ayarlari kaldirir; Repair degil'. Ayarlar > Reset settings > 'Restore settings to their default values'. Bookmark ve kayitli sifreler korunur, eklenti ve site izinleri sifirlanir.",
+        "en": "Per Microsoft: Reset 'removes your history, cookies, and any settings you might have changed, whereas repairing the browser won't affect anything'. Settings > Reset settings > 'Restore settings to their default values'. Bookmarks/passwords preserved; extensions and site permissions reset."
+      }
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Diger Microsoft onerileri", "en": "Other Microsoft suggestions" },
+      "body": {
+        "tr": "Bilgisayari yeniden baslat. Anti-malware tarama yap (Defender Quick Scan). Acik sekme ve uygulamalari kapatip yeniden dene.",
+        "en": "Restart the PC. Run anti-malware scan (Defender Quick Scan). Close other tabs/apps and retry."
       }
     }
   ],
-  "microsoft_doc": "https://support.microsoft.com/en-us/microsoft-edge/reset-microsoft-edge-9c9c61d6-bc24-4f7b-9bb6-91ddabcae27c"
+  "microsoft_doc": "https://support.microsoft.com/en-us/microsoft-edge/what-to-do-if-microsoft-edge-isn-t-working-cc0657a6-acd2-cbbd-1528-c0335c71312a"
 }

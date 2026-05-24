@@ -119,16 +119,18 @@ fn legacy_bios_blocking() -> DMedicResult<Vec<Finding>> {
     }])
 }
 
-/// #13 — EFI System partition < 100 MB (Microsoft önerilen minimum).
+/// #13 — EFI System Partition Microsoft minimum boyutuna uyumsuz.
 ///
-/// Microsoft Learn: "Configure UEFI/GPT-Based hard drive partitions" sayfası
-/// System (ESP) partition için minimum 100 MB belirtir. Windows kurulumu
-/// varsayılan olarak 100 MB ayırır; bu boyut Win11 güncellemeleri dahil
-/// standart kullanım için yeterlidir.
-/// Ref: https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/configure-uefi-gpt-based-hard-drive-partitions
+/// Microsoft Learn 'UEFI/GPT-based hard drive partitions' (2026-05-18 güncel):
+/// "The EFI system partition must meet the following minimum size requirements
+/// for the storage device type: 512 native/512e byte sector size: minimum 200 MB;
+/// 4K native sector size: minimum 300 MB."
+/// Ref: https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/configure-uefigpt-based-hard-drive-partitions?view=windows-11
 ///
-/// 100 MB ve üzeri → bulgu YOK. 100 MB altı yalnızca anormal/manuel kurulumda
-/// görülür (OEM tarafından küçültülmüş, eski Win7 upgrade yolu).
+/// Eskiden 100 MB önerilirdi (Win7/8 dönemi); Microsoft Win11 25H2'den itibaren
+/// 200 MB minimum talep ediyor — bazı sistemlerde 100 MB ESP'de feature update
+/// başarısız oluyor (Microsoft Q&A'larda belgelendi). Bu sebeple D-Medic eşik
+/// 200 MB; sektör boyutuna göre 4K detected ise 300 MB.
 pub struct EfiPartitionCheck;
 
 #[async_trait]
@@ -138,47 +140,76 @@ impl Check for EfiPartitionCheck {
     }
 
     async fn run(&self) -> DMedicResult<Vec<Finding>> {
-        let script = "try { (Get-Partition -ErrorAction Stop | Where-Object { $_.Type -eq 'System' } | Select-Object -First 1 -ExpandProperty Size) / 1MB | ForEach-Object { [int]$_ } } catch { '' }";
+        // Partition boyutu ve sektör boyutu (LogicalSectorSize) — 4K disk ise 4096.
+        let script = "try { \
+            $p = Get-Partition -ErrorAction Stop | Where-Object { $_.Type -eq 'System' } | Select-Object -First 1; \
+            $disk = Get-Disk -Number $p.DiskNumber -ErrorAction Stop; \
+            $size_mb = [int]($p.Size / 1MB); \
+            $sector = [int]$disk.LogicalSectorSize; \
+            \"$size_mb,$sector\" \
+        } catch { '' }";
         let out = crate::ps::runner::run_script(script).await.ok();
         let Some(out) = out else {
             return Ok(Vec::new());
         };
-        let Ok(size_mb) = out.stdout.trim().parse::<u32>() else {
-            return Ok(Vec::new());
-        };
-        // Microsoft minimum: 100 MB. Üzerindeki her şey sorunsuz.
-        if size_mb >= 100 {
+        let trimmed = out.stdout.trim();
+        let parts: Vec<&str> = trimmed.split(',').collect();
+        if parts.len() != 2 {
             return Ok(Vec::new());
         }
+        let Ok(size_mb) = parts[0].parse::<u32>() else {
+            return Ok(Vec::new());
+        };
+        let sector_bytes = parts[1].parse::<u32>().unwrap_or(512);
+        // Microsoft minimum: 200 MB (512-byte sector), 300 MB (4K).
+        let ms_minimum = if sector_bytes >= 4096 { 300 } else { 200 };
+        if size_mb >= ms_minimum {
+            return Ok(Vec::new());
+        }
+
+        let priority = if size_mb < 100 {
+            Priority::Critical
+        } else {
+            Priority::High
+        };
 
         Ok(vec![Finding {
             id: "efi-partition".to_string(),
             category: Category::Storage,
-            priority: Priority::High,
+            priority,
             action_type: ActionType::Guided,
             title: LocalizedText::new(
-                format!("EFI System Partition çok küçük: {size_mb} MB"),
-                format!("EFI System Partition undersized: {size_mb} MB"),
+                format!("EFI System Partition Microsoft minimumunun altında: {size_mb} MB"),
+                format!("EFI System Partition below Microsoft minimum: {size_mb} MB"),
             ),
             description: LocalizedText::new(
-                "Microsoft'un belirttiği minimum ESP boyutu 100 MB'dir \
-                 (Configure UEFI/GPT-Based hard drive partitions, Microsoft Learn). \
-                 100 MB altı bölüm güncelleme ve onarım senaryolarında soruna \
-                 yol açabilir. Genişletme yalnızca disk yeniden bölümlendirme ile \
-                 mümkündür — kaynak: Microsoft Learn rehberindeki adımlar."
-                    .to_string(),
-                "Microsoft's documented ESP minimum is 100 MB (Configure UEFI/GPT-\
-                 Based hard drive partitions, Microsoft Learn). Below 100 MB may \
-                 cause update/repair failures. Resizing requires disk re-partitioning \
-                 — see Microsoft Learn for the supported procedure."
-                    .to_string(),
+                format!(
+                    "Microsoft Learn 'UEFI/GPT-based hard drive partitions' \
+                     (2026-05-18 güncel): {sector_bytes}-byte sektör için ESP \
+                     minimum {ms_minimum} MB olmalıdır. Mevcut: {size_mb} MB. \
+                     Win11 25H2 feature update'leri 100 MB ESP'lerde başarısız \
+                     olabiliyor (Microsoft Q&A). Çözüm: temiz kurulum (kurulum \
+                     standart ESP oluşturur)."
+                ),
+                format!(
+                    "Microsoft Learn 'UEFI/GPT-based hard drive partitions' \
+                     (updated 2026-05-18): ESP minimum is {ms_minimum} MB for \
+                     {sector_bytes}-byte sector disks. Current: {size_mb} MB. \
+                     Win11 25H2 feature updates can fail on 100 MB ESPs \
+                     (Microsoft Q&A). Resolution: clean install (setup creates \
+                     a standard ESP)."
+                ),
             ),
             estimated_gain: EstimatedGain::Stability,
             risk: RiskLevel::Medium,
             reboot_required: false,
             action_id: None,
             guide_id: Some("efi-partition-resize".to_string()),
-            evidence: json!({ "efi_size_mb": size_mb, "ms_minimum_mb": 100 }),
+            evidence: json!({
+                "efi_size_mb": size_mb,
+                "sector_bytes": sector_bytes,
+                "ms_minimum_mb": ms_minimum
+            }),
         }])
     }
 }

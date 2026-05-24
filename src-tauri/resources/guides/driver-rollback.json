@@ -1,65 +1,62 @@
 {
   "id": "driver-rollback",
   "title": {
-    "tr": "Surucu Geri Alma",
-    "en": "Driver Rollback"
+    "tr": "Surucu Geri Alma (Microsoft Support adimlari)",
+    "en": "Roll Back Driver (Microsoft Support steps)"
   },
   "priority": "ORTA",
   "estimated_time": "5-15 dk",
   "risk": "MEDIUM",
   "risk_note": {
-    "tr": "Yanlis surucu geri alinirsa donanim calismayabilir. Once sistem geri yukleme noktasi olusturun.",
-    "en": "Rolling back the wrong driver may break hardware. Create a System Restore point first."
+    "tr": "Adimlar Microsoft Support 'Update drivers through Device Manager in Windows' belgesinden alinmistir. Yanlis surucunun geri alinmasi donanimi calismaz duruma getirebilir. Microsoft sarti: 'You must be signed in with administrator permissions to roll back drivers.'",
+    "en": "Steps sourced from Microsoft Support 'Update drivers through Device Manager in Windows'. Rolling back the wrong driver may break hardware. Microsoft requirement: 'You must be signed in with administrator permissions to roll back drivers.'"
   },
   "prerequisites": [
-    { "tr": "Sorun cikaran surucunun adi (Device Manager > Properties > Driver tab)", "en": "Name of the problematic driver (Device Manager > Properties > Driver tab)" }
+    { "tr": "Yonetici yetkisi (Microsoft sarti)", "en": "Administrator permissions (Microsoft requirement)" },
+    { "tr": "Sorun cikaran cihazi/surucusu tespit etmis ol", "en": "Identified the problematic device/driver" }
   ],
   "steps": [
     {
       "id": 1,
       "type": "info",
-      "title": { "tr": "Device Manager ac", "en": "Open Device Manager" },
+      "title": { "tr": "Microsoft'un 6 resmi adimi", "en": "Microsoft's 6 official steps" },
       "body": {
-        "tr": "Win+X > Device Manager. Sorunlu cihazi bul (sariUNTAG, BSOD raporunda gozuken surucu kategorisi).",
-        "en": "Win+X > Device Manager. Locate the problematic device (yellow exclamation, or category from BSOD report)."
+        "tr": "1) Start menusune sag tikla > Device Manager. 2) Ilgili cihaz kategorisinin yanindaki oka tikla. 3) Cihaza sag tikla > Properties. 4) Driver sekmesini sec. 5) 'Roll Back Driver' dugmesine tikla. 6) Sebep istendikten sonra Yes ile onayla. Gerekirse yeniden baslat.",
+        "en": "1) Right-click Start menu > Device Manager. 2) Select arrow next to category to expand. 3) Right-click device > Properties. 4) Select Driver tab. 5) Click 'Roll Back Driver'. 6) Choose a reason when prompted, Yes to confirm. Restart if prompted."
       }
     },
     {
       "id": 2,
-      "type": "info",
-      "title": { "tr": "Roll Back Driver", "en": "Roll Back Driver" },
-      "body": {
-        "tr": "Cihaza sag tikla > Properties > Driver tab > 'Roll Back Driver'. Buton gri ise: onceki surucunun yedegi yok, Step 4'e ge.",
-        "en": "Right-click device > Properties > Driver tab > 'Roll Back Driver'. If grayed out: no previous driver kept, go to Step 4."
-      }
+      "type": "manual",
+      "title": { "tr": "Win+X > Device Manager", "en": "Win+X > Device Manager" }
     },
     {
       "id": 3,
       "type": "info",
-      "title": { "tr": "Sebep secimi", "en": "Pick reason" },
+      "title": { "tr": "'Roll Back Driver' butonu gri ise", "en": "If 'Roll Back Driver' button is grayed out" },
       "body": {
-        "tr": "Acilan dialogda sebep sec (BSOD / Performance / Other). Restart istenir; isi kaydet, yeniden baslat.",
-        "en": "Pick a reason in the dialog (BSOD / Performance / Other). Reboot required; save work and restart."
+        "tr": "Onceki surucu yedegi sistemde tutulmamis demektir. Microsoft Q&A'lara gore yaygin sebep: Windows Update sirasinda eski surucu temizlendi. Cozum: Step 4'teki manuel yontemi kullan (uretici sitesinden eski versiyon).",
+        "en": "Means no previous driver was kept by the system. Per Microsoft Q&A, common cause: Windows Update purged the old driver. Workaround: use the manual method in Step 4 (older version from vendor)."
       }
     },
     {
       "id": 4,
       "type": "info",
-      "title": { "tr": "Manuel eski surucu yukleme", "en": "Manual install of older driver" },
+      "title": { "tr": "Manuel eski surucu yukleme (Microsoft Device Manager yontemi)", "en": "Manual older driver install (Microsoft Device Manager method)" },
       "body": {
-        "tr": "Donanim ureticisinin sitesinden eski versiyonu indir. Device Manager > Update Driver > Browse my computer > Let me pick > 'Have Disk' ile inf dosyasini sec.",
-        "en": "Download older version from vendor site. Device Manager > Update Driver > Browse my computer > Let me pick > 'Have Disk' and select the inf file."
+        "tr": "1) Donanim ureticisinin (Intel/NVIDIA/AMD/anakart OEM) sitesinden eski versiyonu indir. 2) Device Manager > cihaza sag tikla > Update driver > 'Browse my computer for drivers'. 3) 'Let me pick from a list of available drivers' > 'Have Disk' > indirilen .inf dosyasini sec.",
+        "en": "1) Download older version from hardware vendor site (Intel/NVIDIA/AMD/motherboard OEM). 2) Device Manager > right-click device > Update driver > 'Browse my computer for drivers'. 3) 'Let me pick from a list of available drivers' > 'Have Disk' > select the downloaded .inf file."
       }
     },
     {
       "id": 5,
       "type": "info",
-      "title": { "tr": "Otomatik guncelleme engelle", "en": "Block automatic updates" },
+      "title": { "tr": "Windows tekrar yeni surucu yuklemesin", "en": "Block Windows from re-installing the new driver" },
       "body": {
-        "tr": "Windows tekrar yeni surucu yuklemesin: 'wushowhide.diagcab' arac ile sorunlu guncellemeyi gizle (Microsoft resmi araci).",
-        "en": "Prevent Windows from re-installing new driver: use 'wushowhide.diagcab' (Microsoft official tool) to hide the offending update."
+        "tr": "Microsoft'un resmi araci 'Show or hide updates troubleshooter' (wushowhide.diagcab). Microsoft Q&A'larda da onerilir. Aracta sorunlu surucu guncellemesini 'hide' et - Windows Update onu bir daha gostermez.",
+        "en": "Microsoft's official tool 'Show or hide updates troubleshooter' (wushowhide.diagcab). Recommended in Microsoft Q&As. Use it to 'hide' the offending driver update - Windows Update won't show it again."
       }
     }
   ],
-  "microsoft_doc": "https://learn.microsoft.com/en-us/windows-hardware/drivers/install/manually-installing-a-driver"
+  "microsoft_doc": "https://support.microsoft.com/en-us/windows/update-drivers-through-device-manager-in-windows-ec62f46c-ff14-c91d-eead-d7126dc1f7b6"
 }

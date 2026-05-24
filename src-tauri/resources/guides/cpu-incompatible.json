@@ -1,37 +1,64 @@
 {
   "id": "cpu-incompatible",
   "title": {
-    "tr": "CPU Win11 Uyumsuz",
-    "en": "CPU Not Officially Supported for Win11"
+    "tr": "CPU Win11 Uyumsuz - Microsoft Resmi Sartlari",
+    "en": "CPU Not Win11-Compatible - Microsoft Official Requirements"
   },
-  "priority": "DÜŞÜK",
-  "estimated_time": "Bilgi amaçlı",
+  "priority": "DUSUK",
+  "estimated_time": "Bilgi amacli",
   "risk": "MEDIUM",
   "risk_note": {
-    "tr": "Microsoft 'desteklenmeyen' CPU'larda Win11 kurulumuna izin vermez. Bypass yapılabilir ama gelecek güncellemeler garanti değildir.",
-    "en": "Microsoft does not officially allow Win11 install on 'unsupported' CPUs. Bypass possible but future updates are not guaranteed."
+    "tr": "Adimlar Microsoft Learn 'Windows 11 requirements' (17 Eki 2025 guncel) belgesinden alinmistir. Microsoft desteklenmeyen CPU'larda Win11 yuklemeyi resmi olarak desteklemez. Bypass yapilabilir ama gelecek guncellemeler ve destek garanti degildir.",
+    "en": "Steps sourced from Microsoft Learn 'Windows 11 requirements' (updated 2025-10-17). Microsoft does not officially support Win11 install on unsupported CPUs. Bypass possible but future updates and support are not guaranteed."
   },
   "prerequisites": [],
   "steps": [
     {
       "id": 1,
       "type": "info",
-      "title": { "tr": "Durumunuz", "en": "Your situation" },
+      "title": { "tr": "Microsoft'un belgeledigi minimum donanim sartlari", "en": "Microsoft's documented minimum hardware requirements" },
       "body": {
-        "tr": "CPU'nuz Microsoft'un resmi listesinde değil. Windows 10 destek sonuna kadar (Ekim 2025) sorun yok. Sonrasında: Win11 bypass + manuel güncelleme veya yeni donanım.",
-        "en": "Your CPU is not on Microsoft's official list. Until Windows 10 EOL (Oct 2025) you're fine. After that: Win11 bypass + manual updates, or new hardware."
+        "tr": "Processor: 1 GHz veya hizli, 2+ cekirdek, uyumlu 64-bit islemci/SoC. Memory: 4 GB+. Storage: 64 GB+. Graphics: DirectX 12 + WDDM 2.0. System firmware: UEFI, Secure Boot capable. TPM: 2.0. Display: 720p, 9 inch+, 8-bit color. Internet: guncelleme/Win11 Home setup icin gerekli.",
+        "en": "Processor: 1 GHz or faster, 2+ cores, compatible 64-bit CPU/SoC. Memory: 4 GB+. Storage: 64 GB+. Graphics: DirectX 12 + WDDM 2.0. System firmware: UEFI, Secure Boot capable. TPM: 2.0. Display: 720p, 9 inch+, 8-bit color. Internet: required for updates/Win11 Home setup."
       }
     },
     {
       "id": 2,
-      "type": "link",
-      "title": { "tr": "Resmi CPU listesi", "en": "Official CPU list" },
-      "guide_link": "https://learn.microsoft.com/tr-tr/windows-hardware/design/minimum/windows-processor-requirements"
+      "type": "info",
+      "title": { "tr": "Resmi CPU listesi Microsoft tarafindan tutulur", "en": "Official CPU list maintained by Microsoft" },
+      "body": {
+        "tr": "Microsoft 'Windows Processor Requirements' sayfasi Intel/AMD/Qualcomm desteklenen modeller listesini tutar. CPU'nuz listede yoksa, Win11'in 'resmi destekli' kurulumu mumkun degildir.",
+        "en": "Microsoft maintains the 'Windows Processor Requirements' page with supported Intel/AMD/Qualcomm models. If your CPU is not listed, an 'officially supported' Win11 install is not possible."
+      }
     },
     {
       "id": 3,
       "type": "link",
-      "title": { "tr": "Bypass yöntemi (Rufus)", "en": "Bypass method (Rufus)" },
+      "title": { "tr": "Microsoft resmi CPU listesi", "en": "Microsoft official CPU list" },
+      "guide_link": "https://learn.microsoft.com/en-us/windows-hardware/design/minimum/windows-processor-requirements"
+    },
+    {
+      "id": 4,
+      "type": "info",
+      "title": { "tr": "OS yukseltme sartlari (Microsoft'un yazdigi)", "en": "OS upgrade prerequisites (Microsoft's wording)" },
+      "body": {
+        "tr": "'To upgrade directly to Windows 11, eligible Windows 10 devices must meet both of the following criteria: Running Windows 10, version 2004 or later. Installed the September 14, 2021 security update or later.'",
+        "en": "'To upgrade directly to Windows 11, eligible Windows 10 devices must meet both of the following criteria: Running Windows 10, version 2004 or later. Installed the September 14, 2021 security update or later.'"
+      }
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Bypass yontemi (Microsoft destekli DEGIL)", "en": "Bypass method (NOT Microsoft-supported)" },
+      "body": {
+        "tr": "Rufus aracina 'Windows User Experience' dialog'unda 'Remove requirement for 4GB+ RAM, Secure Boot and TPM 2.0' kutusu vardir. Bu seçenek Microsoft tarafindan onaylanmadi - Microsoft 'gelecek guncellemeler garanti degil' uyarisini koruyor.",
+        "en": "Rufus has a 'Windows User Experience' dialog with 'Remove requirement for 4GB+ RAM, Secure Boot and TPM 2.0' checkbox. This is NOT Microsoft-approved - Microsoft warns 'future updates not guaranteed'."
+      }
+    },
+    {
+      "id": 6,
+      "type": "link",
+      "title": { "tr": "Rufus (bypass aracligi - resmi destekli degil)", "en": "Rufus (bypass tool - unsupported)" },
       "guide_link": "https://rufus.ie/"
     }
   ],

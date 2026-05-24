@@ -1,48 +1,81 @@
 {
   "id": "smart-disk-replace",
   "title": {
-    "tr": "SMART Kritik — Disk Değişimi",
-    "en": "SMART Critical — Disk Replacement"
+    "tr": "SMART Hatali Disk - Acil Yedek + Degisim (Microsoft Support)",
+    "en": "SMART Failing Disk - Urgent Backup + Replace (Microsoft Support)"
   },
-  "priority": "KRİTİK",
+  "priority": "KRITIK",
   "estimated_time": "Aciliyetli",
   "risk": "HIGH",
   "risk_note": {
-    "tr": "Diskte fiziksel hasar var. D-Medic bu sorunu düzeltemez. Yapabileceğiniz EN ÖNEMLİ şey ŞU AN veri yedeği almaktır.",
-    "en": "Physical damage detected. D-Medic cannot fix this. The MOST IMPORTANT thing you can do is take a backup NOW."
+    "tr": "SMART fiziksel donanim arizasi gosterir; D-Medic bu durumda yalnizca veri kurtarma yonlendirmesi yapabilir. Microsoft alintisi: yedek almak ICIN gec olmadan harekete gec. Bu rehberin Microsoft kismi yedek alma yontemleridir; disk degisimi vendor/donanim islemi.",
+    "en": "SMART indicates physical hardware failure; D-Medic can only direct you to data recovery. Microsoft message: take a backup BEFORE it's too late. This guide's Microsoft portion is backup methods; disk replacement is vendor/hardware work."
   },
-  "prerequisites": ["harici_disk", "yeni_disk"],
+  "prerequisites": [
+    { "tr": "Harici disk (yedek icin)", "en": "External drive (for backup)" },
+    { "tr": "Yedekleme bittikten sonra yeni disk", "en": "New disk (after backup completes)" }
+  ],
   "steps": [
     {
       "id": 1,
       "type": "info",
-      "title": { "tr": "ÖNCELİK: Veri yedeği alın", "en": "PRIORITY: Take a backup" },
+      "title": { "tr": "ONCELIK 1: YEDEK ALIN (Microsoft Backup secenekleri)", "en": "PRIORITY 1: BACK UP (Microsoft Backup options)" },
       "body": {
-        "tr": "Önemli dosyalarınızı harici bir SSD veya cloud'a kopyalayın. File History veya OneDrive devreye girebilir.",
-        "en": "Copy critical files to an external SSD or cloud. File History or OneDrive can help."
+        "tr": "Microsoft 'Choose a backup solution in Windows' belgesi 3 ana yol sunar: (a) Windows Backup app - dosyalar + temalar + ayarlar + uygulamalar + Wi-Fi. (b) OneDrive klasor yedegi (Desktop, Documents, Pictures) - PC otomatik bulut. (c) File History - klasik dosya snapshot harici diske.",
+        "en": "Microsoft 'Choose a backup solution in Windows' lists 3 paths: (a) Windows Backup app - files + themes + settings + apps + Wi-Fi. (b) OneDrive folder backup (Desktop, Documents, Pictures) - PC to cloud. (c) File History - classic file snapshots to external drive."
       }
     },
     {
       "id": 2,
-      "type": "cmd",
-      "title": { "tr": "Detaylı SMART raporu al", "en": "Get detailed SMART report" },
-      "command": "Get-StorageReliabilityCounter -PhysicalDisk (Get-PhysicalDisk) | Format-List"
+      "type": "manual",
+      "title": { "tr": "OneDrive klasor yedegi (en hizli, internet varsa)", "en": "OneDrive folder backup (fastest, if internet)" },
+      "body": {
+        "tr": "OneDrive icon (system tray) > Settings veya gear > Sync and backup > Manage backup. Desktop, Documents, Pictures klasorlerini secip Save changes. Microsoft 5 GB ucretsiz; daha buyuk veri icin abonelik veya File History.",
+        "en": "OneDrive icon (system tray) > Settings or gear > Sync and backup > Manage backup. Select Desktop, Documents, Pictures, Save changes. Microsoft offers 5 GB free; larger data requires subscription or File History."
+      }
     },
     {
       "id": 3,
-      "type": "info",
-      "title": { "tr": "Yeni disk seçimi", "en": "Choose new disk" },
+      "type": "manual",
+      "title": { "tr": "File History (harici disk yedegi - sik degisen dosyalar icin)", "en": "File History (external drive backup - frequently changing files)" },
       "body": {
-        "tr": "SSD: minimum 256 GB, NVMe tercih edilir. HDD: 7200 rpm. Garantili marka (Samsung, Crucial, WD, Seagate).",
-        "en": "SSD: 256 GB minimum, prefer NVMe. HDD: 7200 rpm. Reliable brand (Samsung, Crucial, WD, Seagate)."
+        "tr": "Settings > Update & Security > Backup > Add a drive > harici diski sec. 'Back up my files' acik. Microsoft: dosyalar uzun donem birden cok versiyon korunur, dolayisi ile yanlislikla silmede de geri yuklenir.",
+        "en": "Settings > Update & Security > Backup > Add a drive > pick external drive. 'Back up my files' on. Microsoft: files kept long-term with versions, restores even from accidental deletion."
       }
     },
     {
       "id": 4,
-      "type": "link",
-      "title": { "tr": "Migration aracı", "en": "Migration tool" },
-      "guide_link": "https://www.macrium.com/reflectfree"
+      "type": "cmd",
+      "title": { "tr": "Detayli SMART durumu", "en": "Detailed SMART status" },
+      "command": "Get-PhysicalDisk | Select FriendlyName, MediaType, HealthStatus, OperationalStatus; Get-StorageReliabilityCounter -PhysicalDisk (Get-PhysicalDisk) | Format-List"
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Yeni disk secimi (vendor referansli)", "en": "Choose new disk (vendor-referenced)" },
+      "body": {
+        "tr": "Microsoft minimum: 64 GB Win11 (gercek kullanim icin 256 GB+). Tip secimi: NVMe SSD ideal (hizli, sessiz), SATA SSD ekonomik, HDD sadece yedek arsiv icin. Marka onerileri (vendor): Samsung, Crucial (Micron), WD, Seagate, Kingston. 5 yil garanti standart.",
+        "en": "Microsoft minimum: 64 GB Win11 (realistic 256 GB+). Type: NVMe SSD ideal (fast, silent), SATA SSD economical, HDD only for backup archive. Vendor brands: Samsung, Crucial (Micron), WD, Seagate, Kingston. 5-year warranty standard."
+      }
+    },
+    {
+      "id": 6,
+      "type": "info",
+      "title": { "tr": "Sistem diski klonlama (vendor araclari, Microsoft DEGIL)", "en": "System disk cloning (vendor tools, NOT Microsoft)" },
+      "body": {
+        "tr": "Microsoft sistem disk klonlama icin resmi arac sunmaz - 3rd party gerekli. Vendor araclari: Samsung Data Migration (Samsung SSD), Acronis True Image (Crucial/WD lisansli surum), Macrium Reflect Free, Clonezilla. Klonlama yapildiktan sonra fiziksel disk degisimi.",
+        "en": "Microsoft does not offer official system-disk cloning - 3rd party required. Vendor tools: Samsung Data Migration (Samsung SSD), Acronis True Image (Crucial/WD licensed version), Macrium Reflect Free, Clonezilla. After clone, physical disk swap."
+      }
+    },
+    {
+      "id": 7,
+      "type": "info",
+      "title": { "tr": "Alternatif: temiz kurulum (Microsoft destekli)", "en": "Alternative: clean install (Microsoft-supported)" },
+      "body": {
+        "tr": "Klonlama yerine: yedek al > yeni diske Windows 11 temiz kur > dosyalari geri yukle. Microsoft destekli yol budur. clean-install-win11 rehberine bak.",
+        "en": "Instead of cloning: back up > clean install Windows 11 on new disk > restore files. This is the Microsoft-supported path. See clean-install-win11 guide."
+      }
     }
   ],
-  "microsoft_doc": "https://support.microsoft.com/en-us/topic/back-up-your-windows-pc-87a81f8a-78fa-456e-b521-ac0560e32338"
+  "microsoft_doc": "https://support.microsoft.com/en-us/windows/backup-restore-and-recovery-in-windows-e6d629c4-2568-4406-814f-209a2af06ef7"
 }
