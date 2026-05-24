@@ -49,5 +49,6 @@
         "en": "powercfg /h off — frees disk space equal to RAM size (hiberfil.sys). Don't disable on laptops."
       }
     }
-  ]
+  ],
+  "microsoft_doc": "https://support.microsoft.com/en-us/windows/disk-cleanup-in-windows-8a96ff42-5751-39ad-23d6-434b4d5b9a68"
 }

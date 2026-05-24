@@ -49,5 +49,6 @@
         "en": "If issues persist after reset: rename %LOCALAPPDATA%\\Microsoft\\Edge\\User Data folder, open browser. All user data (passwords, history) wiped."
       }
     }
-  ]
+  ],
+  "microsoft_doc": "https://support.microsoft.com/en-us/microsoft-edge/reset-microsoft-edge-9c9c61d6-bc24-4f7b-9bb6-91ddabcae27c"
 }

@@ -34,5 +34,6 @@
       "title": { "tr": "Bypass yöntemi (Rufus)", "en": "Bypass method (Rufus)" },
       "guide_link": "https://rufus.ie/"
     }
-  ]
+  ],
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows/whats-new/windows-11-requirements"
 }

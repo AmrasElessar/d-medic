@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Stethoscope, Play, BookOpen, History, Activity, Cpu, HardDrive, MemoryStick } from 'lucide-vue-next';
+import { Stethoscope, Zap, Play, BookOpen, History, Activity, Cpu, HardDrive, MemoryStick } from 'lucide-vue-next';
+import type { ScanKind } from '@/types';
 import { useScanStore } from '@/stores/scan';
 import { useNavStore } from '@/stores/nav';
 import { useSystemStore } from '@/stores/system';
@@ -21,9 +22,12 @@ const { t } = useI18n();
 
 const hasResults = computed(() => !!scan.lastResult);
 
-async function runQuick() {
-  await run('quick');
-  if (scan.lastResult) nav.go('scan');
+// Tarama butonları: önce Scan view'a geç (kullanıcı progress'i hemen görsün),
+// sonra arka planda tara. fire-and-forget — Scan store'daki event'ler
+// ScanProgress.vue'yi besler, await etmemize gerek yok.
+function startScan(kind: ScanKind) {
+  nav.go('scan');
+  void run(kind);
 }
 </script>
 
@@ -34,9 +38,23 @@ async function runQuick() {
         <h1 class="text-2xl font-bold text-fg">{{ t('view.dashboard.title') }}</h1>
         <p class="text-sm text-fg-muted mt-1">{{ t('view.dashboard.subtitle') }}</p>
       </div>
-      <BaseButton :icon="Stethoscope" :loading="scan.status === 'running'" @click="runQuick">
-        {{ t('scan.quick') }}
-      </BaseButton>
+      <div class="flex gap-2">
+        <BaseButton
+          variant="secondary"
+          :icon="Zap"
+          :loading="scan.status === 'running' && scan.kind === 'quick'"
+          @click="startScan('quick')"
+        >
+          {{ t('scan.quick') }}
+        </BaseButton>
+        <BaseButton
+          :icon="Stethoscope"
+          :loading="scan.status === 'running' && scan.kind === 'deep'"
+          @click="startScan('deep')"
+        >
+          {{ t('scan.deep') }}
+        </BaseButton>
+      </div>
     </header>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -70,7 +88,7 @@ async function runQuick() {
       <div v-else class="text-center py-8">
         <Activity class="w-10 h-10 text-fg-subtle mx-auto mb-3" />
         <p class="text-sm text-fg-muted">{{ t('view.dashboard.no_scan') }}</p>
-        <BaseButton class="mt-3" :icon="Stethoscope" @click="runQuick">
+        <BaseButton class="mt-3" :icon="Stethoscope" @click="startScan('quick')">
           {{ t('scan.quick') }}
         </BaseButton>
       </div>

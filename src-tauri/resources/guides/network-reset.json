@@ -48,5 +48,6 @@
         "en": "Stack changes take effect after restart. You may need to re-configure VPN connections."
       }
     }
-  ]
+  ],
+  "microsoft_doc": "https://support.microsoft.com/en-us/windows/use-the-network-reset-feature-to-fix-internet-connection-issues-after-upgrading-from-windows-7-or-windows-8-1-to-windows-10-323a8ad8-93e7-7806-8b5e-9c93f8df9a17"
 }

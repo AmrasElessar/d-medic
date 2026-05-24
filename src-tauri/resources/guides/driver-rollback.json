@@ -60,5 +60,6 @@
         "en": "Prevent Windows from re-installing new driver: use 'wushowhide.diagcab' (Microsoft official tool) to hide the offending update."
       }
     }
-  ]
+  ],
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows-hardware/drivers/install/manually-installing-a-driver"
 }

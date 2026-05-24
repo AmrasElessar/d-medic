@@ -51,5 +51,6 @@
         "en": "Defender auto-quarantines. Manual cleanup: Settings > Virus & threat protection > 'Protection history' > threat > 'Actions' > Remove. Then re-scan."
       }
     }
-  ]
+  ],
+  "microsoft_doc": "https://learn.microsoft.com/en-us/defender-endpoint/run-scan-microsoft-defender-antivirus"
 }

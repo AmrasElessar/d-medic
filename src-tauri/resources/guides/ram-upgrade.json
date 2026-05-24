@@ -61,5 +61,6 @@
         "en": "BIOS POST should show new total. After Windows boots, verify via D-Medic > System Details. Run MemTest86 for stability test."
       }
     }
-  ]
+  ],
+  "microsoft_doc": "https://support.microsoft.com/en-us/windows/find-your-ram-memory-info-on-windows-fff7c2c3-d2bd-4b39-1490-b80d7b9cfa07"
 }

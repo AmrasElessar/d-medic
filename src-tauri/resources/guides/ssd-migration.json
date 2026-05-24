@@ -62,5 +62,6 @@
         "en": "After Windows boots, confirm disk type SSD via D-Medic > System Details. 'fsutil behavior query DisableDeleteNotify' should return 0 (TRIM enabled)."
       }
     }
-  ]
+  ],
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows-server/storage/disk-management/initialize-new-disks"
 }

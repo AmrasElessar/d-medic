@@ -51,5 +51,6 @@
         "en": "If BSODs recurring: MemTest86 (RAM, 4+ passes), Prime95 (CPU, 1h), FurMark (GPU, 30 min), CrystalDiskInfo (SMART). Multiple BSODs across different drivers > likely hardware."
       }
     }
-  ]
+  ],
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/crash-dump-analysis"
 }

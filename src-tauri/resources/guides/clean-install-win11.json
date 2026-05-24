@@ -62,5 +62,6 @@
         "en": "Run Windows Update for all updates (3-5 reboots). From motherboard site, install chipset+LAN drivers (via USB). Then GPU, audio, other drivers. Final: install D-Medic."
       }
     }
-  ]
+  ],
+  "microsoft_doc": "https://www.microsoft.com/software-download/windows11"
 }

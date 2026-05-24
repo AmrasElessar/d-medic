@@ -119,7 +119,16 @@ fn legacy_bios_blocking() -> DMedicResult<Vec<Finding>> {
     }])
 }
 
-/// #13 — EFI System partition < 300 MB (Windows 11 feature update için dar).
+/// #13 — EFI System partition < 100 MB (Microsoft önerilen minimum).
+///
+/// Microsoft Learn: "Configure UEFI/GPT-Based hard drive partitions" sayfası
+/// System (ESP) partition için minimum 100 MB belirtir. Windows kurulumu
+/// varsayılan olarak 100 MB ayırır; bu boyut Win11 güncellemeleri dahil
+/// standart kullanım için yeterlidir.
+/// Ref: https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/configure-uefi-gpt-based-hard-drive-partitions
+///
+/// 100 MB ve üzeri → bulgu YOK. 100 MB altı yalnızca anormal/manuel kurulumda
+/// görülür (OEM tarafından küçültülmüş, eski Win7 upgrade yolu).
 pub struct EfiPartitionCheck;
 
 #[async_trait]
@@ -137,34 +146,31 @@ impl Check for EfiPartitionCheck {
         let Ok(size_mb) = out.stdout.trim().parse::<u32>() else {
             return Ok(Vec::new());
         };
-        if size_mb >= 300 {
+        // Microsoft minimum: 100 MB. Üzerindeki her şey sorunsuz.
+        if size_mb >= 100 {
             return Ok(Vec::new());
         }
-
-        let (priority, label_tr, label_en) = if size_mb < 100 {
-            (Priority::Critical, "çok küçük", "very small")
-        } else {
-            (Priority::High, "küçük", "small")
-        };
 
         Ok(vec![Finding {
             id: "efi-partition".to_string(),
             category: Category::Storage,
-            priority,
+            priority: Priority::High,
             action_type: ActionType::Guided,
             title: LocalizedText::new(
-                format!("EFI System partition {label_tr}: {size_mb} MB"),
-                format!("EFI System partition {label_en}: {size_mb} MB"),
+                format!("EFI System Partition çok küçük: {size_mb} MB"),
+                format!("EFI System Partition undersized: {size_mb} MB"),
             ),
             description: LocalizedText::new(
-                "Win11 feature update'leri EFI/MSR partition'a yeni boot dosyaları yazıyor. \
-                 100 MB altı kurulum tamamen başarısız olur; 100-300 MB arası gelecek \
-                 güncellemelerde sorun çıkarır. Önerilen: ~500 MB. Genişletme için DiskGenius \
-                 veya MiniTool Partition Wizard."
+                "Microsoft'un belirttiği minimum ESP boyutu 100 MB'dir \
+                 (Configure UEFI/GPT-Based hard drive partitions, Microsoft Learn). \
+                 100 MB altı bölüm güncelleme ve onarım senaryolarında soruna \
+                 yol açabilir. Genişletme yalnızca disk yeniden bölümlendirme ile \
+                 mümkündür — kaynak: Microsoft Learn rehberindeki adımlar."
                     .to_string(),
-                "Win11 feature updates write new boot files to EFI/MSR. Under 100 MB the \
-                 update fails; 100-300 MB causes future issues. Recommended: ~500 MB. Use \
-                 DiskGenius or MiniTool Partition Wizard to expand."
+                "Microsoft's documented ESP minimum is 100 MB (Configure UEFI/GPT-\
+                 Based hard drive partitions, Microsoft Learn). Below 100 MB may \
+                 cause update/repair failures. Resizing requires disk re-partitioning \
+                 — see Microsoft Learn for the supported procedure."
                     .to_string(),
             ),
             estimated_gain: EstimatedGain::Stability,
@@ -172,7 +178,7 @@ impl Check for EfiPartitionCheck {
             reboot_required: false,
             action_id: None,
             guide_id: Some("efi-partition-resize".to_string()),
-            evidence: json!({ "efi_size_mb": size_mb }),
+            evidence: json!({ "efi_size_mb": size_mb, "ms_minimum_mb": 100 }),
         }])
     }
 }

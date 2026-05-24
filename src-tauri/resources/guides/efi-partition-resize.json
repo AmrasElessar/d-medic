@@ -24,8 +24,8 @@
       "type": "info",
       "title": { "tr": "Önerilen yollar", "en": "Recommended paths" },
       "body": {
-        "tr": "1) Üçüncü parti araç (EaseUS Partition Master, MiniTool Partition Wizard) ile genişlet. 2) Veri yedekle, Windows 11'i temiz kur — kurulum yeni 260 MB EFI oluşturur.",
-        "en": "1) Use a third-party tool (EaseUS Partition Master, MiniTool Partition Wizard) to expand. 2) Back up and clean-install Windows 11 — setup creates a fresh 260 MB EFI."
+        "tr": "Microsoft'un belgelediği minimum ESP boyutu 100 MB'dir. Mevcut bölüm 100 MB'nin altındaysa: (1) Temiz kurulum — Windows kurulumu standart bir ESP oluşturur. (2) Üçüncü parti partition aracı ile genişletme (EaseUS, MiniTool) — desteklenmez ve veri kaybı riski taşır. Microsoft'un desteklediği prosedür temiz kurulumdur.",
+        "en": "Microsoft's documented minimum ESP size is 100 MB. If current partition is below 100 MB: (1) Clean install — Windows setup creates a standard ESP. (2) Third-party partition tools (EaseUS, MiniTool) — unsupported, carries data-loss risk. Microsoft's supported procedure is a clean install."
       }
     },
     {
@@ -34,5 +34,6 @@
       "title": { "tr": "MiniTool Partition Wizard", "en": "MiniTool Partition Wizard" },
       "guide_link": "https://www.partitionwizard.com/free-partition-manager.html"
     }
-  ]
+  ],
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/configure-uefi-gpt-based-hard-drive-partitions"
 }

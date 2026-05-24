@@ -43,5 +43,6 @@
       "title": { "tr": "Migration aracı", "en": "Migration tool" },
       "guide_link": "https://www.macrium.com/reflectfree"
     }
-  ]
+  ],
+  "microsoft_doc": "https://support.microsoft.com/en-us/topic/back-up-your-windows-pc-87a81f8a-78fa-456e-b521-ac0560e32338"
 }

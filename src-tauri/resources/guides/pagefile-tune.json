@@ -49,5 +49,6 @@
       "title": { "tr": "Geri al (otomatik moda dön)", "en": "Revert to auto management" },
       "command": "wmic computersystem set AutomaticManagedPagefile=True"
     }
-  ]
+  ],
+  "microsoft_doc": "https://learn.microsoft.com/en-us/troubleshoot/windows-server/performance/introduction-to-the-page-file"
 }

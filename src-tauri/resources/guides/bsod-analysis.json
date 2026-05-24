@@ -36,5 +36,6 @@
       "title": { "tr": "MemTest86 indir", "en": "Download MemTest86" },
       "guide_link": "https://www.memtest86.com/"
     }
-  ]
+  ],
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-checks--blue-screens"
 }

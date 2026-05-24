@@ -39,5 +39,6 @@
         "en": "Boot time after shutdown will be 2-5s longer, but true power-off means safe dual-boot, BIOS updates, hardware swaps."
       }
     }
-  ]
+  ],
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows-hardware/customize/power-settings/configure-hybrid-shutdown-fast-startup"
 }

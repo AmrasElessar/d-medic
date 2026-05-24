@@ -36,5 +36,6 @@
       "title": { "tr": "Microsoft Lisans Satın Al", "en": "Buy Microsoft License" },
       "guide_link": "https://www.microsoft.com/tr-tr/windows/get-windows-11"
     }
-  ]
+  ],
+  "microsoft_doc": "https://support.microsoft.com/en-us/windows/troubleshoot-activation-errors-when-activating-windows-9ab37dc9-ce0e-c4d3-3c93-ae4bb4c8a4e5"
 }

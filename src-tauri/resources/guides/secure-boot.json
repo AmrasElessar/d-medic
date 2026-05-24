@@ -41,5 +41,6 @@
       "command": "Confirm-SecureBootUEFI",
       "success_message": "True"
     }
-  ]
+  ],
+  "microsoft_doc": "https://learn.microsoft.com/en-us/windows/security/hardware-security/secure-the-windows-10-boot-process"
 }
