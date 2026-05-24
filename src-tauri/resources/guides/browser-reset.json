@@ -1,0 +1,53 @@
+{
+  "id": "browser-reset",
+  "title": {
+    "tr": "Tarayici Sifirlama",
+    "en": "Browser Reset"
+  },
+  "priority": "DUSUK",
+  "estimated_time": "5-10 dk",
+  "risk": "LOW",
+  "risk_note": {
+    "tr": "Cerezler, kaydedilmis sifreler ve eklentiler silinir. Onemli sifreleri once parola yoneticisine alin.",
+    "en": "Cookies, saved passwords, and extensions will be cleared. Move important passwords to a manager first."
+  },
+  "prerequisites": [],
+  "steps": [
+    {
+      "id": 1,
+      "type": "info",
+      "title": { "tr": "Edge sifirlama", "en": "Edge reset" },
+      "body": {
+        "tr": "edge://settings/reset > 'Restore settings to their default values'. Bookmark'lar kalir, eklenti ve site izinleri sifirlanir.",
+        "en": "edge://settings/reset > 'Restore settings to their default values'. Bookmarks remain; extensions and site permissions reset."
+      }
+    },
+    {
+      "id": 2,
+      "type": "info",
+      "title": { "tr": "Chrome sifirlama", "en": "Chrome reset" },
+      "body": {
+        "tr": "chrome://settings/reset > 'Restore settings to their original defaults'. Eklentileri devre disi birakir (silmez), pinned tablari acilir gosterir.",
+        "en": "chrome://settings/reset > 'Restore settings to their original defaults'. Disables extensions (doesn't remove), unpins tabs."
+      }
+    },
+    {
+      "id": 3,
+      "type": "info",
+      "title": { "tr": "Firefox 'Refresh'", "en": "Firefox 'Refresh'" },
+      "body": {
+        "tr": "about:support > 'Refresh Firefox' butonu. Yeni profil olusturup bookmark + sifreleri tasir; eklenti ve ozel ayarlari atar.",
+        "en": "about:support > 'Refresh Firefox' button. Creates new profile, migrates bookmarks + passwords; drops extensions and custom settings."
+      }
+    },
+    {
+      "id": 4,
+      "type": "info",
+      "title": { "tr": "Profil silme (son care)", "en": "Profile delete (last resort)" },
+      "body": {
+        "tr": "Sorun reset sonrasi devam ederse: %LOCALAPPDATA%\\Microsoft\\Edge\\User Data klasorunu yeniden adlandir, tarayiciyi ac. Tum kullanici verisi (sifre, gecmis) silinir.",
+        "en": "If issues persist after reset: rename %LOCALAPPDATA%\\Microsoft\\Edge\\User Data folder, open browser. All user data (passwords, history) wiped."
+      }
+    }
+  ]
+}

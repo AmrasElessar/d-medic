@@ -1,0 +1,66 @@
+{
+  "id": "clean-install-win11",
+  "title": {
+    "tr": "Windows 11 Temiz Kurulum",
+    "en": "Windows 11 Clean Install"
+  },
+  "priority": "YUKSEK",
+  "estimated_time": "1-2 saat",
+  "risk": "HIGH",
+  "risk_note": {
+    "tr": "Sistem diski tamamen silinir. Tum dosyalar, programlar, ayarlar kaybolur. Onceden yedek SART.",
+    "en": "System drive is wiped completely. All files, programs, settings lost. Backup is MANDATORY."
+  },
+  "prerequisites": [
+    { "tr": "USB bellek (8 GB+)", "en": "USB drive (8 GB+)" },
+    { "tr": "Tum onemli dosyalarin harici diske yedegi", "en": "Backup of all important files to external drive" },
+    { "tr": "Windows lisans bilgisi (genelde donanima bagli)", "en": "Windows license info (usually tied to hardware)" }
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "type": "info",
+      "title": { "tr": "Yedek listesi", "en": "Backup checklist" },
+      "body": {
+        "tr": "Belgeler, Resimler, Videolar, Masaustu, Indirilenler, Tarayici bookmarks (export), e-posta (PST), oyun save'leri (Documents/MyGames vb.), lisans key'leri (LicenseCrawler).",
+        "en": "Documents, Pictures, Videos, Desktop, Downloads, browser bookmarks (export), email (PST), game saves (Documents/MyGames etc.), license keys (LicenseCrawler)."
+      }
+    },
+    {
+      "id": 2,
+      "type": "info",
+      "title": { "tr": "Media Creation Tool", "en": "Media Creation Tool" },
+      "body": {
+        "tr": "microsoft.com/software-download/windows11 > 'Create Windows 11 installation media' > USB hedef. Arac otomatik ISO indirir + bootable yapar.",
+        "en": "microsoft.com/software-download/windows11 > 'Create Windows 11 installation media' > USB target. Auto-downloads ISO and makes bootable."
+      }
+    },
+    {
+      "id": 3,
+      "type": "info",
+      "title": { "tr": "Boot order", "en": "Boot order" },
+      "body": {
+        "tr": "USB takili PC'yi yeniden baslat. BIOS/UEFI'ye gir (F2/F12/Del). Boot order'da USB'yi en ust yap, kaydet, cik.",
+        "en": "Boot PC with USB plugged. Enter BIOS/UEFI (F2/F12/Del). Put USB first in boot order, save, exit."
+      }
+    },
+    {
+      "id": 4,
+      "type": "info",
+      "title": { "tr": "Kurulum: Custom", "en": "Install: Custom" },
+      "body": {
+        "tr": "Setup'ta dil/zaman secimi, lisans (lokal hesap secebilirsiniz). 'Custom: Install Windows only' > Sistem diskindeki TUM bolumleri 'Delete' > 'New' > 'Next'.",
+        "en": "Setup: language/time, license (you can pick local account). 'Custom: Install Windows only' > 'Delete' ALL system disk partitions > 'New' > 'Next'."
+      }
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Ilk acilis sonrasi", "en": "First boot tasks" },
+      "body": {
+        "tr": "Windows Update tum guncellemeleri yukle (3-5 dk Restart). Anakart sitesinden chipset+LAN driver indir (USB ile). Sonra GPU, audio, diger driver'lar. Son adim: D-Medic yukle.",
+        "en": "Run Windows Update for all updates (3-5 reboots). From motherboard site, install chipset+LAN drivers (via USB). Then GPU, audio, other drivers. Final: install D-Medic."
+      }
+    }
+  ]
+}

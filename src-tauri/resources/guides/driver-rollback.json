@@ -1,0 +1,64 @@
+{
+  "id": "driver-rollback",
+  "title": {
+    "tr": "Surucu Geri Alma",
+    "en": "Driver Rollback"
+  },
+  "priority": "ORTA",
+  "estimated_time": "5-15 dk",
+  "risk": "MEDIUM",
+  "risk_note": {
+    "tr": "Yanlis surucu geri alinirsa donanim calismayabilir. Once sistem geri yukleme noktasi olusturun.",
+    "en": "Rolling back the wrong driver may break hardware. Create a System Restore point first."
+  },
+  "prerequisites": [
+    { "tr": "Sorun cikaran surucunun adi (Device Manager > Properties > Driver tab)", "en": "Name of the problematic driver (Device Manager > Properties > Driver tab)" }
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "type": "info",
+      "title": { "tr": "Device Manager ac", "en": "Open Device Manager" },
+      "body": {
+        "tr": "Win+X > Device Manager. Sorunlu cihazi bul (sariUNTAG, BSOD raporunda gozuken surucu kategorisi).",
+        "en": "Win+X > Device Manager. Locate the problematic device (yellow exclamation, or category from BSOD report)."
+      }
+    },
+    {
+      "id": 2,
+      "type": "info",
+      "title": { "tr": "Roll Back Driver", "en": "Roll Back Driver" },
+      "body": {
+        "tr": "Cihaza sag tikla > Properties > Driver tab > 'Roll Back Driver'. Buton gri ise: onceki surucunun yedegi yok, Step 4'e ge.",
+        "en": "Right-click device > Properties > Driver tab > 'Roll Back Driver'. If grayed out: no previous driver kept, go to Step 4."
+      }
+    },
+    {
+      "id": 3,
+      "type": "info",
+      "title": { "tr": "Sebep secimi", "en": "Pick reason" },
+      "body": {
+        "tr": "Acilan dialogda sebep sec (BSOD / Performance / Other). Restart istenir; isi kaydet, yeniden baslat.",
+        "en": "Pick a reason in the dialog (BSOD / Performance / Other). Reboot required; save work and restart."
+      }
+    },
+    {
+      "id": 4,
+      "type": "info",
+      "title": { "tr": "Manuel eski surucu yukleme", "en": "Manual install of older driver" },
+      "body": {
+        "tr": "Donanim ureticisinin sitesinden eski versiyonu indir. Device Manager > Update Driver > Browse my computer > Let me pick > 'Have Disk' ile inf dosyasini sec.",
+        "en": "Download older version from vendor site. Device Manager > Update Driver > Browse my computer > Let me pick > 'Have Disk' and select the inf file."
+      }
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Otomatik guncelleme engelle", "en": "Block automatic updates" },
+      "body": {
+        "tr": "Windows tekrar yeni surucu yuklemesin: 'wushowhide.diagcab' arac ile sorunlu guncellemeyi gizle (Microsoft resmi araci).",
+        "en": "Prevent Windows from re-installing new driver: use 'wushowhide.diagcab' (Microsoft official tool) to hide the offending update."
+      }
+    }
+  ]
+}

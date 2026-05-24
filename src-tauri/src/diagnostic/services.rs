@@ -6,7 +6,7 @@ use wmi::WMIConnection;
 use super::{wmi as wmi_helper, Check};
 use crate::error::{DMedicError, DMedicResult};
 use crate::models::{
-    ActionType, Category, EstimatedGain, Finding, LocalizedText, Priority, RiskLevel,
+    ActionType, Category, EstimatedGain, Finding, LocalizedText, Priority, RiskLevel, ScanKind,
 };
 
 #[derive(Deserialize, Clone)]
@@ -44,6 +44,9 @@ pub struct BloatServicesCheck;
 impl Check for BloatServicesCheck {
     fn id(&self) -> &'static str {
         "bloat-services"
+    }
+    fn applicable_in(&self, kind: ScanKind) -> bool {
+        matches!(kind, ScanKind::Deep)
     }
 
     async fn run(&self) -> DMedicResult<Vec<Finding>> {
@@ -140,6 +143,9 @@ pub struct TelemetryCheck;
 impl Check for TelemetryCheck {
     fn id(&self) -> &'static str {
         "telemetry-services"
+    }
+    fn applicable_in(&self, kind: ScanKind) -> bool {
+        matches!(kind, ScanKind::Deep)
     }
 
     async fn run(&self) -> DMedicResult<Vec<Finding>> {

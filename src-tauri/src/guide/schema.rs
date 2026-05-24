@@ -27,6 +27,17 @@ pub struct GuideVerification {
     pub success_pattern: String,
 }
 
+/// Prerequisite iki formatta gelebilir:
+/// - Eski (kısa key): `"yonetici_yetkisi"` — geri uyumluluk için.
+/// - Yeni (yerelleştirilmiş): `{ "tr": "...", "en": "..." }` — UI'da doğrudan
+///   gösterilebilir, key→çeviri tablosu gerektirmez.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Prerequisite {
+    Key(String),
+    Localized(LocalizedText),
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GuideStep {
     pub id: u32,
@@ -55,7 +66,7 @@ pub struct Guide {
     #[serde(default)]
     pub risk_note: Option<LocalizedText>,
     #[serde(default)]
-    pub prerequisites: Vec<String>,
+    pub prerequisites: Vec<Prerequisite>,
     pub steps: Vec<GuideStep>,
     #[serde(default)]
     pub verification: Option<GuideVerification>,

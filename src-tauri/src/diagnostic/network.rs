@@ -4,7 +4,7 @@ use serde_json::json;
 use super::Check;
 use crate::error::DMedicResult;
 use crate::models::{
-    ActionType, Category, EstimatedGain, Finding, LocalizedText, Priority, RiskLevel,
+    ActionType, Category, EstimatedGain, Finding, LocalizedText, Priority, RiskLevel, ScanKind,
 };
 use crate::ps;
 
@@ -15,6 +15,9 @@ pub struct DnsSpeedCheck;
 impl Check for DnsSpeedCheck {
     fn id(&self) -> &'static str {
         "dns-speed"
+    }
+    fn applicable_in(&self, kind: ScanKind) -> bool {
+        matches!(kind, ScanKind::Deep)
     }
 
     async fn run(&self) -> DMedicResult<Vec<Finding>> {

@@ -6,7 +6,7 @@ use wmi::WMIConnection;
 use super::{wmi as wmi_helper, Check};
 use crate::error::{DMedicError, DMedicResult};
 use crate::models::{
-    ActionType, Category, EstimatedGain, Finding, LocalizedText, Priority, RiskLevel,
+    ActionType, Category, EstimatedGain, Finding, LocalizedText, Priority, RiskLevel, ScanKind,
 };
 
 /// #20 — Windows Recovery Environment devre dışı (rollback için kritik).
@@ -279,6 +279,9 @@ pub struct DriverFreshnessCheck;
 impl Check for DriverFreshnessCheck {
     fn id(&self) -> &'static str {
         "driver-freshness"
+    }
+    fn applicable_in(&self, kind: ScanKind) -> bool {
+        matches!(kind, ScanKind::Deep)
     }
 
     async fn run(&self) -> DMedicResult<Vec<Finding>> {

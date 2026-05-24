@@ -15,6 +15,11 @@ const lang = computed(() => locale.value as 'tr' | 'en');
 const completedIds = computed(() =>
   guide.value ? store.completedStepIds[guide.value.id] ?? [] : [],
 );
+
+/** Prerequisite ya bir kısa key string (eski format) ya da LocalizedText. */
+function prereqText(p: string | { tr: string; en: string }): string {
+  return typeof p === 'string' ? p : p[lang.value];
+}
 </script>
 
 <template>
@@ -62,7 +67,7 @@ const completedIds = computed(() =>
               {{ t('guide.prerequisites') }}
             </h3>
             <ul class="text-sm text-fg-muted list-disc list-inside space-y-1">
-              <li v-for="p in guide.prerequisites" :key="p">{{ p }}</li>
+              <li v-for="(p, i) in guide.prerequisites" :key="i">{{ prereqText(p) }}</li>
             </ul>
           </div>
 

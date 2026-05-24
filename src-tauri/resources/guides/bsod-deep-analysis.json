@@ -1,0 +1,55 @@
+{
+  "id": "bsod-deep-analysis",
+  "title": {
+    "tr": "BSOD Derin Analiz",
+    "en": "BSOD Deep Analysis"
+  },
+  "priority": "ORTA",
+  "estimated_time": "20-40 dk",
+  "risk": "LOW",
+  "risk_note": {
+    "tr": "Yalnizca okuma operasyonlari. Dump dosyalari acilir, sistem degisiklik yapilmaz.",
+    "en": "Read-only operations. Dump files inspected, no system changes."
+  },
+  "prerequisites": [
+    { "tr": "BSOD sonrasi en az bir minidump (C:\\Windows\\Minidump altinda)", "en": "At least one minidump after a BSOD (in C:\\Windows\\Minidump)" }
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "type": "info",
+      "title": { "tr": "BlueScreenView ile hizli ozet", "en": "Quick summary with BlueScreenView" },
+      "body": {
+        "tr": "NirSoft BlueScreenView indir, calistir; mini dump'lari listeler. 'Caused By Driver' kolonu suclu surucuyu gosterir. URL: nirsoft.net/utils/blue_screen_view.html",
+        "en": "Download NirSoft BlueScreenView, run; lists minidumps. 'Caused By Driver' column shows the culprit. URL: nirsoft.net/utils/blue_screen_view.html"
+      }
+    },
+    {
+      "id": 2,
+      "type": "info",
+      "title": { "tr": "WinDbg ile detayli analiz", "en": "Detailed analysis with WinDbg" },
+      "body": {
+        "tr": "Microsoft Store'dan 'WinDbg Preview' indir. File > Open dump file > C:\\Windows\\Minidump\\*.dmp. Komut: !analyze -v - tam stack ve probable cause verir.",
+        "en": "Install 'WinDbg Preview' from Microsoft Store. File > Open dump file > C:\\Windows\\Minidump\\*.dmp. Command: !analyze -v - gives full stack and probable cause."
+      }
+    },
+    {
+      "id": 3,
+      "type": "info",
+      "title": { "tr": "Yaygin BSOD kodlari", "en": "Common BSOD codes" },
+      "body": {
+        "tr": "MEMORY_MANAGEMENT > RAM modul testi (MemTest86). DRIVER_IRQL_NOT_LESS_OR_EQUAL > surucu/driver guncelleme veya rollback. CRITICAL_PROCESS_DIED > sistem dosyasi bozulmasi (SFC + DISM).",
+        "en": "MEMORY_MANAGEMENT > test RAM modules (MemTest86). DRIVER_IRQL_NOT_LESS_OR_EQUAL > update/rollback driver. CRITICAL_PROCESS_DIED > corrupt system file (SFC + DISM)."
+      }
+    },
+    {
+      "id": 4,
+      "type": "info",
+      "title": { "tr": "Donanim stres testi", "en": "Hardware stress test" },
+      "body": {
+        "tr": "BSOD'ler tekrarliyorsa: MemTest86 (RAM, en az 4 pas), Prime95 (CPU, 1 saat), FurMark (GPU, 30 dk), CrystalDiskInfo (SMART). Birden fazla BSOD farkli driver'da > donanim sorunu olabilir.",
+        "en": "If BSODs recurring: MemTest86 (RAM, 4+ passes), Prime95 (CPU, 1h), FurMark (GPU, 30 min), CrystalDiskInfo (SMART). Multiple BSODs across different drivers > likely hardware."
+      }
+    }
+  ]
+}

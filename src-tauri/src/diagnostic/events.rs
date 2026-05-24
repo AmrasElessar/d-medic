@@ -4,7 +4,7 @@ use serde_json::json;
 use super::Check;
 use crate::error::DMedicResult;
 use crate::models::{
-    ActionType, Category, EstimatedGain, Finding, LocalizedText, Priority, RiskLevel,
+    ActionType, Category, EstimatedGain, Finding, LocalizedText, Priority, RiskLevel, ScanKind,
 };
 use crate::ps;
 
@@ -33,6 +33,9 @@ pub struct BsodHistoryCheck;
 impl Check for BsodHistoryCheck {
     fn id(&self) -> &'static str {
         "bsod-history"
+    }
+    fn applicable_in(&self, kind: ScanKind) -> bool {
+        matches!(kind, ScanKind::Deep)
     }
 
     async fn run(&self) -> DMedicResult<Vec<Finding>> {
@@ -87,6 +90,9 @@ pub struct EventLogCriticalCheck;
 impl Check for EventLogCriticalCheck {
     fn id(&self) -> &'static str {
         "event-log-critical"
+    }
+    fn applicable_in(&self, kind: ScanKind) -> bool {
+        matches!(kind, ScanKind::Deep)
     }
 
     async fn run(&self) -> DMedicResult<Vec<Finding>> {

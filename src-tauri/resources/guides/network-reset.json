@@ -1,0 +1,52 @@
+{
+  "id": "network-reset",
+  "title": {
+    "tr": "Ag Ayarlarini Sifirla",
+    "en": "Reset Network Stack"
+  },
+  "priority": "ORTA",
+  "estimated_time": "5-10 dk",
+  "risk": "LOW",
+  "risk_note": {
+    "tr": "VPN, statik IP ve ozel adapter ayarlari silinir. Yeniden baslatma gerekir.",
+    "en": "VPN, static IP, and custom adapter settings will be removed. Reboot required."
+  },
+  "prerequisites": [
+    { "tr": "Yonetici PowerShell", "en": "Administrator PowerShell" }
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "type": "cmd",
+      "title": { "tr": "Winsock catalog sifirla", "en": "Reset Winsock catalog" },
+      "command": "netsh winsock reset"
+    },
+    {
+      "id": 2,
+      "type": "cmd",
+      "title": { "tr": "IP stack sifirla", "en": "Reset IP stack" },
+      "command": "netsh int ip reset"
+    },
+    {
+      "id": 3,
+      "type": "cmd",
+      "title": { "tr": "DNS cache temizle", "en": "Flush DNS cache" },
+      "command": "ipconfig /flushdns; ipconfig /registerdns"
+    },
+    {
+      "id": 4,
+      "type": "cmd",
+      "title": { "tr": "DHCP yeniden iste", "en": "Renew DHCP lease" },
+      "command": "ipconfig /release; ipconfig /renew"
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Yeniden baslat", "en": "Reboot" },
+      "body": {
+        "tr": "Stack degisiklikleri restart sonrasinda etkin olur. Restart sonrasi VPN bagiantilarini yeniden yapilandirmaniz gerekebilir.",
+        "en": "Stack changes take effect after restart. You may need to re-configure VPN connections."
+      }
+    }
+  ]
+}

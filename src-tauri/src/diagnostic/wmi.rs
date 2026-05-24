@@ -23,6 +23,13 @@ pub struct SystemSnapshot {
     pub primary_disk_free_gb: f32,
     /// Win32_DeviceGuard.VirtualizationBasedSecurityStatus == 2 → çalışıyor.
     pub vbs_running: bool,
+    /// EFI System Partition boyutu (MB). 0 = bilinmiyor / Legacy BIOS sistem.
+    pub efi_size_mb: u64,
+    pub efi_free_mb: u64,
+    /// Get-AppxPackage sayısı (mevcut kullanıcı için). 0 = sayım yapılamadı.
+    pub uwp_package_count: u32,
+    /// HKLM + HKCU Uninstall altında kayıtlı program sayısı (yaklaşık).
+    pub installed_app_count: u32,
 }
 
 // wmi crate, query<T>() yaparken T'nin Rust adını WMI sınıf adı olarak kullanır.
@@ -70,6 +77,16 @@ struct Win32DeviceGuard {
     virtualization_based_security_status: Option<u32>,
 }
 
+#[derive(Deserialize)]
+#[serde(rename = "MSFT_Partition", rename_all = "PascalCase")]
+struct MsftPartition {
+    /// 1=Unknown, 2=Logical, ..., "System" tipli partition ESP'dir.
+    /// MSFT_Partition.Type enum'da string; ama wmi crate sadece numeric döner —
+    /// GptType GUID alanını kullanıyoruz (ESP GUID sabit).
+    gpt_type: Option<String>,
+    size: Option<u64>,
+}
+
 const BYTES_PER_GB: f64 = 1024.0 * 1024.0 * 1024.0;
 
 /// COMLibrary helper. tokio'nun spawn_blocking thread havuzundaki bir thread
@@ -86,11 +103,77 @@ pub(crate) fn init_com_lib() -> COMLibrary {
     }
 }
 
-/// Sistem genel snapshot'ını WMI üzerinden al.
+/// Sistem genel snapshot'ını WMI üzerinden al. WMI sorgularını sync thread'de
+/// yapar, PS-bağımlı sayımları (UWP) ayrı bir async spawn ile ekler. Toplam
+/// 1-3 saniye; ilk Dashboard yüklemesinde non-blocking.
 pub async fn read_snapshot() -> DMedicResult<SystemSnapshot> {
-    tokio::task::spawn_blocking(read_snapshot_blocking)
+    let mut snap = tokio::task::spawn_blocking(read_snapshot_blocking)
         .await
-        .map_err(|e| DMedicError::Other(format!("wmi spawn_blocking join: {e}")))?
+        .map_err(|e| DMedicError::Other(format!("wmi spawn_blocking join: {e}")))??;
+
+    // UWP package count — PS spawn'lı sayım, fail olursa 0 kalır.
+    snap.uwp_package_count = count_uwp_packages().await.unwrap_or(0);
+
+    // Installed app count — sync registry enum, hızlı.
+    snap.installed_app_count = count_installed_apps_blocking().unwrap_or(0);
+
+    Ok(snap)
+}
+
+/// Get-AppxPackage'i çağırıp satır sayısını döner. Mevcut kullanıcı kapsamı —
+/// `-AllUsers` admin gerektirir, dev'de fail eder; basit non-elevated sayım.
+async fn count_uwp_packages() -> Option<u32> {
+    let out = crate::ps::runner::run_script(
+        "(Get-AppxPackage -ErrorAction SilentlyContinue | Measure-Object).Count",
+    )
+    .await
+    .ok()?;
+    out.stdout.trim().parse::<u32>().ok()
+}
+
+/// HKLM + HKCU Uninstall altındaki alt anahtar sayısı = yüklü program sayısı.
+/// Win32_Product YAVAŞ (MSI repair tetikler), bu yöntem ms cinsinden döner.
+fn count_installed_apps_blocking() -> Option<u32> {
+    use windows::core::{PCWSTR, PWSTR};
+    use windows::Win32::Foundation::ERROR_SUCCESS;
+    use windows::Win32::System::Registry::{
+        RegCloseKey, RegOpenKeyExW, RegQueryInfoKeyW, HKEY, KEY_READ,
+    };
+    use crate::diagnostic::registry::{HKCU, HKLM};
+
+    fn count_subkeys(hive: HKEY, subkey: &str) -> u32 {
+        let wide: Vec<u16> = subkey.encode_utf16().chain(std::iter::once(0)).collect();
+        let mut h: HKEY = HKEY::default();
+        if unsafe { RegOpenKeyExW(hive, PCWSTR(wide.as_ptr()), 0, KEY_READ, &mut h) } != ERROR_SUCCESS
+        {
+            return 0;
+        }
+        let mut count: u32 = 0;
+        // PWSTR(null_mut) → class adı yazılmasın; sadece subkey sayısı isteniyor.
+        unsafe {
+            let _ = RegQueryInfoKeyW(
+                h,
+                PWSTR(std::ptr::null_mut()),
+                None,
+                None,
+                Some(&mut count),
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            );
+            let _ = RegCloseKey(h);
+        }
+        count
+    }
+
+    let n = count_subkeys(HKLM, "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
+        + count_subkeys(HKLM, "Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
+        + count_subkeys(HKCU, "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
+    Some(n)
 }
 
 fn read_snapshot_blocking() -> DMedicResult<SystemSnapshot> {
@@ -180,6 +263,35 @@ fn read_snapshot_blocking() -> DMedicResult<SystemSnapshot> {
             Err(e) => tracing::warn!(error = %e, "Win32_DeviceGuard query failed"),
         },
         Err(e) => tracing::warn!(error = %e, "DeviceGuard namespace connect failed"),
+    }
+
+    // EFI System Partition — Storage namespace'i tekrar kullan (yukarıdaki COM
+    // init aynı thread'de). GptType "{c12a7328-f81f-11d2-ba4b-00a0c93ec93b}"
+    // sabit ESP GUID'i. Bulamazsa 0 kalır (Legacy BIOS, küçük olasılık).
+    let esp_com = init_com_lib();
+    if let Ok(storage) =
+        WMIConnection::with_namespace_path("ROOT\\Microsoft\\Windows\\Storage", esp_com)
+    {
+        match storage.query::<MsftPartition>() {
+            Ok(parts) => {
+                const ESP_GUID: &str = "{c12a7328-f81f-11d2-ba4b-00a0c93ec93b}";
+                for p in parts {
+                    if p.gpt_type.as_deref().map(|g| g.eq_ignore_ascii_case(ESP_GUID))
+                        == Some(true)
+                    {
+                        let bytes = p.size.unwrap_or(0);
+                        snap.efi_size_mb = bytes / (1024 * 1024);
+                        // FAT32 free space WMI'dan doğrudan gelmiyor — Get-Volume
+                        // çağrısı PS spawn ister. ESP genelde %30-70 dolu olduğu
+                        // için Total - 50MB rough estimate yerine 0 bırakıyoruz;
+                        // ileride PS query eklenebilir.
+                        snap.efi_free_mb = 0;
+                        break;
+                    }
+                }
+            }
+            Err(e) => tracing::warn!(error = %e, "MSFT_Partition query failed"),
+        }
     }
 
     Ok(snap)

@@ -1,0 +1,55 @@
+{
+  "id": "defender-full-scan",
+  "title": {
+    "tr": "Microsoft Defender Tam Tarama",
+    "en": "Microsoft Defender Full Scan"
+  },
+  "priority": "DUSUK",
+  "estimated_time": "30-90 dk",
+  "risk": "LOW",
+  "risk_note": {
+    "tr": "Risk yok. Disk I/O yuksek olabilir, baska is yaparken yavasligi hissedersiniz.",
+    "en": "No risk. High disk I/O may cause sluggishness during scan."
+  },
+  "prerequisites": [
+    { "tr": "Yonetici PowerShell", "en": "Administrator PowerShell" }
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "type": "cmd",
+      "title": { "tr": "Tum sistemi tara", "en": "Scan entire system" },
+      "command": "Start-MpScan -ScanType FullScan"
+    },
+    {
+      "id": 2,
+      "type": "info",
+      "title": { "tr": "Veya GUI ile", "en": "Or via GUI" },
+      "body": {
+        "tr": "Settings > Privacy & Security > Windows Security > Virus & threat protection > 'Scan options' > 'Full scan' > 'Scan now'.",
+        "en": "Settings > Privacy & Security > Windows Security > Virus & threat protection > 'Scan options' > 'Full scan' > 'Scan now'."
+      }
+    },
+    {
+      "id": 3,
+      "type": "cmd",
+      "title": { "tr": "Imza guncelle (tarama oncesi)", "en": "Update signatures first" },
+      "command": "Update-MpSignature"
+    },
+    {
+      "id": 4,
+      "type": "cmd",
+      "title": { "tr": "Tarama gecmisini gor", "en": "View scan history" },
+      "command": "Get-MpThreatDetection | Select-Object DomainUser, InitialDetectionTime, Resources, ThreatID"
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Bulgu sonrasi aksiyon", "en": "Action on findings" },
+      "body": {
+        "tr": "Defender otomatik quarantine yapar. Manuel temizlik: Settings > Virus & threat protection > 'Protection history' > tehdit > 'Actions' > Remove. Sonra tekrar tarama yap.",
+        "en": "Defender auto-quarantines. Manual cleanup: Settings > Virus & threat protection > 'Protection history' > threat > 'Actions' > Remove. Then re-scan."
+      }
+    }
+  ]
+}

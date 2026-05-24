@@ -1,0 +1,43 @@
+{
+  "id": "fast-startup-disable",
+  "title": {
+    "tr": "Hizli Baslangici Kapat",
+    "en": "Disable Fast Startup"
+  },
+  "priority": "DUSUK",
+  "estimated_time": "2 dk",
+  "risk": "LOW",
+  "risk_note": {
+    "tr": "Geri alinabilir. Tam shutdown gerektigi durumlar (dual-boot, donanim degisikligi) icin kapatmak gerekir.",
+    "en": "Reversible. Should be off for true shutdown (dual-boot, hardware changes)."
+  },
+  "prerequisites": [
+    { "tr": "Yonetici PowerShell", "en": "Administrator PowerShell" }
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "type": "cmd",
+      "title": { "tr": "Hibernation kapat (Fast Startup'i da kapatir)", "en": "Disable hibernation (also disables Fast Startup)" },
+      "command": "powercfg /h off"
+    },
+    {
+      "id": 2,
+      "type": "info",
+      "title": { "tr": "Veya GUI ile", "en": "Or via GUI" },
+      "body": {
+        "tr": "Control Panel > Power Options > 'Choose what the power buttons do' > 'Change settings that are currently unavailable' > 'Turn on fast startup' kutusunu kaldir.",
+        "en": "Control Panel > Power Options > 'Choose what the power buttons do' > 'Change settings that are currently unavailable' > uncheck 'Turn on fast startup'."
+      }
+    },
+    {
+      "id": 3,
+      "type": "info",
+      "title": { "tr": "Dogrulama", "en": "Verify" },
+      "body": {
+        "tr": "Shutdown sonrasi onyukleme suresi 2-5 sn uzar ama tam kapanma yapildigindan dual-boot, BIOS update, donanim degisikligi guvenli olur.",
+        "en": "Boot time after shutdown will be 2-5s longer, but true power-off means safe dual-boot, BIOS updates, hardware swaps."
+      }
+    }
+  ]
+}

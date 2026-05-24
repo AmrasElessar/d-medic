@@ -7,4 +7,8 @@ export interface SystemStats {
   primary_disk_size_gb: number;
   primary_disk_free_gb: number;
   vbs_running: boolean;
+  efi_size_mb: number;
+  efi_free_mb: number;
+  uwp_package_count: number;
+  installed_app_count: number;
 }

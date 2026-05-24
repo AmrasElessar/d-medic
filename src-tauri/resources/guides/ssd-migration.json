@@ -1,0 +1,66 @@
+{
+  "id": "ssd-migration",
+  "title": {
+    "tr": "HDD'den SSD'ye Gecis",
+    "en": "HDD to SSD Migration"
+  },
+  "priority": "YUKSEK",
+  "estimated_time": "1-3 saat",
+  "risk": "MEDIUM",
+  "risk_note": {
+    "tr": "Disk klonlama yedek almadan yapilirsa kaynak veri risk altinda olabilir. Onemli dosyalari once harici diske yedekleyin.",
+    "en": "Cloning without backup risks source data. Back up important files to external drive first."
+  },
+  "prerequisites": [
+    { "tr": "Yeni SSD (mevcut diskin kullanilan alanindan buyuk)", "en": "New SSD (larger than used space on current drive)" },
+    { "tr": "USB-SATA kablo veya M.2 enclosure", "en": "USB-SATA cable or M.2 enclosure" },
+    { "tr": "Yedekleme icin harici disk", "en": "External drive for backup" }
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "type": "info",
+      "title": { "tr": "Yedek al", "en": "Back up first" },
+      "body": {
+        "tr": "Belgeler, Resimler, masaustu vb. harici diske kopyalayin. File History veya basit Copy-Paste yeterli.",
+        "en": "Copy Documents, Pictures, Desktop, etc. to external drive. File History or simple copy-paste works."
+      }
+    },
+    {
+      "id": 2,
+      "type": "info",
+      "title": { "tr": "SSD'yi bagla", "en": "Connect SSD" },
+      "body": {
+        "tr": "USB-SATA kablo veya enclosure ile SSD'yi USB'den bagla. Disk Management'ta gorunecek; format gerekmeyecek (klonlama bunu yapar).",
+        "en": "Connect SSD via USB-SATA cable / enclosure. It'll appear in Disk Management; no formatting needed (clone tool does it)."
+      }
+    },
+    {
+      "id": 3,
+      "type": "info",
+      "title": { "tr": "Klonlama araci", "en": "Cloning tool" },
+      "body": {
+        "tr": "Macrium Reflect Free, Samsung Data Migration (Samsung SSD), Acronis True Image (Crucial/WD), Clonezilla. Hedef: SSD; Kaynak: mevcut C: drive.",
+        "en": "Macrium Reflect Free, Samsung Data Migration (Samsung), Acronis True Image (Crucial/WD), Clonezilla. Target: SSD; Source: current C: drive."
+      }
+    },
+    {
+      "id": 4,
+      "type": "info",
+      "title": { "tr": "Disk degistirme", "en": "Physical swap" },
+      "body": {
+        "tr": "Klonlama biterse bilgisayari kapat, fisi cek, eski HDD'yi cikar, SSD'yi takabilecegin yuvasina yerlestir. BIOS'tan boot order'i SSD'ye al.",
+        "en": "After clone completes, power off, unplug, remove old HDD, insert SSD into its slot. Change BIOS boot order to SSD."
+      }
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Dogrulama ve TRIM", "en": "Verify and TRIM" },
+      "body": {
+        "tr": "Windows acildiktan sonra D-Medic > Sistem Detaylari ile disk tipi SSD goruldugunu teyit edin. 'fsutil behavior query DisableDeleteNotify' = 0 olmali (TRIM aktif).",
+        "en": "After Windows boots, confirm disk type SSD via D-Medic > System Details. 'fsutil behavior query DisableDeleteNotify' should return 0 (TRIM enabled)."
+      }
+    }
+  ]
+}

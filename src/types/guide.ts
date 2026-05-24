@@ -15,14 +15,17 @@ export interface GuideStep {
   fail_action?: 'stop' | 'warn' | 'continue';
 }
 
+/** Prerequisite eski (key) veya yeni (LocalizedText) formatta gelebilir. */
+export type Prerequisite = string | LocalizedText;
+
 export interface Guide {
   id: string;
   title: LocalizedText;
-  priority: 'YÜKSEK' | 'ORTA' | 'DÜŞÜK' | 'KRİTİK';
+  priority: 'YÜKSEK' | 'ORTA' | 'DÜŞÜK' | 'KRİTİK' | string;
   estimated_time: string;
   risk: GuideRisk;
   risk_note?: LocalizedText;
-  prerequisites: string[];
+  prerequisites: Prerequisite[];
   steps: GuideStep[];
   verification?: {
     command: string;

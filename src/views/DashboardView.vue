@@ -11,6 +11,7 @@ import BaseButton from '@/components/common/BaseButton.vue';
 import StatPill from '@/components/common/StatPill.vue';
 import ScanSummary from '@/components/diagnostic/ScanSummary.vue';
 import QuickTools from '@/components/dashboard/QuickTools.vue';
+import SystemDetails from '@/components/dashboard/SystemDetails.vue';
 
 const scan = useScanStore();
 const nav = useNavStore();
@@ -74,6 +75,8 @@ async function runQuick() {
         </BaseButton>
       </div>
     </BaseCard>
+
+    <SystemDetails />
 
     <QuickTools />
 

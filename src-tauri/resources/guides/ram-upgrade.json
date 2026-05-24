@@ -1,0 +1,65 @@
+{
+  "id": "ram-upgrade",
+  "title": {
+    "tr": "RAM Yükseltme Rehberi",
+    "en": "RAM Upgrade Guide"
+  },
+  "priority": "YUKSEK",
+  "estimated_time": "30-60 dk (fiziksel)",
+  "risk": "MEDIUM",
+  "risk_note": {
+    "tr": "Donanım degisikligi. Statik elektrik ve uyumsuz modul riski var. Garantili kanaldan alin.",
+    "en": "Hardware change. Static-discharge and incompatibility risks. Buy from a reputable source."
+  },
+  "prerequisites": [
+    { "tr": "Yildiz tornavida", "en": "Phillips screwdriver" },
+    { "tr": "Antistatik bileklik (opsiyonel)", "en": "Anti-static wrist strap (optional)" }
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "type": "info",
+      "title": { "tr": "Mevcut RAM'i ogren", "en": "Identify current RAM" },
+      "body": {
+        "tr": "D-Medic > Sistem Detaylari ile RAM miktarini gor. Detay icin: Task Manager > Performance > Memory (Hiz, Slots used, Form factor).",
+        "en": "Check RAM amount via D-Medic > System Details. For details: Task Manager > Performance > Memory (Speed, Slots used, Form factor)."
+      }
+    },
+    {
+      "id": 2,
+      "type": "info",
+      "title": { "tr": "Anakart maksimumu", "en": "Motherboard maximum" },
+      "body": {
+        "tr": "Anakart modelini ogren (msinfo32 > System Model) ve ureticinin spec sayfasinda 'Max Memory' degerine bak. Modulu bu sinirin altinda tut.",
+        "en": "Get motherboard model (msinfo32 > System Model), check vendor spec page for 'Max Memory'. Stay below this limit."
+      }
+    },
+    {
+      "id": 3,
+      "type": "info",
+      "title": { "tr": "Uyumlu modul sec", "en": "Pick compatible module" },
+      "body": {
+        "tr": "DDR tipi (DDR4/DDR5), hiz (MHz) ve form factor (DIMM/SODIMM) anakartla eslesmeli. Cift kanal icin ayni kapasiteli iki modul tercih edin.",
+        "en": "DDR type (DDR4/DDR5), speed (MHz), and form factor (DIMM/SODIMM) must match. For dual-channel, prefer two equal modules."
+      }
+    },
+    {
+      "id": 4,
+      "type": "info",
+      "title": { "tr": "Fiziksel kurulum", "en": "Physical install" },
+      "body": {
+        "tr": "Bilgisayari kapat, fisi cek, statigini bosalt (metal yuzeye dokun). Eski modulu klipsleri acarak cikar, yenisini cantik sesi gelene kadar bastir.",
+        "en": "Power off, unplug, ground yourself (touch metal). Release clips to remove old module, press new one until clips snap."
+      }
+    },
+    {
+      "id": 5,
+      "type": "info",
+      "title": { "tr": "Dogrulama", "en": "Verify" },
+      "body": {
+        "tr": "Aciyolda BIOS POST ekraninda yeni toplam RAM gorulur. Windows acilinca D-Medic > Sistem Detaylari ile teyit edin. Stabilite testi icin MemTest86.",
+        "en": "BIOS POST should show new total. After Windows boots, verify via D-Medic > System Details. Run MemTest86 for stability test."
+      }
+    }
+  ]
+}

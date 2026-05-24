@@ -29,6 +29,10 @@ desktop.ini
 *.log
 logs/
 
+# Workspace artifacts — yüksek çözünürlüklü kaynak logo + tek seferlik utility script'ler
+yeni_logo.png
+scripts/
+
 # Geçici
 _extracted/
 *.tmp

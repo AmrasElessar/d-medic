@@ -4,7 +4,7 @@ use serde_json::json;
 use super::{registry, Check};
 use crate::error::{DMedicError, DMedicResult};
 use crate::models::{
-    ActionType, Category, EstimatedGain, Finding, LocalizedText, Priority, RiskLevel,
+    ActionType, Category, EstimatedGain, Finding, LocalizedText, Priority, RiskLevel, ScanKind,
 };
 
 /// #14 — Windows Update takılı (SoftwareDistribution\Download büyük + wuauserv yok).
@@ -14,6 +14,9 @@ pub struct WindowsUpdateStuckCheck;
 impl Check for WindowsUpdateStuckCheck {
     fn id(&self) -> &'static str {
         "wu-stuck"
+    }
+    fn applicable_in(&self, kind: ScanKind) -> bool {
+        matches!(kind, ScanKind::Deep)
     }
 
     async fn run(&self) -> DMedicResult<Vec<Finding>> {
