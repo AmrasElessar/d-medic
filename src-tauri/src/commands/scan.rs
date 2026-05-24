@@ -66,6 +66,14 @@ async fn run_scan_with_progress(
     .await?;
 
     let finished = Utc::now();
+    let duration_ms = (finished - started).num_milliseconds();
+    tracing::info!(
+        scan_kind = kind_str,
+        scan_id = %scan_id,
+        finding_count = findings.len(),
+        duration_ms = duration_ms,
+        "Tarama tamamlandı"
+    );
     Ok(ScanResult {
         scan_id,
         kind: scan_kind,

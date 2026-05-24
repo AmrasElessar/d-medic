@@ -53,17 +53,24 @@ pub async fn list_disks() -> DMedicResult<Vec<PhysicalDiskInfo>> {
 
 /// Uygulamayı UAC promptu ile yönetici olarak yeniden başlatır. PowerShell
 /// `Start-Process -Verb RunAs` ile yeni instance açılır + mevcut process
-/// `std::process::exit(0)` ile kapanır. Kullanıcı UAC promptunda Hayır derse
-/// yeni process açılmaz, mevcut process zaten kapandığı için kullanıcı app'i
-/// elle tekrar açmak zorunda kalır → kullanıcı UAC'a Evet demeden bu IPC
-/// çağrılmamalı (frontend rozeti tıklayınca confirm sorar).
+/// Tauri-aware `app.exit(0)` ile kapanır.
+///
+/// ÖNEMLİ: Eskiden `std::process::exit(0)` çağrılıyordu — webview cleanup
+/// tamamlanmadan process öldüğü için pencere aniden gidip "çöktü" gibi
+/// görünüyordu. Tauri'nin kendi shutdown'ı (`app.exit`) tüm event listener'lar
+/// ve webview'ı düzgün kapatır.
+///
+/// Kullanıcı UAC promptunda Hayır derse yeni process açılmaz, mevcut process
+/// zaten 600ms sonra kapanır → kullanıcı app'i elle tekrar açmak zorunda
+/// kalır. Bu sebeple frontend rozeti tıklayınca confirm sorar (yanlış tıklama
+/// koruması).
 #[tauri::command]
-pub fn relaunch_as_admin() -> DMedicResult<()> {
+pub fn relaunch_as_admin(app: tauri::AppHandle) -> DMedicResult<()> {
     let exe = std::env::current_exe()
         .map_err(|e| DMedicError::Other(format!("current_exe: {e}")))?;
     let path = exe.display().to_string();
-    // Single-quote escape PowerShell injection için. Path'te genelde single-quote
-    // olmaz ama defensif kalalım.
+    // Single-quote escape PowerShell injection için (defansif — exe path'te
+    // genelde single-quote olmaz).
     let safe_path = path.replace('\'', "''");
     std::process::Command::new("powershell")
         .args([
@@ -75,11 +82,12 @@ pub fn relaunch_as_admin() -> DMedicResult<()> {
         ])
         .spawn()
         .map_err(|e| DMedicError::Other(format!("relaunch spawn: {e}")))?;
-    // Mevcut process'i bir süre yaşat ki PowerShell prompt çıkarmaya zaman bulsun;
-    // sonra kapan.
-    std::thread::spawn(|| {
-        std::thread::sleep(std::time::Duration::from_millis(500));
-        std::process::exit(0);
+
+    // Mevcut process'i 600ms yaşat ki PowerShell UAC promptunu kuyruğa atsın,
+    // sonra Tauri-aware shutdown ile temiz kapat.
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(600));
+        app.exit(0);
     });
     Ok(())
 }
