@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ChevronRight } from 'lucide-vue-next';
 import type { Finding } from '@/types';
+import { useVerificationStore } from '@/stores/verification';
 import PriorityBadge from './PriorityBadge.vue';
 import ActionTypeBadge from './ActionTypeBadge.vue';
 import CategoryIcon from './CategoryIcon.vue';
 import GainBadge from './GainBadge.vue';
+import SourceBadge from '@/components/common/SourceBadge.vue';
+import SourceList from '@/components/common/SourceList.vue';
 
 interface Props {
   finding: Finding;
@@ -26,6 +29,13 @@ defineEmits<{
 const { locale } = useI18n();
 const title = computed(() => props.finding.title[locale.value as 'tr' | 'en']);
 const desc  = computed(() => props.finding.description[locale.value as 'tr' | 'en']);
+
+// Verification rozeti: action_id > check_id öncelikli. Action önerisi varsa
+// onun kaynakları daha alakalı; yoksa check'in kendi kaydı.
+const verif = useVerificationStore();
+const verifId = computed(() => props.finding.action_id ?? props.finding.id);
+const verifRecord = computed(() => verif.byId(verifId.value));
+const showSources = ref(false);
 </script>
 
 <template>
@@ -49,7 +59,7 @@ const desc  = computed(() => props.finding.description[locale.value as 'tr' | 'e
           <ActionTypeBadge :action-type="finding.action_type" />
         </div>
         <p class="text-xs text-fg-muted line-clamp-2">{{ desc }}</p>
-        <div class="flex items-center gap-3 mt-2">
+        <div class="flex items-center flex-wrap gap-3 mt-2">
           <GainBadge :gain="finding.estimated_gain" />
           <span
             v-if="finding.reboot_required"
@@ -57,6 +67,11 @@ const desc  = computed(() => props.finding.description[locale.value as 'tr' | 'e
           >
             ⟳ Reboot
           </span>
+          <SourceBadge
+            v-if="verifRecord"
+            :level="verifRecord.verification_level"
+            @click="showSources = true"
+          />
         </div>
       </div>
       <button
@@ -66,5 +81,12 @@ const desc  = computed(() => props.finding.description[locale.value as 'tr' | 'e
         <ChevronRight class="w-4 h-4" />
       </button>
     </div>
+
+    <SourceList
+      :open="showSources"
+      :id="verifId"
+      :record="verifRecord ?? null"
+      @close="showSources = false"
+    />
   </article>
 </template>

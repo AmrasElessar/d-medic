@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n';
 import { useNavStore } from '@/stores/nav';
 import { useSettingsStore } from '@/stores/settings';
 import { useSystemStore } from '@/stores/system';
+import { useVerificationStore } from '@/stores/verification';
 import { useTheme } from '@/composables/useTheme';
 import { useToast } from '@/composables/useToast';
 import { formatError } from '@/composables/useInvoke';
@@ -27,6 +28,7 @@ import AboutView from '@/views/AboutView.vue';
 const nav = useNavStore();
 const settings = useSettingsStore();
 const sys = useSystemStore();
+const verif = useVerificationStore();
 const toast = useToast();
 const theme = useTheme();
 const { locale, t } = useI18n();
@@ -64,6 +66,9 @@ onMounted(async () => {
   } catch (e) {
     toast.error(t('toast.system_info_fail'), formatError(e));
   }
+
+  // Verification kayıtlarını arka planda yükle — UI rozetleri için.
+  void verif.loadOnce();
 
   // System stats — WMI query'leri 1-2 saniye sürebilir, paralel yükle.
   invoke<SystemStats>('system_stats')

@@ -4,3 +4,4 @@ export * from './plan';
 export * from './snapshot';
 export * from './guide';
 export * from './system';
+export * from './verification';

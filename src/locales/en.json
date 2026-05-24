@@ -127,6 +127,28 @@
     "elevation_warn_desc": "D-Medic is running without admin privileges. Some operations may fail.",
     "system_info_fail": "Failed to read system info"
   },
+  "verification": {
+    "title": "Verification Sources",
+    "safe": "Safe",
+    "documented_alternative": "Documented Alternative",
+    "tried_not_official": "Community-Validated",
+    "not_recommended": "Not Recommended",
+    "level_hint": "This level is derived from Microsoft + institutional (CIS/NIST) + major community source consensus.",
+    "harm_record": "Known side effect",
+    "sources": "Sources",
+    "open": "Open Source",
+    "last_verified": "Verified",
+    "last_audit": "D-Medic last audit",
+    "no_record": "No verification record yet for this operation.",
+    "source_forum": "Forum / Reddit",
+    "source_other": "Other",
+    "stance_recommends": "Recommends",
+    "stance_documents": "Documents",
+    "stance_supports": "Supports",
+    "stance_silent": "Silent",
+    "stance_discourages": "Discourages",
+    "stance_blocks": "Blocks"
+  },
   "reboot": {
     "title": "Reboot Required",
     "description": "A reboot is needed for the changes to take effect.",

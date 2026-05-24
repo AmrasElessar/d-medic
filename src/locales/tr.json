@@ -127,6 +127,28 @@
     "elevation_warn_desc": "D-Medic admin yetkisi olmadan çalışıyor. Bazı işlemler başarısız olabilir.",
     "system_info_fail": "Sistem bilgisi alınamadı"
   },
+  "verification": {
+    "title": "Doğrulama Kaynakları",
+    "safe": "Güvenli",
+    "documented_alternative": "Belgeli Alternatif",
+    "tried_not_official": "Topluluk-Onaylı",
+    "not_recommended": "Önerilmez",
+    "level_hint": "Bu seviye Microsoft + kurumsal (CIS/NIST) + büyük topluluk kaynaklarının ortak değerlendirmesinden çıkarılmıştır.",
+    "harm_record": "Bilinen yan etki",
+    "sources": "Kaynaklar",
+    "open": "Kaynağı Aç",
+    "last_verified": "Doğrulandı",
+    "last_audit": "D-Medic son denetim",
+    "no_record": "Bu işlem için henüz doğrulama kaydı yok.",
+    "source_forum": "Forum / Reddit",
+    "source_other": "Diğer",
+    "stance_recommends": "Önerir",
+    "stance_documents": "Belgeler",
+    "stance_supports": "Destekler",
+    "stance_silent": "Sessiz",
+    "stance_discourages": "Önermez",
+    "stance_blocks": "Engeller"
+  },
   "reboot": {
     "title": "Yeniden Başlatma Gerekli",
     "description": "Yapılan değişikliklerin etkili olması için bilgisayarı yeniden başlatmanız gerekiyor.",

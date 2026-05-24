@@ -10,8 +10,12 @@ pub mod paths;
 pub mod profile;
 pub mod ps;
 pub mod snapshot;
+pub mod verification;
 
-use commands::{action as action_cmd, guide as guide_cmd, profile as profile_cmd, scan, snapshot as snap_cmd, system};
+use commands::{
+    action as action_cmd, guide as guide_cmd, profile as profile_cmd, scan, snapshot as snap_cmd,
+    system, verification as verification_cmd,
+};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -49,6 +53,9 @@ pub fn run() {
             guide_cmd::get_guide,
             // profile
             profile_cmd::list_profiles,
+            // verification
+            verification_cmd::get_verification,
+            verification_cmd::list_verifications,
         ])
         .run(tauri::generate_context!())
         .expect("Tauri uygulama başlatılamadı");
