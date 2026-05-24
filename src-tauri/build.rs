@@ -1,6 +1,7 @@
 fn main() {
     println!("cargo:rerun-if-changed=app.manifest");
     println!("cargo:rerun-if-changed=.git/HEAD");
+    println!("cargo:rerun-if-env-changed=PROFILE");
 
     // Build metadata — AboutView'da göstermek için env var olarak inject.
     let git_rev = std::process::Command::new("git")
@@ -24,11 +25,24 @@ fn main() {
 
     #[cfg(windows)]
     {
-        // D-Medic her zaman yönetici yetkisiyle çalışır — dev ve release ayrımı yok.
-        // pnpm tauri:dev exe'yi spawn ettiğinde Windows UAC promptu çıkar; kullanıcı
-        // Evet derse pencere yetkili, Hayır derse spawn başarısız (os error 740).
-        let manifest = include_str!("app.manifest");
-        let win = tauri_build::WindowsAttributes::new().app_manifest(manifest);
+        // Release build → requireAdministrator (kullanıcı exe'yi çift tıkladığında
+        // Windows UAC promptu çıkar). Debug build → asInvoker (cargo elevated
+        // olmayan terminalden requireAdministrator exe spawn edemez, os error 740).
+        // Dev'de admin davranışını test etmek için terminali "Yönetici olarak
+        // çalıştır" ile aç; release exe her durumda admin yetkili çalışır.
+        let raw = include_str!("app.manifest");
+        let manifest_owned;
+        let manifest_ref: &str = if std::env::var("PROFILE").as_deref() == Ok("debug") {
+            manifest_owned = raw.replace(
+                r#"level="requireAdministrator""#,
+                r#"level="asInvoker""#,
+            );
+            &manifest_owned
+        } else {
+            raw
+        };
+
+        let win = tauri_build::WindowsAttributes::new().app_manifest(manifest_ref);
         attrs = attrs.windows_attributes(win);
     }
 
