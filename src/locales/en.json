@@ -127,6 +127,11 @@
     "elevation_warn_desc": "D-Medic is running without admin privileges. Some operations may fail.",
     "system_info_fail": "Failed to read system info"
   },
+  "finding": {
+    "description": "Description",
+    "evidence": "Detection Details",
+    "open_guide": "Open Related Guide"
+  },
   "verification": {
     "title": "Verification Sources",
     "safe": "Safe",

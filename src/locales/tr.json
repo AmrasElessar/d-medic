@@ -127,6 +127,11 @@
     "elevation_warn_desc": "D-Medic admin yetkisi olmadan çalışıyor. Bazı işlemler başarısız olabilir.",
     "system_info_fail": "Sistem bilgisi alınamadı"
   },
+  "finding": {
+    "description": "Açıklama",
+    "evidence": "Tespit Detayları",
+    "open_guide": "İlgili Kılavuzu Aç"
+  },
   "verification": {
     "title": "Doğrulama Kaynakları",
     "safe": "Güvenli",
