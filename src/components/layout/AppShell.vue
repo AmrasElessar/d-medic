@@ -8,6 +8,7 @@ import { useSystemStore } from '@/stores/system';
 import { useTheme } from '@/composables/useTheme';
 import { useToast } from '@/composables/useToast';
 import { formatError } from '@/composables/useInvoke';
+import type { SystemStats } from '@/types';
 
 import SideNav from './SideNav.vue';
 import TopBar from './TopBar.vue';
@@ -28,7 +29,7 @@ const settings = useSettingsStore();
 const sys = useSystemStore();
 const toast = useToast();
 const theme = useTheme();
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 
 const views = {
   dashboard: DashboardView,
@@ -53,14 +54,26 @@ onMounted(async () => {
       version: string;
       os: string;
       elevated: boolean;
+      git_rev: string;
+      build_date: string;
     }>('app_info');
     sys.setInfo(info);
     if (!info.elevated) {
-      toast.warning('Yetki Uyarısı', 'D-Medic admin yetkisi olmadan çalışıyor. Bazı işlemler başarısız olabilir.');
+      toast.warning(t('toast.elevation_warn_title'), t('toast.elevation_warn_desc'));
     }
   } catch (e) {
-    toast.error('Sistem bilgisi alınamadı', formatError(e));
+    toast.error(t('toast.system_info_fail'), formatError(e));
   }
+
+  // System stats — WMI query'leri 1-2 saniye sürebilir, paralel yükle.
+  invoke<SystemStats>('system_stats')
+    .then((stats) => sys.setStats(stats))
+    .catch((e) => {
+      // Sessiz fail — Dashboard StatPill'ler "—" göstermeye devam eder.
+      // Debug için log atalım, kullanıcıya toast spam etmeyelim.
+      // eslint-disable-next-line no-console
+      console.warn('system_stats failed:', formatError(e));
+    });
 
   window.addEventListener('online', () => sys.setOnline(true));
   window.addEventListener('offline', () => sys.setOnline(false));

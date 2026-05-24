@@ -24,7 +24,7 @@ async function refresh() {
     const items = await invoke<Snapshot[]>('list_snapshots');
     snaps.replaceAll(items);
   } catch (e) {
-    toast.error('Snapshot listesi alınamadı', formatError(e));
+    toast.error(t('view.history.list_fail'), formatError(e));
   } finally {
     snaps.setLoading(false);
   }
@@ -34,15 +34,12 @@ onMounted(refresh);
 
 async function rollback(snap: Snapshot) {
   if (busy.value[snap.id]) return;
-  if (
-    !confirm(
-      `"${snap.description}" snapshot'ına geri dönülecek:\n` +
-        `- ${snap.registry_export_paths.length} registry .reg import edilecek\n` +
-        `- ${snap.service_states.length} servisin StartupType + Status geri yüklenecek\n\n` +
-        'Devam edilsin mi?',
-    )
-  )
-    return;
+  const msg = t('view.history.rollback_confirm', {
+    desc: snap.description,
+    regs: snap.registry_export_paths.length,
+    svcs: snap.service_states.length,
+  });
+  if (!confirm(msg)) return;
 
   busy.value = { ...busy.value, [snap.id]: true };
   try {
@@ -50,12 +47,15 @@ async function rollback(snap: Snapshot) {
     const okReg = report.registry_imports.filter(([, ok]) => ok).length;
     const failReg = report.registry_imports.length - okReg;
     toast.success(
-      'Rollback tamamlandı',
-      `Registry: ${okReg} başarılı, ${failReg} başarısız. ` +
-        `${report.services_restored} servis geri yüklendi.`,
+      t('view.history.rollback_done_title'),
+      t('view.history.rollback_done_desc', {
+        ok: okReg,
+        fail: failReg,
+        svcs: report.services_restored,
+      }),
     );
   } catch (e) {
-    toast.error('Rollback başarısız', formatError(e));
+    toast.error(t('view.history.rollback_fail_title'), formatError(e));
   } finally {
     busy.value = { ...busy.value, [snap.id]: false };
   }
@@ -63,19 +63,14 @@ async function rollback(snap: Snapshot) {
 
 async function remove(snap: Snapshot) {
   if (busy.value[snap.id]) return;
-  if (
-    !confirm(
-      `"${snap.description}" snapshot'ı silinecek. .reg dosyaları diskte kalır (manuel silinmeli). Devam?`,
-    )
-  )
-    return;
+  if (!confirm(t('view.history.delete_confirm', { desc: snap.description }))) return;
   busy.value = { ...busy.value, [snap.id]: true };
   try {
     await invoke('delete_snapshot', { id: snap.id });
     snaps.remove(snap.id);
-    toast.info('Snapshot silindi', snap.description);
+    toast.info(t('view.history.delete_done_title'), snap.description);
   } catch (e) {
-    toast.error('Snapshot silinemedi', formatError(e));
+    toast.error(t('view.history.delete_fail_title'), formatError(e));
   } finally {
     busy.value = { ...busy.value, [snap.id]: false };
   }
@@ -119,8 +114,8 @@ function formatDate(iso: string): string {
           <p class="text-xs text-fg-muted mt-1">{{ formatDate(snap.timestamp) }}</p>
           <div class="flex items-center gap-3 text-xs text-fg-muted mt-2">
             <span v-if="snap.restore_point_created">✓ System Restore</span>
-            <span>{{ snap.service_states.length }} servis</span>
-            <span>{{ snap.registry_export_paths.length }} reg export</span>
+            <span>{{ t('view.history.svc_count', { n: snap.service_states.length }) }}</span>
+            <span>{{ t('view.history.reg_count', { n: snap.registry_export_paths.length }) }}</span>
           </div>
         </div>
         <div class="flex gap-2">

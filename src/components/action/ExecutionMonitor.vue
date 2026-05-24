@@ -5,7 +5,12 @@ import { useI18n } from 'vue-i18n';
 import ProgressBar from '../common/ProgressBar.vue';
 
 const exec = useExecutionStore();
-const { t } = useI18n();
+const { t, te } = useI18n();
+
+function actionLabel(id: string): string {
+  const key = `action.${id}.title`;
+  return te(key) ? t(key) : id;
+}
 </script>
 
 <template>
@@ -28,7 +33,7 @@ const { t } = useI18n();
         <Circle v-else class="w-4 h-4 text-fg-subtle" />
 
         <div class="flex-1 min-w-0">
-          <div class="text-sm text-fg">{{ item.action_id }}</div>
+          <div class="text-sm text-fg">{{ actionLabel(item.action_id) }}</div>
           <div v-if="item.message" class="text-xs text-fg-muted truncate">
             {{ item.message }}
           </div>

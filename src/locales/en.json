@@ -46,6 +46,8 @@
     "deep": "Deep Scan",
     "starting": "Scan starting",
     "finished": "Scan complete",
+    "finalizing": "Finalizing",
+    "fail_title": "Scan failed",
     "tab_all": "All"
   },
   "priority": {
@@ -109,15 +111,31 @@
     "skipped": "Skipped",
     "empty_selection_title": "Nothing selected",
     "empty_selection_desc": "At least one action must be selected before execution.",
+    "only_guided_desc": "None of the selected findings can be auto-fixed (guided only).",
+    "log_plan_created": "Plan created: {n} action(s)",
+    "log_snapshot_start": "Taking pre-action snapshot...",
+    "log_snapshot_done": "Snapshot created: {id}...",
+    "log_snapshot_skip": "Snapshot could not be created; continuing without one.",
+    "toast_done_title": "Plan complete",
+    "toast_done_desc": "{ok} succeeded, {fail} failed.",
+    "toast_failed_title": "Plan failed",
     "stub_title": "Scaffold mode",
     "stub_desc": "Action handlers are not wired yet (Phase 2)."
+  },
+  "toast": {
+    "elevation_warn_title": "Privilege Warning",
+    "elevation_warn_desc": "D-Medic is running without admin privileges. Some operations may fail.",
+    "system_info_fail": "Failed to read system info"
   },
   "reboot": {
     "title": "Reboot Required",
     "description": "A reboot is needed for the changes to take effect.",
     "hint": "Save any open work first.",
     "postpone": "Later",
-    "now": "Reboot Now"
+    "now": "Reboot Now",
+    "scheduled_title": "Reboot scheduled",
+    "scheduled_desc": "The PC will reboot in 30 seconds. To cancel: run 'shutdown /a' in PowerShell.",
+    "failed_title": "Reboot failed"
   },
   "view": {
     "dashboard": {
@@ -131,6 +149,12 @@
       "browse_guides": "Browse guides",
       "view_history": "Open history",
       "quick_actions": "Quick Actions",
+      "tools_title": "Quick Tools",
+      "tools_desc": "One-click common maintenance — no scan required. A snapshot is taken before each run.",
+      "tools_run": "Run",
+      "tools_confirm_long": "This operation may take several minutes. Continue?",
+      "tools_success": "Done",
+      "tools_failed": "Failed",
       "tips": "Tips",
       "tip_1": "Start with a Quick Scan — it gives a 30s overview.",
       "tip_2": "A System Restore point is created before applying actions.",
@@ -139,7 +163,9 @@
     "scan": {
       "title": "System Scan",
       "subtitle": "Quick scan 15-30s, deep scan (SFC + DISM) 2-5 minutes.",
-      "summary": "Scan Summary"
+      "summary": "Scan Summary",
+      "eligible_hint": "{n} finding(s) can be auto-fixed.",
+      "go_plan": "Go to Plan"
     },
     "plan": {
       "title": "Action Plan",
@@ -170,6 +196,8 @@
       "start": "Start",
       "new_plan": "New Plan",
       "go_plan": "Go to Plan",
+      "go_history": "Go to History",
+      "go_dashboard": "Back to Dashboard",
       "empty_title": "No plan yet",
       "empty_desc": "Select actions in the 'Plan' tab first."
     },
@@ -182,7 +210,17 @@
       "subtitle": "Previously captured snapshots — you can roll back any of them.",
       "empty_title": "No snapshots yet",
       "empty_desc": "First execution will list snapshots here automatically.",
-      "rollback": "Restore"
+      "rollback": "Restore",
+      "svc_count": "{n} service(s)",
+      "reg_count": "{n} reg export(s)",
+      "list_fail": "Failed to list snapshots",
+      "rollback_confirm": "Rolling back to \"{desc}\":\n- {regs} registry .reg file(s) will be imported\n- {svcs} service(s) StartupType + Status will be restored\n\nContinue?",
+      "rollback_done_title": "Rollback complete",
+      "rollback_done_desc": "Registry: {ok} ok, {fail} failed. {svcs} service(s) restored.",
+      "rollback_fail_title": "Rollback failed",
+      "delete_confirm": "Snapshot \"{desc}\" will be deleted. .reg files remain on disk (delete manually). Continue?",
+      "delete_done_title": "Snapshot deleted",
+      "delete_fail_title": "Failed to delete snapshot"
     },
     "settings": {
       "title": "Settings",
@@ -199,10 +237,17 @@
       "p5": "Zero dependencies, zero telemetry.",
       "links": "Links",
       "docs": "Technical Docs",
-      "environment": "Environment"
+      "environment": "Environment",
+      "privilege": "Privilege",
+      "administrator": "Administrator",
+      "standard_user": "Standard User"
     }
   },
   "settings": {
+    "tab_general": "General",
+    "tab_appearance": "Appearance",
+    "tab_safety": "Safety",
+    "tab_logs": "Logs",
     "language": "Language",
     "theme": "Theme",
     "theme_dark": "Dark",
@@ -216,6 +261,60 @@
     "reg_export_hint": "HKCU\\Software + HKLM\\Software\\Microsoft\\Windows.",
     "confirm_execute": "Confirm before each action",
     "log_level": "Log level",
-    "log_path_hint": "Logs are written to:"
+    "log_path_hint": "Logs are written to:",
+    "open_logs": "Open Folder",
+    "open_logs_fail": "Failed to open log folder"
+  },
+  "check": {
+    "ram-vbs-conflict": { "title": "Low-RAM VBS Conflict" },
+    "sysmain-hdd": { "title": "SysMain on HDD" },
+    "smart-health": { "title": "SMART Disk Health" },
+    "disk-full": { "title": "System Drive Capacity" },
+    "fragmentation": { "title": "Disk Fragmentation" },
+    "bloat-services": { "title": "Unnecessary Background Services" },
+    "telemetry-services": { "title": "Telemetry Services" },
+    "uwp-bloatware": { "title": "UWP Bloatware" },
+    "startup-count": { "title": "Startup Programs" },
+    "bcd-health": { "title": "Boot Configuration (BCD)" },
+    "legacy-bios": { "title": "Legacy BIOS / MBR Disk" },
+    "efi-partition": { "title": "EFI Partition" },
+    "wu-stuck": { "title": "Windows Update Stuck" },
+    "pending-reboot": { "title": "Pending Reboot" },
+    "tpm-status": { "title": "TPM Status" },
+    "secure-boot": { "title": "Secure Boot" },
+    "vbs-hvci": { "title": "VBS / HVCI" },
+    "power-plan": { "title": "Power Plan" },
+    "hibernation": { "title": "Hibernation" },
+    "pagefile": { "title": "Pagefile" },
+    "visual-effects": { "title": "Visual Effects" },
+    "dns-speed": { "title": "DNS Response Speed" },
+    "bsod-history": { "title": "BSOD History" },
+    "event-log-critical": { "title": "Critical Event Log" },
+    "windows-re": { "title": "Windows Recovery Environment (WinRE)" },
+    "cpu-compat": { "title": "CPU Compatibility (Win11)" },
+    "activation": { "title": "Windows Activation" },
+    "driver-freshness": { "title": "Driver Freshness" },
+    "sfc-corrupt": { "title": "SFC — System Files" },
+    "dism-image": { "title": "DISM — System Image" }
+  },
+  "action": {
+    "sfc-repair": { "title": "Repair System Files with SFC" },
+    "dism-restore-health": { "title": "Restore Image Health with DISM" },
+    "bcd-rebuild": { "title": "Rebuild Boot Configuration (BCD)" },
+    "reset-windows-update": { "title": "Reset Windows Update Components" },
+    "disable-sysmain": { "title": "Disable SysMain (SuperFetch)" },
+    "disable-wsearch": { "title": "Disable Windows Search Indexing" },
+    "disable-telemetry": { "title": "Disable Telemetry Services" },
+    "uninstall-uwp-bloat": { "title": "Remove UWP Bloatware" },
+    "startup-cleanup": { "title": "Clean Startup Items" },
+    "set-visual-effects-performance": { "title": "Set Visual Effects to Performance" },
+    "set-high-performance-plan": { "title": "High Performance Power Plan" },
+    "pagefile-optimize": { "title": "Optimize Pagefile" },
+    "disable-hibernation": { "title": "Disable Hibernation" },
+    "set-fast-dns": { "title": "Switch to Fast DNS (Cloudflare/Google)" },
+    "enable-windows-re": { "title": "Enable Windows Recovery Environment" },
+    "disable-vbs": { "title": "Disable VBS / HVCI" },
+    "clean-temp": { "title": "Clean Temporary Files" },
+    "defrag-system": { "title": "Defragment Disk" }
   }
 }

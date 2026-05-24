@@ -16,9 +16,12 @@ pub async fn export_safe_hives(snapshot_id: &str) -> DMedicResult<Vec<String>> {
     let hklm = dir.join(format!("{snapshot_id}_hklm-windows.reg"));
 
     // reg.exe export çıktıyı UTF-16 LE BOM ile yazar — import'ta sorun değil.
+    // /reg:64 → 64-bit kayıt görünümünü zorla; D-Medic 64-bit app olduğu için
+    // default zaten 64-view ama WOW6432Node dalına yanlışlıkla düşmemek için
+    // explicit. /y → mevcut dosyayı sorgusuz üzerine yaz.
     let script = format!(
-        "reg.exe export 'HKCU\\Software' '{}' /y; \
-         reg.exe export 'HKLM\\Software\\Microsoft\\Windows' '{}' /y",
+        "reg.exe export 'HKCU\\Software' '{}' /y /reg:64; \
+         reg.exe export 'HKLM\\Software\\Microsoft\\Windows' '{}' /y /reg:64",
         hkcu.display(),
         hklm.display()
     );
@@ -37,7 +40,11 @@ pub async fn import_safe_hives(paths: &[String]) -> DMedicResult<Vec<(String, bo
     let mut results = Vec::new();
     for p in paths {
         // HKLM import elevation gerektirir, fail olursa kullanıcıya görünür kalsın.
-        let script = format!("reg.exe import '{}' 2>&1; $LASTEXITCODE", p.replace('\'', "''"));
+        // /reg:64 → export'la aynı view'da import et.
+        let script = format!(
+            "reg.exe import '{}' /reg:64 2>&1; $LASTEXITCODE",
+            p.replace('\'', "''"),
+        );
         let out = ps::runner::run_script(&script).await?;
         let success = out.status == 0
             && out.stdout.lines().last().map(|s| s.trim() == "0").unwrap_or(false);

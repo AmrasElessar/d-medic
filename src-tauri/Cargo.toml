@@ -13,6 +13,8 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2.0", features = [] }
+# build.rs git rev + build date metadata inject ediyor — AboutView'da gösterilir.
+chrono = "0.4"
 
 # Windows manifest embed işi tauri-build'in WindowsAttributes API'sine
 # devredildi (build.rs içinde). Üçüncü taraf resource crate'i gerekmiyor;

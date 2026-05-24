@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
-import { Play, RotateCw, FileCheck, AlertTriangle } from 'lucide-vue-next';
+import { Play, RotateCw, FileCheck, AlertTriangle, History, LayoutDashboard } from 'lucide-vue-next';
 import { useScanStore } from '@/stores/scan';
 import { usePlanStore } from '@/stores/plan';
 import { useExecutionStore } from '@/stores/execution';
@@ -47,10 +47,7 @@ async function start() {
   // Sadece action_id'si olan finding'leri al — Guided'lar kullanıcı manuel.
   const executable = selectedFindings.value.filter((f) => !!f.action_id);
   if (executable.length === 0) {
-    toast.info(
-      t('exec.empty_selection_title'),
-      'Seçili bulguların hiçbiri otomatik düzeltilebilir değil (yalnız kılavuz).',
-    );
+    toast.info(t('exec.empty_selection_title'), t('exec.only_guided_desc'));
     return;
   }
 
@@ -71,17 +68,19 @@ async function start() {
   };
 
   exec.begin(planObj);
-  exec.appendLog(`Plan oluşturuldu: ${executable.length} action`);
+  exec.appendLog(t('exec.log_plan_created', { n: executable.length }));
 
   try {
-    exec.appendLog('Pre-action snapshot alınıyor...');
+    exec.appendLog(t('exec.log_snapshot_start'));
     const result = await invoke<PlanResult>('apply_plan', {
       actionIds: executable.map((f) => f.action_id),
     });
 
     if (result.snapshot_id) {
       planObj.snapshot_id = result.snapshot_id;
-      exec.appendLog(`Snapshot oluşturuldu: ${result.snapshot_id.slice(0, 8)}...`);
+      exec.appendLog(
+        t('exec.log_snapshot_done', { id: result.snapshot_id.slice(0, 8) }),
+      );
       // Geçmiş listesini güncel tutmak için snapshot'ları yeniden yükle.
       try {
         const items = await invoke<Snapshot[]>('list_snapshots');
@@ -90,7 +89,7 @@ async function start() {
         // best-effort, sessiz geç
       }
     } else {
-      exec.appendLog('Snapshot oluşturulamadı, action snapshotsiz devam etti.');
+      exec.appendLog(t('exec.log_snapshot_skip'));
     }
 
     // outcomes sıralı geldiği için item'larla index-by-index eşleşir.
@@ -112,13 +111,13 @@ async function start() {
     const ok = result.outcomes.filter((o) => o.success).length;
     const fail = result.outcomes.length - ok;
     toast.success(
-      'Plan tamamlandı',
-      `${ok} başarılı, ${fail} başarısız.`,
+      t('exec.toast_done_title'),
+      t('exec.toast_done_desc', { ok, fail }),
     );
   } catch (e) {
     const msg = formatError(e);
     exec.fail(msg);
-    toast.error('Plan başarısız', msg);
+    toast.error(t('exec.toast_failed_title'), msg);
   }
 }
 
@@ -127,6 +126,16 @@ function reset() {
 }
 function backToPlan() {
   nav.go('plan');
+}
+
+async function doReboot() {
+  try {
+    await invoke('reboot_system', { delaySeconds: 30 });
+    toast.info(t('reboot.scheduled_title'), t('reboot.scheduled_desc'));
+    showReboot.value = false;
+  } catch (e) {
+    toast.error(t('reboot.failed_title'), formatError(e));
+  }
 }
 </script>
 
@@ -202,7 +211,13 @@ function backToPlan() {
     >
       <ResultSummary />
       <template #footer>
-        <div class="flex justify-end gap-2 w-full">
+        <div class="flex flex-wrap justify-end gap-2 w-full">
+          <BaseButton variant="ghost" :icon="LayoutDashboard" @click="nav.go('dashboard')">
+            {{ t('view.execute.go_dashboard') }}
+          </BaseButton>
+          <BaseButton variant="ghost" :icon="History" @click="nav.go('history')">
+            {{ t('view.execute.go_history') }}
+          </BaseButton>
           <BaseButton variant="secondary" @click="reset">
             {{ t('view.execute.new_plan') }}
           </BaseButton>
@@ -217,7 +232,7 @@ function backToPlan() {
       :open="showReboot"
       @close="showReboot = false"
       @postpone="showReboot = false"
-      @reboot="showReboot = false"
+      @reboot="doReboot"
     />
   </div>
 </template>

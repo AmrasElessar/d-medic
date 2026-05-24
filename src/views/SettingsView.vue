@@ -1,25 +1,39 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { invoke } from '@tauri-apps/api/core';
+import { FolderOpen } from 'lucide-vue-next';
 import { useSettingsStore } from '@/stores/settings';
 import { useTheme } from '@/composables/useTheme';
+import { useToast } from '@/composables/useToast';
+import { formatError } from '@/composables/useInvoke';
 import BaseCard from '@/components/common/BaseCard.vue';
 import BaseSelect from '@/components/common/BaseSelect.vue';
 import BaseToggle from '@/components/common/BaseToggle.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 import TabBar from '@/components/common/TabBar.vue';
 
 const settings = useSettingsStore();
 const { apply } = useTheme();
+const toast = useToast();
 const { t, locale } = useI18n();
+
+async function openLogs() {
+  try {
+    await invoke('open_logs_folder');
+  } catch (e) {
+    toast.error(t('settings.open_logs_fail'), formatError(e));
+  }
+}
 
 type Tab = 'general' | 'appearance' | 'logs' | 'safety';
 const tab = ref<Tab>('general');
 
 const tabs = [
-  { key: 'general' as Tab,    label: 'Genel' },
-  { key: 'appearance' as Tab, label: 'Görünüm' },
-  { key: 'safety' as Tab,     label: 'Güvenlik' },
-  { key: 'logs' as Tab,       label: 'Loglar' },
+  { key: 'general' as Tab,    label: t('settings.tab_general') },
+  { key: 'appearance' as Tab, label: t('settings.tab_appearance') },
+  { key: 'safety' as Tab,     label: t('settings.tab_safety') },
+  { key: 'logs' as Tab,       label: t('settings.tab_logs') },
 ];
 
 const themeOptions = [
@@ -123,10 +137,15 @@ watch(
         :options="logOptions"
         :label="t('settings.log_level')"
       />
-      <p class="text-xs text-fg-muted mt-2">
-        {{ t('settings.log_path_hint') }}
-        <code class="font-mono">%APPDATA%\D-Medic\logs\</code>
-      </p>
+      <div class="mt-4 flex items-center justify-between gap-3">
+        <p class="text-xs text-fg-muted">
+          {{ t('settings.log_path_hint') }}
+          <code class="font-mono">%APPDATA%\D-Medic\logs\</code>
+        </p>
+        <BaseButton size="sm" variant="secondary" :icon="FolderOpen" @click="openLogs">
+          {{ t('settings.open_logs') }}
+        </BaseButton>
+      </div>
     </BaseCard>
   </div>
 </template>

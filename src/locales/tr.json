@@ -46,6 +46,8 @@
     "deep": "Derin Tarama",
     "starting": "Tarama başlatılıyor",
     "finished": "Tarama tamamlandı",
+    "finalizing": "Tamamlanıyor",
+    "fail_title": "Tarama başarısız",
     "tab_all": "Tümü"
   },
   "priority": {
@@ -109,15 +111,31 @@
     "skipped": "Atlandı",
     "empty_selection_title": "Seçim yok",
     "empty_selection_desc": "Yürütme öncesi en az bir aksiyon seçilmeli.",
+    "only_guided_desc": "Seçili bulguların hiçbiri otomatik düzeltilebilir değil (yalnız kılavuz).",
+    "log_plan_created": "Plan oluşturuldu: {n} aksiyon",
+    "log_snapshot_start": "Pre-action snapshot alınıyor...",
+    "log_snapshot_done": "Snapshot oluşturuldu: {id}...",
+    "log_snapshot_skip": "Snapshot oluşturulamadı, action snapshotsiz devam etti.",
+    "toast_done_title": "Plan tamamlandı",
+    "toast_done_desc": "{ok} başarılı, {fail} başarısız.",
+    "toast_failed_title": "Plan başarısız",
     "stub_title": "İskelet mod",
     "stub_desc": "Action handler'ları henüz bağlanmadı (Faz 2)."
+  },
+  "toast": {
+    "elevation_warn_title": "Yetki Uyarısı",
+    "elevation_warn_desc": "D-Medic admin yetkisi olmadan çalışıyor. Bazı işlemler başarısız olabilir.",
+    "system_info_fail": "Sistem bilgisi alınamadı"
   },
   "reboot": {
     "title": "Yeniden Başlatma Gerekli",
     "description": "Yapılan değişikliklerin etkili olması için bilgisayarı yeniden başlatmanız gerekiyor.",
     "hint": "Açık çalışmalarınızı kaydedin.",
     "postpone": "Sonra",
-    "now": "Şimdi Yeniden Başlat"
+    "now": "Şimdi Yeniden Başlat",
+    "scheduled_title": "Yeniden başlatma planlandı",
+    "scheduled_desc": "Bilgisayar 30 saniye sonra yeniden başlayacak. İptal için: PowerShell'de 'shutdown /a'.",
+    "failed_title": "Yeniden başlatma başarısız"
   },
   "view": {
     "dashboard": {
@@ -131,6 +149,12 @@
       "browse_guides": "Kılavuzları Gör",
       "view_history": "Geçmişi Aç",
       "quick_actions": "Hızlı Aksiyonlar",
+      "tools_title": "Hızlı Araçlar",
+      "tools_desc": "Tarama yapmadan, tek tıkla yaygın bakım işlemleri. Her işlem öncesi otomatik snapshot alınır.",
+      "tools_run": "Çalıştır",
+      "tools_confirm_long": "Bu işlem birkaç dakika sürebilir. Devam edilsin mi?",
+      "tools_success": "Tamamlandı",
+      "tools_failed": "Başarısız",
       "tips": "İpuçları",
       "tip_1": "Önce 'Hızlı Tarama' çalıştırın — 30 saniyede genel resmi gösterir.",
       "tip_2": "Aksiyon uygulamadan önce Sistem Geri Yükleme noktası oluşturulur.",
@@ -139,7 +163,9 @@
     "scan": {
       "title": "Sistem Taraması",
       "subtitle": "Hızlı tarama 15-30 sn, derin tarama (SFC + DISM) 2-5 dakika.",
-      "summary": "Tarama Özeti"
+      "summary": "Tarama Özeti",
+      "eligible_hint": "{n} bulgu otomatik düzeltilebilir.",
+      "go_plan": "Plana Geç"
     },
     "plan": {
       "title": "Aksiyon Planı",
@@ -170,6 +196,8 @@
       "start": "Başlat",
       "new_plan": "Yeni Plan",
       "go_plan": "Plana Dön",
+      "go_history": "Geçmişe Git",
+      "go_dashboard": "Panoya Dön",
       "empty_title": "Plan henüz oluşturulmadı",
       "empty_desc": "Önce 'Plan' sekmesinden işlem seçin."
     },
@@ -182,7 +210,17 @@
       "subtitle": "Daha önce oluşturulan snapshot'lar — herhangi birine geri dönebilirsiniz.",
       "empty_title": "Henüz snapshot yok",
       "empty_desc": "İlk yürütme yaptığınızda otomatik olarak burada listelenir.",
-      "rollback": "Geri Yükle"
+      "rollback": "Geri Yükle",
+      "svc_count": "{n} servis",
+      "reg_count": "{n} reg export",
+      "list_fail": "Snapshot listesi alınamadı",
+      "rollback_confirm": "\"{desc}\" snapshot'ına geri dönülecek:\n- {regs} registry .reg import edilecek\n- {svcs} servisin StartupType + Status geri yüklenecek\n\nDevam edilsin mi?",
+      "rollback_done_title": "Rollback tamamlandı",
+      "rollback_done_desc": "Registry: {ok} başarılı, {fail} başarısız. {svcs} servis geri yüklendi.",
+      "rollback_fail_title": "Rollback başarısız",
+      "delete_confirm": "\"{desc}\" snapshot'ı silinecek. .reg dosyaları diskte kalır (manuel silinmeli). Devam?",
+      "delete_done_title": "Snapshot silindi",
+      "delete_fail_title": "Snapshot silinemedi"
     },
     "settings": {
       "title": "Ayarlar",
@@ -199,10 +237,17 @@
       "p5": "Hiçbir bağımlılık veya telemetry yok.",
       "links": "Bağlantılar",
       "docs": "Teknik Döküman",
-      "environment": "Çalışma Ortamı"
+      "environment": "Çalışma Ortamı",
+      "privilege": "Yetki",
+      "administrator": "Yönetici",
+      "standard_user": "Standart Kullanıcı"
     }
   },
   "settings": {
+    "tab_general": "Genel",
+    "tab_appearance": "Görünüm",
+    "tab_safety": "Güvenlik",
+    "tab_logs": "Loglar",
     "language": "Dil",
     "theme": "Tema",
     "theme_dark": "Koyu",
@@ -216,6 +261,60 @@
     "reg_export_hint": "HKCU\\Software + HKLM\\Software\\Microsoft\\Windows.",
     "confirm_execute": "Her işlemden önce kullanıcıya sor",
     "log_level": "Log seviyesi",
-    "log_path_hint": "Loglar şu klasöre yazılır:"
+    "log_path_hint": "Loglar şu klasöre yazılır:",
+    "open_logs": "Klasörü Aç",
+    "open_logs_fail": "Log klasörü açılamadı"
+  },
+  "check": {
+    "ram-vbs-conflict": { "title": "Düşük RAM'de VBS Çakışması" },
+    "sysmain-hdd": { "title": "HDD'de SysMain Servisi" },
+    "smart-health": { "title": "SMART Disk Sağlığı" },
+    "disk-full": { "title": "Sistem Diski Doluluk" },
+    "fragmentation": { "title": "Disk Parçalanması" },
+    "bloat-services": { "title": "Gereksiz Arka Plan Servisleri" },
+    "telemetry-services": { "title": "Telemetri Servisleri" },
+    "uwp-bloatware": { "title": "UWP Bloatware" },
+    "startup-count": { "title": "Başlangıç Program Sayısı" },
+    "bcd-health": { "title": "Önyükleme Yapılandırması (BCD)" },
+    "legacy-bios": { "title": "Eski BIOS / MBR Disk" },
+    "efi-partition": { "title": "EFI Bölümü" },
+    "wu-stuck": { "title": "Windows Update Takılı" },
+    "pending-reboot": { "title": "Bekleyen Yeniden Başlatma" },
+    "tpm-status": { "title": "TPM Durumu" },
+    "secure-boot": { "title": "Secure Boot" },
+    "vbs-hvci": { "title": "VBS / HVCI" },
+    "power-plan": { "title": "Güç Planı" },
+    "hibernation": { "title": "Hazırda Bekleme" },
+    "pagefile": { "title": "Sayfa Dosyası (Pagefile)" },
+    "visual-effects": { "title": "Görsel Efektler" },
+    "dns-speed": { "title": "DNS Yanıt Hızı" },
+    "bsod-history": { "title": "BSOD Geçmişi" },
+    "event-log-critical": { "title": "Kritik Olay Günlüğü" },
+    "windows-re": { "title": "Windows Kurtarma Ortamı (WinRE)" },
+    "cpu-compat": { "title": "CPU Uyumluluğu (Win11)" },
+    "activation": { "title": "Windows Aktivasyonu" },
+    "driver-freshness": { "title": "Sürücü Güncelliği" },
+    "sfc-corrupt": { "title": "SFC — Sistem Dosyaları" },
+    "dism-image": { "title": "DISM — Sistem İmajı" }
+  },
+  "action": {
+    "sfc-repair": { "title": "SFC ile Sistem Dosyalarını Onar" },
+    "dism-restore-health": { "title": "DISM ile İmaj Sağlığını Onar" },
+    "bcd-rebuild": { "title": "BCD'yi Yeniden Oluştur" },
+    "reset-windows-update": { "title": "Windows Update Bileşenlerini Sıfırla" },
+    "disable-sysmain": { "title": "SysMain (SuperFetch) Servisini Kapat" },
+    "disable-wsearch": { "title": "Windows Search İndekslemeyi Kapat" },
+    "disable-telemetry": { "title": "Telemetri Servislerini Kapat" },
+    "uninstall-uwp-bloat": { "title": "UWP Bloatware'i Kaldır" },
+    "startup-cleanup": { "title": "Başlangıç Öğelerini Temizle" },
+    "set-visual-effects-performance": { "title": "Görsel Efektleri Performansa Ayarla" },
+    "set-high-performance-plan": { "title": "Yüksek Performans Güç Planı" },
+    "pagefile-optimize": { "title": "Sayfa Dosyasını Optimize Et" },
+    "disable-hibernation": { "title": "Hazırda Beklemeyi Kapat" },
+    "set-fast-dns": { "title": "Hızlı DNS'e Geç (Cloudflare/Google)" },
+    "enable-windows-re": { "title": "Windows Kurtarma Ortamı'nı Aç" },
+    "disable-vbs": { "title": "VBS / HVCI Kapat" },
+    "clean-temp": { "title": "Geçici Dosyaları Temizle" },
+    "defrag-system": { "title": "Diski Birleştir (Defrag)" }
   }
 }

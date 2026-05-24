@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Stethoscope, Zap } from 'lucide-vue-next';
+import { Stethoscope, Zap, Play } from 'lucide-vue-next';
 import { useScanStore } from '@/stores/scan';
+import { useNavStore } from '@/stores/nav';
 import { useScan } from '@/composables/useScan';
 import type { Priority } from '@/types';
 import BaseButton from '@/components/common/BaseButton.vue';
@@ -14,8 +15,16 @@ import DiagnosticList from '@/components/diagnostic/DiagnosticList.vue';
 import PriorityFilter from '@/components/diagnostic/PriorityFilter.vue';
 
 const scan = useScanStore();
+const nav = useNavStore();
 const { run } = useScan();
 const { t } = useI18n();
+
+const eligibleCount = computed(
+  () =>
+    scan.findings.filter(
+      (f) => f.action_type === 'automatic' || f.action_type === 'reboot',
+    ).length,
+);
 
 type Tab = 'all' | 'automatic' | 'guided' | 'reboot' | 'not_possible';
 const tab = ref<Tab>('all');
@@ -82,6 +91,16 @@ const priorityCounts = computed(() => ({
 
     <BaseCard v-if="scan.lastResult" :title="t('view.scan.summary')">
       <ScanSummary />
+      <template v-if="eligibleCount > 0" #footer>
+        <div class="flex items-center justify-between w-full">
+          <span class="text-sm text-fg-muted">
+            {{ t('view.scan.eligible_hint', { n: eligibleCount }) }}
+          </span>
+          <BaseButton :icon="Play" @click="nav.go('plan')">
+            {{ t('view.scan.go_plan') }}
+          </BaseButton>
+        </div>
+      </template>
     </BaseCard>
 
     <div v-if="scan.lastResult" class="space-y-3">

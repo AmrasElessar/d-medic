@@ -16,7 +16,10 @@ const { t } = useI18n();
       </div>
       <div>
         <h1 class="text-2xl font-bold text-fg">D-Medic</h1>
-        <p class="text-sm text-fg-muted">v{{ sys.version }} · MIT License</p>
+        <p class="text-sm text-fg-muted">
+          v{{ sys.version }} · {{ sys.info?.git_rev ?? '—' }} ·
+          {{ sys.info?.build_date ?? '—' }} · MIT License
+        </p>
       </div>
     </header>
 
@@ -61,8 +64,10 @@ const { t } = useI18n();
       <dl class="text-sm grid grid-cols-2 gap-y-2">
         <dt class="text-fg-muted">OS</dt>
         <dd class="text-fg">{{ sys.info?.os ?? '—' }}</dd>
-        <dt class="text-fg-muted">Yetki</dt>
-        <dd class="text-fg">{{ sys.isElevated ? 'Administrator' : 'Standard User' }}</dd>
+        <dt class="text-fg-muted">{{ t('view.about.privilege') }}</dt>
+        <dd class="text-fg">
+          {{ sys.isElevated ? t('view.about.administrator') : t('view.about.standard_user') }}
+        </dd>
         <dt class="text-fg-muted">Stack</dt>
         <dd class="text-fg">Tauri 2 · Vue 3 · Rust</dd>
       </dl>

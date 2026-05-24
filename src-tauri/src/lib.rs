@@ -30,6 +30,9 @@ pub fn run() {
             system::ping,
             system::app_info,
             system::is_elevated,
+            system::system_stats,
+            system::reboot_system,
+            system::open_logs_folder,
             // scan
             scan::quick_scan,
             scan::deep_scan,

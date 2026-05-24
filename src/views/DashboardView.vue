@@ -10,6 +10,7 @@ import BaseCard from '@/components/common/BaseCard.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import StatPill from '@/components/common/StatPill.vue';
 import ScanSummary from '@/components/diagnostic/ScanSummary.vue';
+import QuickTools from '@/components/dashboard/QuickTools.vue';
 
 const scan = useScanStore();
 const nav = useNavStore();
@@ -38,9 +39,13 @@ async function runQuick() {
     </header>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <StatPill :icon="Cpu" label="OS" :value="sys.info?.os ?? '—'" />
-      <StatPill :icon="MemoryStick" label="RAM" value="—" />
-      <StatPill :icon="HardDrive" label="Disk" value="—" />
+      <StatPill :icon="Cpu" label="CPU" :value="sys.cpuText" />
+      <StatPill :icon="MemoryStick" label="RAM" :value="sys.ramText" />
+      <StatPill
+        :icon="HardDrive"
+        :label="`Disk ${sys.stats?.primary_disk_type || ''}`.trim()"
+        :value="sys.diskText"
+      />
       <StatPill
         :icon="Activity"
         :label="t('status.elevated')"
@@ -69,6 +74,8 @@ async function runQuick() {
         </BaseButton>
       </div>
     </BaseCard>
+
+    <QuickTools />
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
       <BaseCard :title="t('view.dashboard.quick_actions')">
