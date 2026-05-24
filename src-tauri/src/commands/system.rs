@@ -51,6 +51,39 @@ pub async fn list_disks() -> DMedicResult<Vec<PhysicalDiskInfo>> {
     list_physical_disks().await
 }
 
+/// Uygulamayı UAC promptu ile yönetici olarak yeniden başlatır. PowerShell
+/// `Start-Process -Verb RunAs` ile yeni instance açılır + mevcut process
+/// `std::process::exit(0)` ile kapanır. Kullanıcı UAC promptunda Hayır derse
+/// yeni process açılmaz, mevcut process zaten kapandığı için kullanıcı app'i
+/// elle tekrar açmak zorunda kalır → kullanıcı UAC'a Evet demeden bu IPC
+/// çağrılmamalı (frontend rozeti tıklayınca confirm sorar).
+#[tauri::command]
+pub fn relaunch_as_admin() -> DMedicResult<()> {
+    let exe = std::env::current_exe()
+        .map_err(|e| DMedicError::Other(format!("current_exe: {e}")))?;
+    let path = exe.display().to_string();
+    // Single-quote escape PowerShell injection için. Path'te genelde single-quote
+    // olmaz ama defensif kalalım.
+    let safe_path = path.replace('\'', "''");
+    std::process::Command::new("powershell")
+        .args([
+            "-NoProfile",
+            "-WindowStyle",
+            "Hidden",
+            "-Command",
+            &format!("Start-Process -FilePath '{safe_path}' -Verb RunAs"),
+        ])
+        .spawn()
+        .map_err(|e| DMedicError::Other(format!("relaunch spawn: {e}")))?;
+    // Mevcut process'i bir süre yaşat ki PowerShell prompt çıkarmaya zaman bulsun;
+    // sonra kapan.
+    std::thread::spawn(|| {
+        std::thread::sleep(std::time::Duration::from_millis(500));
+        std::process::exit(0);
+    });
+    Ok(())
+}
+
 /// %APPDATA%\D-Medic\logs klasörünü Windows Explorer'da açar. Klasör yoksa
 /// oluştur, sonra explorer.exe spawn et. tauri-plugin-shell'in `open()` API'si
 /// de kullanılabilirdi ama spawning daha açık ve test edilebilir.

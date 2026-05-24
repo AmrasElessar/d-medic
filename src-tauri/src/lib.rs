@@ -37,6 +37,7 @@ pub fn run() {
             system::system_stats,
             system::list_disks,
             system::reboot_system,
+            system::relaunch_as_admin,
             system::open_logs_folder,
             // scan
             scan::quick_scan,

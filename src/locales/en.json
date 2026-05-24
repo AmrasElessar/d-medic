@@ -30,6 +30,11 @@
   "topbar": {
     "elevated": "Administrator privileges active",
     "not_elevated": "Standard user — some operations restricted",
+    "relaunch_hint": "Relaunch as administrator",
+    "relaunch_confirm": "D-Medic will relaunch with administrator privileges. Click Yes in the UAC prompt. Your open work is preserved; only this app restarts. Continue?",
+    "relaunch_title": "Relaunching",
+    "relaunch_desc": "Click Yes in the UAC prompt. This window will close; a new elevated instance will open.",
+    "relaunch_fail": "Relaunch failed",
     "toggle_theme": "Toggle theme",
     "toggle_language": "Toggle language"
   },

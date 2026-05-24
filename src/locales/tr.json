@@ -30,6 +30,11 @@
   "topbar": {
     "elevated": "Yönetici yetkisi aktif",
     "not_elevated": "Standart kullanıcı — bazı işlemler kısıtlı",
+    "relaunch_hint": "Yönetici olarak yeniden başlat",
+    "relaunch_confirm": "D-Medic yönetici yetkisi ile yeniden başlatılacak. UAC penceresinde Evet'i tıklayın. Açık çalışmalarınız kaybolmaz, sadece bu uygulama yeniden açılır. Devam edilsin mi?",
+    "relaunch_title": "Yeniden başlatılıyor",
+    "relaunch_desc": "UAC penceresinde Evet'i tıklayın. Bu pencere kapanacak ve yeni instance yönetici yetkisiyle açılacak.",
+    "relaunch_fail": "Yeniden başlatma başarısız",
     "toggle_theme": "Tema değiştir",
     "toggle_language": "Dil değiştir"
   },

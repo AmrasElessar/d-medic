@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { invoke } from '@tauri-apps/api/core';
 import { Sun, Moon, ShieldCheck, ShieldAlert, Languages } from 'lucide-vue-next';
 import { useNavStore } from '@/stores/nav';
 import { useSettingsStore } from '@/stores/settings';
 import { useSystemStore } from '@/stores/system';
 import { useTheme } from '@/composables/useTheme';
+import { useToast } from '@/composables/useToast';
+import { formatError } from '@/composables/useInvoke';
 import { NAV_ENTRIES } from '@/constants/nav';
 import BaseTooltip from '../common/BaseTooltip.vue';
 
 const nav = useNavStore();
 const settings = useSettingsStore();
 const sys = useSystemStore();
+const toast = useToast();
 const { t, locale } = useI18n();
 const { isDark, toggle } = useTheme();
 
@@ -26,6 +30,19 @@ function toggleLocale() {
   locale.value = next;
   settings.persist();
 }
+
+async function relaunchAdmin() {
+  if (sys.isElevated) return;
+  if (!confirm(t('topbar.relaunch_confirm'))) return;
+  try {
+    await invoke('relaunch_as_admin');
+    // Backend 500ms sonra kendi process'ini kapatacak; UI bunu beklemeden
+    // kullanıcıya "yeniden başlatılıyor" mesajı gösterir.
+    toast.info(t('topbar.relaunch_title'), t('topbar.relaunch_desc'));
+  } catch (e) {
+    toast.error(t('topbar.relaunch_fail'), formatError(e));
+  }
+}
 </script>
 
 <template>
@@ -39,24 +56,29 @@ function toggleLocale() {
     </div>
 
     <div class="flex items-center gap-2">
+      <!-- Admin rozeti — USER iken tıklanabilir buton (yönetici olarak yeniden başlat) -->
       <BaseTooltip
-        :content="sys.isElevated ? t('topbar.elevated') : t('topbar.not_elevated')"
+        side="bottom"
+        :content="sys.isElevated ? t('topbar.elevated') : t('topbar.relaunch_hint')"
       >
-        <span
-          class="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs"
+        <button
+          type="button"
+          :disabled="sys.isElevated"
+          class="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors"
           :class="
             sys.isElevated
-              ? 'bg-priority-low/15 text-priority-low'
-              : 'bg-priority-critical/15 text-priority-critical'
+              ? 'bg-priority-low/15 text-priority-low cursor-default'
+              : 'bg-priority-critical/15 text-priority-critical hover:bg-priority-critical/25 cursor-pointer'
           "
+          @click="relaunchAdmin"
         >
           <ShieldCheck v-if="sys.isElevated" class="w-3.5 h-3.5" />
           <ShieldAlert v-else class="w-3.5 h-3.5" />
           {{ sys.isElevated ? 'ADMIN' : 'USER' }}
-        </span>
+        </button>
       </BaseTooltip>
 
-      <BaseTooltip :content="t('topbar.toggle_language')">
+      <BaseTooltip side="bottom" :content="t('topbar.toggle_language')">
         <button
           class="p-1.5 rounded text-fg-muted hover:text-fg hover:bg-bg-subtle"
           @click="toggleLocale"
@@ -65,7 +87,7 @@ function toggleLocale() {
         </button>
       </BaseTooltip>
 
-      <BaseTooltip :content="t('topbar.toggle_theme')">
+      <BaseTooltip side="bottom" :content="t('topbar.toggle_theme')">
         <button
           class="p-1.5 rounded text-fg-muted hover:text-fg hover:bg-bg-subtle"
           @click="toggle"
