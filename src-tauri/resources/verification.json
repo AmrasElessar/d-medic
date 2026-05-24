@@ -1,4 +1,191 @@
 {
   "version": 1,
-  "records": {}
+  "records": {
+    "disable-telemetry": {
+      "verification_level": "documented_alternative",
+      "harm_record": "Feedback Hub bozulur (geri bildirim gönderemezsiniz). Cortana arama performansı düşebilir. Domain ortamında Group Policy override edilirse ayar geri gelir.",
+      "sources": [
+        {
+          "type": "microsoft",
+          "url": "https://learn.microsoft.com/en-us/windows/privacy/configure-windows-diagnostic-data-in-your-organization",
+          "stance": "documents",
+          "note": "Microsoft 4 seviye belgelemiş: Diagnostic data off (Security) = 0, Required (Basic) = 1, Enhanced = 2, Optional (Full) = 3. AllowTelemetry=0 SADECE Enterprise/Education/Server için. Pro/Home kullanıcılar minimum 'Required' (1) ile sınırlı. Group Policy: Computer Configuration > Administrative Templates > Windows Components > Data Collection and Preview Builds > Allow diagnostic data.",
+          "last_verified": "2025-11-07"
+        },
+        {
+          "type": "cis",
+          "reference": "CIS Microsoft Windows 11 Enterprise Benchmark v3.0.0 §18.10.43.3 'Allow Diagnostic Data'",
+          "stance": "recommends",
+          "note": "CIS Level 1 (Enterprise) ayar 'Diagnostic data off' veya 'Send required diagnostic data' önerir. Enterprise security baseline."
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/ChrisTitusTech/winutil",
+          "stars": 21000,
+          "stance": "recommends",
+          "note": "winutil 'Tweaks' bölümünde 'Disable Telemetry' tek tıkla — DiagTrack + dmwappushservice + GP AllowTelemetry=0 + Connected User Experiences task'ları disable. Milyonlarca kullanıcı tarafından test edildi."
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/builtbybel/privatezilla",
+          "stars": 4500,
+          "stance": "recommends",
+          "note": "Privatezilla telemetry kapatmayı varsayılan davranış olarak işaretler. Microsoft MVP destekli açık kaynak."
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/Raphire/Win11Debloat",
+          "stars": 5000,
+          "stance": "recommends",
+          "note": "Win11Debloat 'Disable telemetry' default. Win11 spesifik script — sürekli güncellenir."
+        },
+        {
+          "type": "forum",
+          "reference": "r/Windows11 — telemetry FAQ, çeşitli üst sıralı thread'lerde tutarlı görüş",
+          "stance": "supports",
+          "note": "Topluluk konsensüsü: home kullanıcılar için DiagTrack servisi disable kabul edilebilir. Domain/work PC'de Group Policy önerilir."
+        }
+      ],
+      "last_audit_date": "2026-05-24"
+    },
+
+    "uninstall-uwp-bloat": {
+      "verification_level": "tried_not_official",
+      "harm_record": "Microsoft Store kaldırılırsa app yükleme imkânsız (sistem bozar). Bazı 'non-removable' paketler (Microsoft.UI.Xaml, .NET Native runtime) silinmesi feature update başarısızlığına yol açar. UWP debloat GERİ ALINAMAZ — sadece tek tek Microsoft Store'dan tekrar indirilebilir, bazıları Store'da artık yok.",
+      "sources": [
+        {
+          "type": "microsoft",
+          "url": "https://learn.microsoft.com/en-us/powershell/module/appx/remove-appxpackage",
+          "stance": "documents",
+          "note": "Remove-AppxPackage cmdlet belgeli — Microsoft hangi paketin kaldırılmaması gerektiğine dair açık liste vermez ama Enterprise Sysprep belgesinde 'provisioned packages' kategorisi var. -AllUsers admin gerektirir.",
+          "last_verified": "2025-05-14"
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/Sycnex/Windows10Debloater",
+          "stars": 12000,
+          "stance": "recommends",
+          "note": "Windows10Debloater 12k+ yıldız. Önceden test edilmiş 'safe to remove' listesi var (BingNews, BingWeather, GetHelp, OfficeHub, Solitaire, vb.). Microsoft Store hariç tutulur — sistem bozulmaz."
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/Raphire/Win11Debloat",
+          "stars": 5000,
+          "stance": "recommends",
+          "note": "Win11Debloat sürekli güncel safe-list tutar. Win11 spesifik. Reversible bir kategori (yeniden yüklenebilir) var."
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/ChrisTitusTech/winutil",
+          "stars": 21000,
+          "stance": "recommends",
+          "note": "winutil debloat preset'leri var (Aggressive / Moderate). Kullanıcı seçim yapar — herhangi bir paket öntanımlı kaldırılmaz."
+        },
+        {
+          "type": "forum",
+          "reference": "r/Windows11 — debloat threads, üst sıralı yorumlar",
+          "stance": "discourages",
+          "note": "Topluluk uyarısı yaygın: 'Microsoft Store'u kaldırma', 'WindowsTerminal kalmasa olur ama .NET runtime'a dokunma'. Yanlış paket silimi sonrası kullanıcılar Windows reinstall gerekti raporları çok."
+        }
+      ],
+      "last_audit_date": "2026-05-24"
+    },
+
+    "disable-vbs": {
+      "verification_level": "tried_not_official",
+      "harm_record": "Microsoft Win11 22H2'den itibaren VBS kapalı sistemlerde Windows Security uyarısı + taskbar ikonunda kırmızı işaret gösteriyor. Güvenlik perspektifinde: kernel-mode malware koruması ve credential guard zayıflar. Bazı Enterprise mandatory policy ile gelirse kapatamazsın.",
+      "sources": [
+        {
+          "type": "microsoft",
+          "url": "https://learn.microsoft.com/en-us/windows/security/hardware-security/enable-virtualization-based-protection-of-code-integrity",
+          "stance": "discourages",
+          "note": "Microsoft güçlü şekilde VBS/Memory Integrity AÇIK tutmayı öneriyor. Eski CPU'larda 'Restricted User Mode' emülasyonu daha büyük performans etkisi yaratır — yeni Intel Kabylake+ / AMD Zen 2+ ile çoğunlukla görünmez. Win11 22H2: kapalı ise UI uyarısı.",
+          "last_verified": "2025-08-15"
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/HotCakeX/Harden-Windows-Security",
+          "stars": 2500,
+          "stance": "blocks",
+          "note": "Microsoft MVP yönetimindeki Harden-Windows-Security repo VBS'i 'mandatory' işaretler — kapatmaya KARŞI tutum. Enterprise security baseline."
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/ChrisTitusTech/winutil",
+          "stars": 21000,
+          "stance": "supports",
+          "note": "winutil performance preset'inde VBS disable seçeneği var ama default DEĞİL — kullanıcı bilinçli seçim yapması bekleniyor. Gaming community için."
+        },
+        {
+          "type": "forum",
+          "reference": "r/Windows11, r/buildapc — gaming performance threads",
+          "stance": "supports",
+          "note": "Gaming topluluğunda VBS kapatmak yaygın — benchmark'larda %5-15 FPS artışı raporlanır (özellikle CPU-bound oyunlarda). Eski CPU'larda %20'ye çıkabilir."
+        },
+        {
+          "type": "forum",
+          "reference": "r/PrivacyGuides, r/Windows10 — security threads",
+          "stance": "discourages",
+          "note": "Güvenlik odaklı topluluk VBS kapatmaya karşı — kernel exploit savunmasının ana hattı."
+        }
+      ],
+      "last_audit_date": "2026-05-24"
+    },
+
+    "disable-hibernation": {
+      "verification_level": "documented_alternative",
+      "harm_record": "hiberfil.sys silinir (genelde RAM kadar yer açılır). Hibernate ve Fast Startup çalışmaz — sadece Sleep ve full shutdown kalır. Laptop'ta batarya bittiğinde hibernate koruma yok, açık işler kaybedilir. Hybrid sleep çalışmaz (Microsoft alıntısı: 'When you make hibernation unavailable, hybrid sleep does not work').",
+      "sources": [
+        {
+          "type": "microsoft",
+          "url": "https://learn.microsoft.com/en-us/troubleshoot/windows-client/setup-upgrade-and-drivers/disable-and-re-enable-hibernation",
+          "stance": "documents",
+          "note": "Microsoft 'How to disable and re-enable hibernation' resmi belgesi. powercfg /h off komutu belgeli. Microsoft özel senaryolar belirtir: limited storage, dual-boot. Genel kapatma önerilmez ama yöntem belgelenir.",
+          "last_verified": "2026-01-15"
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/ChrisTitusTech/winutil",
+          "stars": 21000,
+          "stance": "supports",
+          "note": "winutil 'Disable Hibernation' tweak — desktop sistemler için varsayılan değil, opt-in. Laptop kullanıcılarına uyarı verir."
+        },
+        {
+          "type": "forum",
+          "reference": "r/Windows11, r/buildapc — SSD wear ve disk space threads",
+          "stance": "supports",
+          "note": "Desktop + SSD kombinasyonunda hibernation kapatma yaygın. RAM kadar (8-32 GB) disk açılır, write cycle azalır. Laptop için 'kapatmayın' konsensüsü."
+        }
+      ],
+      "last_audit_date": "2026-05-24"
+    },
+
+    "disable-sysmain": {
+      "verification_level": "documented_alternative",
+      "harm_record": "HDD üzerinde Windows'ta uygulama açılış süreleri uzar (SuperFetch ön-yükleme yok). SSD'de fark hissedilmez. Sysmain ayrıca Memory Compression'ı etkilemez — onlar ayrı servisler.",
+      "sources": [
+        {
+          "type": "microsoft",
+          "reference": "Microsoft Q&A 'should i disable sysmain', 'Why disable SuperFetch on ssd' threads — Microsoft personeli cevapları",
+          "stance": "documents",
+          "note": "Microsoft Q&A'da Microsoft yetkilileri 'SSD'de SuperFetch/SysMain devre dışı bırakılabilir, HDD'de açık tutulmalıdır' diye yanıtlar. Resmi öneri: SSD = disable opsiyonu, HDD = enable.",
+          "last_verified": "2025-08-15"
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/ChrisTitusTech/winutil",
+          "stars": 21000,
+          "stance": "recommends",
+          "note": "winutil SSD detect ederse SysMain disable opsiyonu varsayılan açık. HDD'de uyarır."
+        },
+        {
+          "type": "forum",
+          "reference": "r/Windows11, r/buildapc — SSD optimization threads",
+          "stance": "recommends",
+          "note": "SSD üzerinde SuperFetch/SysMain kapatma neredeyse evrensel kabul — yıllardır milyonlarca PC'de denenmiş, zarar kaydı yok."
+        }
+      ],
+      "last_audit_date": "2026-05-24"
+    }
+  }
 }
