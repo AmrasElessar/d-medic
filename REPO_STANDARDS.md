@@ -14,7 +14,7 @@
 |---|---|
 | **Owner/Repo** | `AmrasElessar/d-medic` |
 | **Visibility** | public |
-| **Default branch** | `master` ⚠️ (D Brand standardı `main` — rename önerilir: `git branch -m master main && gh repo edit AmrasElessar/d-medic --default-branch main`) |
+| **Default branch** | `main` (2026-05-26'da `master` → `main` rename edildi, D Brand ailesi ile align) |
 | **License (SPDX)** | `MIT` |
 | **Description** | `Diagnose-first Windows 11 system optimizer — scans, prioritizes findings, applies only with consent. Revo-style uninstaller + custom NTFS defrag engine. Tauri v2 + Vue 3 + Rust.` |
 | **Homepage** | `https://github.com/sponsors/AmrasElessar` |
@@ -138,7 +138,6 @@ Dil: TR veya EN.
   - `D-Medic-Teknik-Dokuman-v1.1.docx` → `docs/` altına taşı, veya markdown'a çevir
   - `dmedic_logo.png` veya `yeni_logo.png` → kanonik birini seç, diğerini sil. Logoyu `src-tauri/icons/` altına standardize et.
   - `yedek.zip` benzeri yedek artıkları varsa → silinmeli (git zaten geçmişi tutar)
-- **README mojibake fix:** Mevcut README'de UTF-8 → CP-1254 dönüşüm artıkları var (`ğŸ¬`, `Ã‡`, `Ä±`). Tek bir UTF-8 yeniden yazıma ihtiyaç var.
 - Push öncesi `git status` kontrol.
 
 ---
@@ -152,7 +151,7 @@ Dil: TR veya EN.
 - **Zero-network claim** — runtime'da hiçbir host'a outbound bağlantı **yok**. Telemetry/analytics/auto-update bile **yok**. PR'da network çağrısı varsa kullanıcıya açık opt-in olmalı + README'de belirtilmeli.
 - **Rust unsafe** — `windows-rs` FFI dışında `unsafe` blok kullanımı PR review'da açıkça gerekçelendirilmeli (`# Safety` doc comment).
 - **Tauri v2 CSP** — `src-tauri/tauri.conf.json`'da CSP `'unsafe-inline'` / `'unsafe-eval'` içermemeli; gerekirse nonce kullan.
-- **Branch adı drift** — default branch `master`, D Brand ailesi standardı `main`. İlk fırsatta rename.
+- **Branch adı** — default branch `main` (2026-05-26'da `master` → `main` rename edildi, D Brand ailesi ile align).
 - **Binary boyut bütçesi:** ~10 MB. PR'da bu eşik aşılıyorsa gerekçelendirme + bundle analiz şart.
 - **`D-Medic-Teknik-Dokuman-v1.1.docx`** — `.docx` kaynak kod repo'sunda olmamalı; markdown'a çevir veya `docs/` altına taşı.
 - **Logo ikilemi** — `dmedic_logo.png` ile `yeni_logo.png` repo kökünde. Kanonik = `src-tauri/icons/icon.png` (Tauri build için). README + brand'de kullanılan dosya tek olmalı.
