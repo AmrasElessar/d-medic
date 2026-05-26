@@ -20,8 +20,10 @@ pub fn init() -> Result<(), Box<dyn std::error::Error>> {
     let (writer, guard) = tracing_appender::non_blocking(appender);
     let _ = GUARD.set(guard);
 
+    // Varsayılan: genel info, kendi kodumuz debug, frontend köprüsü (dev_log
+    // komutu target="frontend") debug. DMEDIC_LOG env ile override edilebilir.
     let filter = EnvFilter::try_from_env("DMEDIC_LOG")
-        .unwrap_or_else(|_| EnvFilter::new("info,d_medic_lib=debug"));
+        .unwrap_or_else(|_| EnvFilter::new("info,d_medic_lib=debug,frontend=debug"));
 
     let file_layer = fmt::layer()
         .with_writer(writer)

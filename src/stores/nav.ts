@@ -7,6 +7,8 @@ export type ViewKey =
   | 'execute'
   | 'guides'
   | 'history'
+  | 'uninstall'
+  | 'defrag'
   | 'settings'
   | 'about';
 

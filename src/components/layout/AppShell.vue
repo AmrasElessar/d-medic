@@ -22,6 +22,8 @@ import PlanView from '@/views/PlanView.vue';
 import ExecuteView from '@/views/ExecuteView.vue';
 import GuidesView from '@/views/GuidesView.vue';
 import HistoryView from '@/views/HistoryView.vue';
+import UninstallView from '@/views/UninstallView.vue';
+import DefragView from '@/views/DefragView.vue';
 import SettingsView from '@/views/SettingsView.vue';
 import AboutView from '@/views/AboutView.vue';
 
@@ -40,6 +42,8 @@ const views = {
   execute: ExecuteView,
   guides: GuidesView,
   history: HistoryView,
+  uninstall: UninstallView,
+  defrag: DefragView,
   settings: SettingsView,
   about: AboutView,
 };

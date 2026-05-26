@@ -5,3 +5,5 @@ export * from './snapshot';
 export * from './guide';
 export * from './system';
 export * from './verification';
+export * from './uninstall';
+export * from './defrag';

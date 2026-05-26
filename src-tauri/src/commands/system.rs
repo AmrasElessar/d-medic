@@ -127,6 +127,19 @@ pub fn reboot_system(delay_seconds: Option<u32>) -> DMedicResult<()> {
     Ok(())
 }
 
+/// Frontend → dev terminali log köprüsü. Yalnız dev modda frontend tarafından
+/// çağrılır (window.onerror, Vue errorHandler, console.error/warn). `tracing`
+/// üzerinden `target="frontend"` ile akar; release'de frontend bunu çağırmaz.
+#[tauri::command]
+pub fn dev_log(level: String, message: String) {
+    match level.as_str() {
+        "error" => tracing::error!(target: "frontend", "{message}"),
+        "warn" => tracing::warn!(target: "frontend", "{message}"),
+        "info" => tracing::info!(target: "frontend", "{message}"),
+        _ => tracing::debug!(target: "frontend", "{message}"),
+    }
+}
+
 #[cfg(windows)]
 fn check_elevated() -> bool {
     use windows::Win32::Foundation::{CloseHandle, HANDLE};

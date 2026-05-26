@@ -26,3 +26,10 @@ pub fn settings_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
 pub fn cache_dir() -> Result<PathBuf, Box<dyn std::error::Error>> {
     Ok(base_dir()?.join("cache"))
 }
+
+/// Kaldırıcı kalıntı silme güvenlik ağı: silinen dosyalar buraya taşınır,
+/// registry anahtarları .reg export edilir. Her kaldırma kendi <timestamp_slug>
+/// alt klasörünü alır; N gün sonra otomatik temizlenir.
+pub fn quarantine_dir() -> Result<PathBuf, Box<dyn std::error::Error>> {
+    Ok(base_dir()?.join("quarantine"))
+}

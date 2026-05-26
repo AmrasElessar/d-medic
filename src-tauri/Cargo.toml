@@ -36,6 +36,9 @@ async-trait = "0.1"
 thiserror = "1.0"
 anyhow = "1.0"
 
+# `log` facade — tauri-plugin-log seviye filtresi (wmi gibi gürültülü dep'leri
+# kısmak) için LevelFilter referansı.
+log = "0.4"
 tracing = "0.1"
 # default-features=false → "tracing-log" özelliği kapanır; aksi halde
 # tracing-subscriber `log` crate'inin global logger'ını da set eder ve
@@ -49,6 +52,11 @@ dirs = "5.0"
 
 memchr = "2.7"
 blake3 = "1.5"
+# Kalıntı taraması: registry için ergonomik native erişim (reg.exe spawn'a göre
+# çok daha hızlı, enum-derinlikli tarama için uygun).
+winreg = "0.52"
+# Dosya sistemi kalıntı taraması: derinlik-sınırlı recursive yürüyüş.
+walkdir = "2.5"
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.58", features = [
@@ -62,6 +70,9 @@ windows = { version = "0.58", features = [
     "Win32_Storage_FileSystem",
     "Win32_Foundation",
     "Win32_Security",
+    # Defrag motoru: DeviceIoControl + FSCTL yapı/sabitleri.
+    "Win32_System_Ioctl",
+    "Win32_System_IO",
 ] }
 # wmi: windows-rs üzerinde tip-güvenli ergonomik WMI wrapper.
 # PS spawn ilkesini koruyor (native COM), boilerplate'i kısaltıyor.

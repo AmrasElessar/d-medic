@@ -8,8 +8,16 @@ import { NAV_ENTRIES } from '@/constants/nav';
 const nav = useNavStore();
 const { t } = useI18n();
 
-const mainEntries = computed(() => NAV_ENTRIES.filter((n) => n.group === 'main'));
-const systemEntries = computed(() => NAV_ENTRIES.filter((n) => n.group === 'system'));
+// Bölümler sırayla render edilir; boş grup gizlenir.
+const sections = computed(() => [
+  { group: 'main' as const, labelKey: 'nav.section_main' },
+  { group: 'tools' as const, labelKey: 'nav.section_tools' },
+  { group: 'system' as const, labelKey: 'nav.section_system' },
+]);
+
+function entriesOf(group: 'main' | 'tools' | 'system') {
+  return NAV_ENTRIES.filter((n) => n.group === group);
+}
 </script>
 
 <template>
@@ -20,41 +28,29 @@ const systemEntries = computed(() => NAV_ENTRIES.filter((n) => n.group === 'syst
     </div>
 
     <nav class="flex-1 overflow-y-auto p-2 space-y-0.5">
-      <div class="text-[10px] uppercase tracking-wider text-fg-subtle px-3 py-2">
-        {{ t('nav.section_main') }}
-      </div>
-      <button
-        v-for="entry in mainEntries"
-        :key="entry.key"
-        class="w-full flex items-center gap-3 px-3 py-2 rounded text-sm transition-colors"
-        :class="
-          nav.current === entry.key
-            ? 'bg-accent/15 text-fg font-medium'
-            : 'text-fg-muted hover:text-fg hover:bg-bg-subtle'
-        "
-        @click="nav.go(entry.key)"
-      >
-        <component :is="entry.icon" class="w-4 h-4" />
-        <span>{{ t(entry.labelKey) }}</span>
-      </button>
-
-      <div class="text-[10px] uppercase tracking-wider text-fg-subtle px-3 py-2 mt-3">
-        {{ t('nav.section_system') }}
-      </div>
-      <button
-        v-for="entry in systemEntries"
-        :key="entry.key"
-        class="w-full flex items-center gap-3 px-3 py-2 rounded text-sm transition-colors"
-        :class="
-          nav.current === entry.key
-            ? 'bg-accent/15 text-fg font-medium'
-            : 'text-fg-muted hover:text-fg hover:bg-bg-subtle'
-        "
-        @click="nav.go(entry.key)"
-      >
-        <component :is="entry.icon" class="w-4 h-4" />
-        <span>{{ t(entry.labelKey) }}</span>
-      </button>
+      <template v-for="section in sections" :key="section.group">
+        <div
+          v-if="entriesOf(section.group).length"
+          class="text-[10px] uppercase tracking-wider text-fg-subtle px-3 py-2"
+          :class="section.group !== 'main' && 'mt-3'"
+        >
+          {{ t(section.labelKey) }}
+        </div>
+        <button
+          v-for="entry in entriesOf(section.group)"
+          :key="entry.key"
+          class="w-full flex items-center gap-3 px-3 py-2 rounded text-sm transition-colors"
+          :class="
+            nav.current === entry.key
+              ? 'bg-accent/15 text-fg font-medium'
+              : 'text-fg-muted hover:text-fg hover:bg-bg-subtle'
+          "
+          @click="nav.go(entry.key)"
+        >
+          <component :is="entry.icon" class="w-4 h-4" />
+          <span>{{ t(entry.labelKey) }}</span>
+        </button>
+      </template>
     </nav>
   </aside>
 </template>
