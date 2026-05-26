@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="yeni_logo.png" width="128" alt="D-Medic logo" />
+<img src="src-tauri/icons/icon.png" width="128" alt="D-Medic logo" />
 
 # D-Medic
 
