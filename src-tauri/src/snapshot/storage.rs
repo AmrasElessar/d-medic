@@ -3,6 +3,7 @@
 use crate::error::{DMedicError, DMedicResult};
 use crate::models::Snapshot;
 use crate::paths;
+use crate::safety;
 
 pub async fn save(snapshot: &Snapshot) -> DMedicResult<()> {
     let dir = paths::snapshot_dir().map_err(|e| DMedicError::Other(e.to_string()))?;
@@ -13,7 +14,17 @@ pub async fn save(snapshot: &Snapshot) -> DMedicResult<()> {
     Ok(())
 }
 
+/// IPC'den gelen snapshot id'sini doğrula (path traversal koruması).
+fn validate_id(id: &str) -> DMedicResult<()> {
+    if safety::is_valid_storage_id(id) {
+        Ok(())
+    } else {
+        Err(DMedicError::Validation(format!("geçersiz snapshot id: {id}")))
+    }
+}
+
 pub async fn load(id: &str) -> DMedicResult<Snapshot> {
+    validate_id(id)?;
     let dir = paths::snapshot_dir().map_err(|e| DMedicError::Other(e.to_string()))?;
     let path = dir.join(format!("{id}.json"));
     let bytes = std::fs::read(&path)
@@ -42,6 +53,7 @@ pub async fn list_all() -> DMedicResult<Vec<Snapshot>> {
 }
 
 pub async fn delete(id: &str) -> DMedicResult<()> {
+    validate_id(id)?;
     let dir = paths::snapshot_dir().map_err(|e| DMedicError::Other(e.to_string()))?;
     let path = dir.join(format!("{id}.json"));
     if path.exists() {

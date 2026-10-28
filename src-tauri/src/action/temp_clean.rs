@@ -6,6 +6,10 @@ use crate::error::DMedicResult;
 use crate::ps;
 
 /// Temp / cache temizliği. Hatalar (kilitli dosya) sessizce atlanır.
+///
+/// Yalnız 24 saatten eski dosyalar silinir — çalışan kurulumların / uygulamaların
+/// o an kullandığı geçici dosyalara dokunulmaz. Junction / symlink'lerin içine
+/// inilmez (TEMP altındaki bir junction ağaç dışını işaret edebilir).
 pub struct CleanTemp;
 
 #[async_trait]
@@ -15,18 +19,26 @@ impl Action for CleanTemp {
     }
 
     async fn apply(&self) -> DMedicResult<ActionOutcome> {
-        let script = "$paths = @(\"$env:TEMP\\*\", \"$env:SystemRoot\\Temp\\*\", \"$env:LOCALAPPDATA\\Microsoft\\Windows\\INetCache\\*\")\n\
-            $before = 0; $after = 0\n\
-            foreach ($p in $paths) {\n\
-              try { $before += (Get-ChildItem $p -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum } catch {}\n\
+        let script = "$cutoff = (Get-Date).AddHours(-24)\n\
+            $script:freed = [int64]0\n\
+            function Clear-Old($dir) {\n\
+              Get-ChildItem -LiteralPath $dir -Force -ErrorAction SilentlyContinue | ForEach-Object {\n\
+                if ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) { return }\n\
+                if ($_.PSIsContainer) {\n\
+                  Clear-Old $_.FullName\n\
+                  if ($_.CreationTime -lt $cutoff -and -not (Get-ChildItem -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue)) {\n\
+                    Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue\n\
+                  }\n\
+                } elseif ($_.LastWriteTime -lt $cutoff) {\n\
+                  $len = $_.Length\n\
+                  Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue\n\
+                  if (-not (Test-Path -LiteralPath $_.FullName)) { $script:freed += $len }\n\
+                }\n\
+              }\n\
             }\n\
-            foreach ($p in $paths) {\n\
-              try { Remove-Item $p -Recurse -Force -ErrorAction SilentlyContinue } catch {}\n\
-            }\n\
-            foreach ($p in $paths) {\n\
-              try { $after += (Get-ChildItem $p -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum } catch {}\n\
-            }\n\
-            [PSCustomObject]@{ freed_mb = [int](($before - $after) / 1MB); before_mb = [int]($before/1MB); after_mb = [int]($after/1MB) } | ConvertTo-Json -Compress";
+            $roots = @($env:TEMP, \"$env:SystemRoot\\Temp\", \"$env:LOCALAPPDATA\\Microsoft\\Windows\\INetCache\")\n\
+            foreach ($r in $roots) { if ($r -and (Test-Path -LiteralPath $r)) { Clear-Old $r } }\n\
+            [PSCustomObject]@{ freed_mb = [int]($script:freed / 1MB) } | ConvertTo-Json -Compress";
         let out = ps::runner::run_script(script).await?;
         let success = out.status == 0;
 
@@ -41,7 +53,7 @@ impl Action for CleanTemp {
             action_id: self.id().to_string(),
             success,
             message: if success {
-                format!("Geçici dosyalar temizlendi: ~{} MB serbest bırakıldı.", freed_mb)
+                format!("Geçici dosyalar temizlendi (24 saatten eski): ~{} MB serbest bırakıldı.", freed_mb)
             } else {
                 format!("Temizlik başarısız: {}", out.stderr.trim())
             },

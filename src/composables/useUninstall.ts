@@ -29,7 +29,7 @@ export function useUninstall() {
 
   async function runUninstaller(program: InstalledProgram): Promise<UninstallReport | null> {
     try {
-      return await invoke<UninstallReport>('run_uninstaller', { program });
+      return await invoke<UninstallReport>('run_uninstaller', { programId: program.id });
     } catch (e) {
       toast.error(t('uninstall.uninstall_fail'), formatError(e));
       return null;

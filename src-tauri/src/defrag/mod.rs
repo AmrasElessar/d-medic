@@ -26,6 +26,26 @@ use std::sync::atomic::{AtomicBool, Ordering};
 /// Tek-iş modeli: aynı anda en fazla bir defrag çalışır. İptal bayrağı.
 static CANCEL_FLAG: AtomicBool = AtomicBool::new(false);
 
+/// Çalışan bir taşıma işi var mı.
+static RUNNING: AtomicBool = AtomicBool::new(false);
+
+/// Çalışan işin kilidi — düşürülünce (hata/iptal dahil) kilit açılır.
+pub(crate) struct RunGuard(());
+
+impl Drop for RunGuard {
+    fn drop(&mut self) {
+        RUNNING.store(false, Ordering::SeqCst);
+    }
+}
+
+/// Başka iş çalışmıyorsa kilidi al; çalışıyorsa `None`.
+pub(crate) fn try_begin() -> Option<RunGuard> {
+    RUNNING
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .ok()
+        .map(|_| RunGuard(()))
+}
+
 /// Çalışan defrag'i iptal et (bir sonraki güvenli noktada durur).
 pub fn request_cancel() {
     CANCEL_FLAG.store(true, Ordering::SeqCst);

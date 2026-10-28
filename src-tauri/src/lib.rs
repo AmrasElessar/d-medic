@@ -10,6 +10,7 @@ pub mod parse;
 pub mod paths;
 pub mod profile;
 pub mod ps;
+pub mod safety;
 pub mod snapshot;
 pub mod uninstall;
 pub mod verification;
@@ -27,9 +28,14 @@ pub fn run() {
 
     tracing::info!(version = env!("CARGO_PKG_VERSION"), "D-Medic başlatılıyor");
 
+    // Saklama süresi (14 gün) dolan karantina partilerini arka planda temizle.
+    std::thread::spawn(|| match uninstall::quarantine::purge_expired() {
+        Ok(0) => {}
+        Ok(n) => tracing::info!(removed = n, "Süresi dolan karantina partileri temizlendi"),
+        Err(e) => tracing::warn!(error = %e, "Karantina temizliği başarısız"),
+    });
+
     tauri::Builder::default()
-        .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_fs::init())
         // tauri-plugin-log `log` crate facade'ını yakalar (wmi gibi dep'ler).
         // Varsayılanı Info'ya çekip gürültülü dep'leri Warn'a kısıyoruz —
         // dev konsolu WMI TRACE/DEBUG seli yerine işe yarar logla dolsun.
