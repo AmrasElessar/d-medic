@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use serde::Deserialize;
 use serde_json::json;
-use wmi::WMIConnection;
+use super::wmi_compat::WMIConnection;
 
 use super::{wmi as wmi_helper, Check};
 use crate::error::{DMedicError, DMedicResult};
@@ -9,19 +9,8 @@ use crate::models::{
     ActionType, Category, EstimatedGain, Finding, LocalizedText, Priority, RiskLevel, ScanKind,
 };
 
-/// #2 — SysMain (Superfetch) + HDD kombinasyonu = sürekli disk thrash.
-pub struct SysmainHddCheck;
-
-#[async_trait]
-impl Check for SysmainHddCheck {
-    fn id(&self) -> &'static str {
-        "sysmain-hdd"
-    }
-    async fn run(&self) -> DMedicResult<Vec<Finding>> {
-        // TODO: snapshot.primary_disk_type == "HDD" && services.SysMain.status == "Running"
-        Ok(Vec::new())
-    }
-}
+// #2 — SysMain (Superfetch) + HDD: `services::BloatServicesCheck` içinde
+// ("sysmain-hdd" bulgusu) — servis sorgusu orada zaten yapılıyor.
 
 #[derive(Deserialize)]
 #[serde(rename = "MSFT_PhysicalDisk", rename_all = "PascalCase")]

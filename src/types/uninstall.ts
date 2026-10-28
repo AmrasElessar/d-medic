@@ -23,6 +23,8 @@ export interface UninstallReport {
   completed: boolean;
   exit_code: number | null;
   message: string;
+  /** Kaldırıcı döndükten sonra program hâlâ envanterde kayıtlı mı. */
+  still_registered: boolean;
 }
 
 export type LeftoverKind = 'file' | 'folder' | 'reg_key' | 'reg_value';
@@ -45,6 +47,8 @@ export interface LeftoverScanResult {
   scanned_roots: string[];
   registry_hits: number;
   file_hits: number;
+  /** Tarama sırasında program hâlâ kuruluydu → hiçbir öğe varsayılan seçili değil. */
+  program_still_registered: boolean;
 }
 
 export interface RemovalItemResult {

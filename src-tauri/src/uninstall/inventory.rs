@@ -29,7 +29,7 @@ pub async fn list_all() -> DMedicResult<Vec<InstalledProgram>> {
     });
     win32.extend(uwp);
     // Ada göre büyük/küçük harf duyarsız sırala.
-    win32.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    win32.sort_by_key(|p| p.name.to_lowercase());
     Ok(win32)
 }
 
@@ -37,6 +37,50 @@ pub async fn list_all() -> DMedicResult<Vec<InstalledProgram>> {
 pub async fn find(program_id: &str) -> DMedicResult<Option<InstalledProgram>> {
     let all = list_all().await?;
     Ok(all.into_iter().find(|p| p.id == program_id))
+}
+
+/// Program hâlâ kurulu (envanterde kayıtlı) mi? Tüm envanteri listelemeden
+/// yalnız ilgili kaydı kontrol eder: Win32 → Uninstall alt anahtarı, UWP →
+/// PackageFullName. Kontrol yapılamazsa `false` döner.
+pub async fn is_still_installed(program: &InstalledProgram) -> bool {
+    match program.kind {
+        ProgramKind::Win32 => {
+            let id = program.id.clone();
+            tokio::task::spawn_blocking(move || win32_key_exists(&id))
+                .await
+                .unwrap_or(false)
+        }
+        ProgramKind::Uwp => {
+            let safe = program.id.replace('\'', "''");
+            let script = format!(
+                "if (Get-AppxPackage | Where-Object {{ $_.PackageFullName -eq '{safe}' }}) {{ 'YES' }}"
+            );
+            match ps::runner::run_script(&script).await {
+                Ok(out) => out.stdout.lines().any(|l| l.trim() == "YES"),
+                Err(_) => false,
+            }
+        }
+    }
+}
+
+#[cfg(windows)]
+fn win32_key_exists(id: &str) -> bool {
+    let sources = [
+        (HKEY_LOCAL_MACHINE, KEY_WOW64_64KEY),
+        (HKEY_LOCAL_MACHINE, KEY_WOW64_32KEY),
+        (HKEY_CURRENT_USER, KEY_WOW64_64KEY),
+    ];
+    sources.iter().any(|&(root, view)| {
+        RegKey::predef(root)
+            .open_subkey_with_flags(format!(r"{UNINSTALL_PATH}\{id}"), KEY_READ | view)
+            .and_then(|k| k.get_value::<String, _>("DisplayName"))
+            .is_ok()
+    })
+}
+
+#[cfg(not(windows))]
+fn win32_key_exists(_id: &str) -> bool {
+    false
 }
 
 // ----------------------------------------------------------------------------

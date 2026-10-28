@@ -18,18 +18,23 @@ use winreg::enums::*;
 use winreg::RegKey;
 
 /// Seçili kalıntıları sil. `program_label` karantina partisini etiketler.
-/// Öğeler frontend'den geldiği için her biri [`safety`] kontrolünden geçer;
-/// korumalı yol/anahtar o öğe için hata olarak raporlanır, hiçbir şey silinmez.
+/// Frontend yalnız öğe id'lerini gönderir; yollar son taramanın backend'deki
+/// kaydından çözülür. Ayrıca her öğe [`safety`] kontrolünden geçer; korumalı
+/// yol/anahtar o öğe için hata olarak raporlanır, hiçbir şey silinmez.
 pub async fn remove_items(
     program_label: String,
-    items: Vec<LeftoverItem>,
+    item_ids: Vec<String>,
 ) -> DMedicResult<RemovalReport> {
+    let items = super::leftover::resolve_items(&item_ids);
     tokio::task::spawn_blocking(move || remove_blocking(&program_label, items))
         .await
         .map_err(|e| DMedicError::Other(format!("silme join: {e}")))?
 }
 
-fn remove_blocking(program_label: &str, items: Vec<LeftoverItem>) -> DMedicResult<RemovalReport> {
+fn remove_blocking(
+    program_label: &str,
+    items: Vec<Result<LeftoverItem, String>>,
+) -> DMedicResult<RemovalReport> {
     let guard = FsGuard::from_env();
     let mut batch = Batch::create(program_label)?;
     let mut results = Vec::with_capacity(items.len());
@@ -38,6 +43,19 @@ fn remove_blocking(program_label: &str, items: Vec<LeftoverItem>) -> DMedicResul
     let mut freed_bytes = 0u64;
 
     for item in &items {
+        let item = match item {
+            Ok(item) => item,
+            Err(unknown_id) => {
+                failed += 1;
+                results.push(RemovalItemResult {
+                    item_id: unknown_id.clone(),
+                    path: String::new(),
+                    success: false,
+                    message: Some("Öğe son kalıntı taramasında yok — yeniden tarayın".into()),
+                });
+                continue;
+            }
+        };
         let res = remove_one(&mut batch, &guard, item);
         match &res {
             Ok(bytes) => {

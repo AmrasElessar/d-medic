@@ -266,7 +266,13 @@
       "rollback_fail_title": "Rollback başarısız",
       "delete_confirm": "\"{desc}\" snapshot'ı silinecek. .reg dosyaları diskte kalır (manuel silinmeli). Devam?",
       "delete_done_title": "Snapshot silindi",
-      "delete_fail_title": "Snapshot silinemedi"
+      "delete_fail_title": "Snapshot silinemedi",
+      "no_restore_point": "Geri yükleme noktası yok",
+      "enable_protection": "Sistem Korumasını Aç",
+      "enable_protection_confirm": "Sistem sürücüsünde Sistem Koruması (System Restore) açılacak. Windows geri yükleme noktaları için disk alanı ayırır. Devam edilsin mi?",
+      "enable_protection_done": "Sistem Koruması açıldı",
+      "enable_protection_done_desc": "Sonraki işlemlerde geri yükleme noktası oluşturulabilecek.",
+      "enable_protection_fail": "Sistem Koruması açılamadı"
     },
     "settings": {
       "title": "Ayarlar",
@@ -419,7 +425,14 @@
     "restore_ok_title": "Geri yüklendi",
     "restore_ok_desc": "Karantinadaki öğeler eski konumlarına döndürüldü.",
     "restore_fail": "Geri yükleme başarısız",
-    "purge_fail": "Silme başarısız"
+    "purge_fail": "Silme başarısız",
+    "still_registered_warn": "Program hâlâ kurulu görünüyor — hiçbir öğe varsayılan olarak seçilmedi. Kurulu bir programın dosyalarını silmek onu bozar.",
+    "purge_confirm": "Bu karantina partisi kalıcı olarak silinecek ve geri yüklenemeyecek. Devam edilsin mi?",
+    "purge_all": "Tümünü Kalıcı Sil",
+    "purge_all_confirm": "{n} karantina partisinin tamamı kalıcı olarak silinecek ve geri yüklenemeyecek. Devam edilsin mi?",
+    "quarantine_total": "{n} parti · toplam {size}",
+    "quarantine_large_warn": "Karantina diskte {size} yer kaplıyor. Geri yüklemeyeceğinizden emin olduğunuz partileri kalıcı silebilirsiniz.",
+    "system_component_hint": "Bu giriş bir sistem bileşeni olarak işaretli; başka bir ürünün kaldırıcısı tarafından yönetilir. D-Medic onu kaldırmaz."
   },
   "defrag": {
     "free": "boş",
@@ -440,8 +453,6 @@
     "analyzing_files": "{n} dosya tarandı...",
     "mode": "Birleştirme modu",
     "mode_quick": "Hızlı (parçalı dosyaları birleştir)",
-    "mode_full": "Tam (parça + boş alan)",
-    "mode_free_space_consolidate": "Boş Alanı Topla",
     "start": "Birleştirmeyi Başlat",
     "cancel": "İptal Et",
     "preparing": "Hazırlanıyor...",

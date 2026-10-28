@@ -1,6 +1,6 @@
 //! Defrag taşıma motoru — FSCTL_MOVE_FILE ile dosya konsolidasyonu.
 //!
-//! Strateji (yalnız Quick; Full / boş alan konsolidasyonu henüz yok): parçalı
+//! Strateji (Quick; tam / boş alan konsolidasyonu henüz yok): parçalı
 //! her dosya için bitmap'te yeterli bitişik boş aralık bulunur ve dosyanın tüm
 //! küme aralığı (VCN 0..N) o hedefe tek çağrıda taşınır — NTFS bütünleşik
 //! yerleştirir. Taşıma `FSCTL_MOVE_FILE` ile yapılır; NTFS bunu journaller,
@@ -40,13 +40,6 @@ pub async fn run(app: AppHandle, letter: char, mode: DefragMode) -> DMedicResult
             return Ok(());
         }
         DefragMode::Quick => {}
-        // Boş alan konsolidasyonu henüz yok — sessizce Quick çalıştırmak yerine
-        // açıkça reddet.
-        DefragMode::Full | DefragMode::FreeSpaceConsolidate => {
-            return Err(DMedicError::Validation(
-                "Bu defrag modu henüz desteklenmiyor; yalnız Hızlı mod kullanılabilir".into(),
-            ));
-        }
     }
 
     let guard = super::try_begin().ok_or_else(|| {

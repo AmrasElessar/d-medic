@@ -9,7 +9,7 @@
 //! - `ROOT\Microsoft\Windows\Storage` — MSFT_PhysicalDisk (MediaType: HDD/SSD)
 
 use serde::{Deserialize, Serialize};
-use wmi::{COMLibrary, WMIConnection};
+use super::wmi_compat::{COMLibrary, WMIConnection};
 
 use crate::error::{DMedicError, DMedicResult};
 
@@ -187,8 +187,14 @@ fn list_physical_disks_blocking() -> DMedicResult<Vec<PhysicalDiskInfo>> {
         .collect())
 }
 
+#[cfg(not(windows))]
+fn count_installed_apps_blocking() -> Option<u32> {
+    None
+}
+
 /// HKLM + HKCU Uninstall altındaki alt anahtar sayısı = yüklü program sayısı.
 /// Win32_Product YAVAŞ (MSI repair tetikler), bu yöntem ms cinsinden döner.
+#[cfg(windows)]
 fn count_installed_apps_blocking() -> Option<u32> {
     use windows::core::{PCWSTR, PWSTR};
     use windows::Win32::Foundation::ERROR_SUCCESS;

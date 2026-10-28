@@ -236,15 +236,23 @@ pub fn purge(id: &str) -> DMedicResult<()> {
     Ok(())
 }
 
-/// Süresi dolmuş partileri temizle (uygulama açılışında çağrılabilir).
+/// Süresi dolmuş partileri temizle (uygulama açılışında çağrılır).
 pub fn purge_expired() -> DMedicResult<usize> {
     let mut removed = 0;
     for e in list()? {
-        if e.expires_in_days <= 0 {
-            if purge(&e.id).is_ok() {
-                removed += 1;
-            }
+        if e.expires_in_days <= 0 && purge(&e.id).is_ok() {
+            removed += 1;
         }
+    }
+    Ok(removed)
+}
+
+/// Tüm partileri kalıcı sil (kullanıcı "Tümünü temizle" dedi).
+pub fn purge_all() -> DMedicResult<usize> {
+    let mut removed = 0;
+    for e in list()? {
+        purge(&e.id)?;
+        removed += 1;
     }
     Ok(removed)
 }
@@ -400,4 +408,57 @@ fn reg_import(reg_file: &Path, view: Option<&str>) -> DMedicResult<()> {
         )));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Test başına ayrı geçici klasör.
+    fn temp_dir(name: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("dmedic-q-{name}-{}", uuid::Uuid::new_v4()));
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn copy_dir_copies_tree() {
+        let root = temp_dir("copy");
+        let src = root.join("src");
+        fs::create_dir_all(src.join("sub")).unwrap();
+        fs::write(src.join("a.txt"), b"a").unwrap();
+        fs::write(src.join("sub").join("b.txt"), b"b").unwrap();
+        let dest = root.join("dest");
+        copy_dir(&src, &dest).unwrap();
+        assert_eq!(fs::read(dest.join("sub").join("b.txt")).unwrap(), b"b");
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn copy_dir_refuses_symlinks_and_leaves_source_intact() {
+        let root = temp_dir("link");
+        let outside = root.join("outside");
+        fs::create_dir_all(&outside).unwrap();
+        fs::write(outside.join("precious.txt"), b"x").unwrap();
+        let src = root.join("src");
+        fs::create_dir_all(&src).unwrap();
+        fs::write(src.join("a.txt"), b"a").unwrap();
+        std::os::unix::fs::symlink(&outside, src.join("link")).unwrap();
+
+        let dest = root.join("dest");
+        assert!(copy_dir(&src, &dest).is_err());
+        // Kopya reddedildi; kaynak ve link hedefi dokunulmadan duruyor.
+        assert!(src.join("a.txt").exists());
+        assert!(outside.join("precious.txt").exists());
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn invalid_batch_ids_are_rejected() {
+        assert!(matches!(batch_dir(r"..\..\Windows"), Err(DMedicError::Validation(_))));
+        assert!(matches!(batch_dir("../x"), Err(DMedicError::Validation(_))));
+        assert!(matches!(purge(".."), Err(DMedicError::Validation(_))));
+        assert!(matches!(restore("a/b"), Err(DMedicError::Validation(_))));
+    }
 }

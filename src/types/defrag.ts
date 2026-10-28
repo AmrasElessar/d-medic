@@ -38,7 +38,7 @@ export interface ClusterMap {
   clusters_per_cell: number;
 }
 
-export type DefragMode = 'analyze_only' | 'quick' | 'full' | 'free_space_consolidate';
+export type DefragMode = 'analyze_only' | 'quick';
 
 export interface DefragProgress {
   job_id: string;

@@ -93,6 +93,16 @@ pub fn match_strength(name: &str, tokens: &Tokens) -> Option<Strength> {
     None
 }
 
+/// Eşleşmenin kullanıcıya gösterilecek açıklaması.
+pub fn describe(strength: Strength, tokens: &Tokens) -> String {
+    let key = &tokens.product_key;
+    match strength {
+        Strength::Exact => format!("ad, ürün anahtarıyla ('{key}') birebir aynı"),
+        Strength::Strong => format!("ad, ürün anahtarını ('{key}') içeriyor"),
+        Strength::Weak => format!("ad, ürün anahtarının ('{key}') ön eki — zayıf eşleşme"),
+    }
+}
+
 pub fn is_publisher_dir(name: &str, tokens: &Tokens) -> bool {
     if safety::is_protected_name(name) {
         return false;

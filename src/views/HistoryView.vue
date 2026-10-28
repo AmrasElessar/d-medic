@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
-import { History, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { History, RotateCcw, Trash2, ShieldAlert } from 'lucide-vue-next';
 import { useSnapshotsStore } from '@/stores/snapshots';
 import { useToast } from '@/composables/useToast';
 import { formatError } from '@/composables/useInvoke';
@@ -76,6 +76,22 @@ async function remove(snap: Snapshot) {
   }
 }
 
+// En yeni snapshot'ta restore point oluşmadıysa System Protection'ı açma önerisi.
+const enablingProtection = ref(false);
+
+async function enableProtection() {
+  if (!confirm(t('view.history.enable_protection_confirm'))) return;
+  enablingProtection.value = true;
+  try {
+    await invoke('enable_system_protection');
+    toast.success(t('view.history.enable_protection_done'), t('view.history.enable_protection_done_desc'));
+  } catch (e) {
+    toast.error(t('view.history.enable_protection_fail'), formatError(e));
+  } finally {
+    enablingProtection.value = false;
+  }
+}
+
 function formatDate(iso: string): string {
   try {
     return new Date(iso).toLocaleString(locale.value === 'tr' ? 'tr-TR' : 'en-US', {
@@ -114,9 +130,31 @@ function formatDate(iso: string): string {
           <p class="text-xs text-fg-muted mt-1">{{ formatDate(snap.timestamp) }}</p>
           <div class="flex items-center gap-3 text-xs text-fg-muted mt-2">
             <span v-if="snap.restore_point_created">✓ System Restore</span>
+            <span
+              v-else
+              class="flex items-center gap-1 text-priority-medium"
+              :title="snap.restore_point_note ?? ''"
+            >
+              <ShieldAlert class="w-3.5 h-3.5" />
+              {{ t('view.history.no_restore_point') }}
+            </span>
             <span>{{ t('view.history.svc_count', { n: snap.service_states.length }) }}</span>
             <span>{{ t('view.history.reg_count', { n: snap.registry_export_paths.length }) }}</span>
           </div>
+          <p v-if="!snap.restore_point_created && snap.restore_point_note" class="text-xs text-fg-subtle mt-1">
+            {{ snap.restore_point_note }}
+          </p>
+          <BaseButton
+            v-if="!snap.restore_point_created && snap.id === snaps.items[0]?.id"
+            class="mt-2"
+            size="sm"
+            variant="secondary"
+            :icon="ShieldAlert"
+            :loading="enablingProtection"
+            @click="enableProtection"
+          >
+            {{ t('view.history.enable_protection') }}
+          </BaseButton>
         </div>
         <div class="flex gap-2">
           <BaseButton

@@ -15,7 +15,6 @@ pub enum DMedicError {
     #[error("PowerShell hatası: {0}")]
     PowerShell(String),
 
-    #[cfg(windows)]
     #[error("WMI hatası: {0}")]
     Wmi(String),
 
@@ -49,7 +48,6 @@ impl Serialize for DMedicError {
             Self::Io(_) => "io",
             Self::Json(_) | Self::SimdJson(_) => "json",
             Self::PowerShell(_) => "powershell",
-            #[cfg(windows)]
             Self::Wmi(_) => "wmi",
             Self::NotElevated => "not_elevated",
             Self::NotFound(_) => "not_found",

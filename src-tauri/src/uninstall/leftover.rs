@@ -10,25 +10,71 @@
 //! gücüne göre). Hiçbir şey burada SİLİNMEZ — yalnızca aday listesi üretilir;
 //! silme [`super::remove`] içindedir.
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
+use std::sync::Mutex;
+#[cfg(windows)]
+use std::path::PathBuf;
 
-use super::matching::{self, is_publisher_dir, Strength, Tokens};
+#[cfg(windows)]
+use super::matching::is_publisher_dir;
+use super::matching::{self, Strength, Tokens};
 use crate::error::DMedicResult;
 use crate::models::{
     InstalledProgram, LeftoverConfidence, LeftoverItem, LeftoverKind, LeftoverScanResult,
 };
-use crate::safety::{self, norm_key, FsGuard};
+use crate::safety::FsGuard;
+#[cfg(windows)]
+use crate::safety::{self, norm_key};
 
 #[cfg(windows)]
 use winreg::enums::*;
 #[cfg(windows)]
 use winreg::RegKey;
 
+/// Son taramanın bulguları. Silme komutu frontend'den yalnız öğe id'si alır ve
+/// yolu buradan çözer — webview'ın gönderdiği yol/anahtar dizesine güvenilmez.
+static LAST_SCAN: Mutex<Vec<LeftoverItem>> = Mutex::new(Vec::new());
+
 /// Programın kalıntılarını ara. Bloklayıcı registry/FS işleri spawn_blocking'te.
+///
+/// Program hâlâ kurulu görünüyorsa (kaldırıcı iptal edildi / sürüyor ya da
+/// "yalnız tara" seçildi) hiçbir öğe varsayılan seçili gelmez.
 pub async fn scan(program: InstalledProgram) -> DMedicResult<LeftoverScanResult> {
-    tokio::task::spawn_blocking(move || scan_blocking(&program))
+    let still_registered = super::inventory::is_still_installed(&program).await;
+    let mut result = tokio::task::spawn_blocking(move || scan_blocking(&program))
         .await
-        .map_err(|e| crate::error::DMedicError::Other(format!("kalıntı tarama join: {e}")))?
+        .map_err(|e| crate::error::DMedicError::Other(format!("kalıntı tarama join: {e}")))??;
+    if still_registered {
+        result.program_still_registered = true;
+        for item in &mut result.items {
+            item.default_selected = false;
+        }
+    }
+    *LAST_SCAN.lock().unwrap_or_else(|e| e.into_inner()) = result.items.clone();
+    Ok(result)
+}
+
+/// Son taramada bulunan öğeleri id ile çöz. Bilinmeyen id'ler `Err(id)` döner.
+pub fn resolve_items(ids: &[String]) -> Vec<Result<LeftoverItem, String>> {
+    let cache = LAST_SCAN.lock().unwrap_or_else(|e| e.into_inner());
+    ids.iter()
+        .map(|id| {
+            cache
+                .iter()
+                .find(|i| &i.id == id)
+                .cloned()
+                .ok_or_else(|| id.clone())
+        })
+        .collect()
+}
+
+/// Kalıntı gerekçesine eşleşme açıklamasını ekle (UI'da "neden önerildi").
+#[cfg(windows)]
+fn with_note(base: &str, name: &str, tokens: &Tokens) -> String {
+    match matching::match_strength(name, tokens) {
+        Some(s) => format!("{base} — {}", matching::describe(s, tokens)),
+        None => base.to_string(),
+    }
 }
 
 /// Bir klasör/anahtar adının ürünle eşleşme güveni.
@@ -101,6 +147,8 @@ fn scan_blocking(program: &InstalledProgram) -> DMedicResult<LeftoverScanResult>
         scanned_roots,
         registry_hits,
         file_hits,
+        // `scan` kurulum durumunu ayrıca kontrol edip günceller.
+        program_still_registered: false,
     })
 }
 
@@ -244,7 +292,7 @@ fn scan_root_dir(
                     ps,
                     None,
                     Some(dir_size(&path)),
-                    "Program adıyla eşleşen artık klasör",
+                    with_note("Program adıyla eşleşen artık klasör", &name, tokens),
                 ));
             }
         } else if depth == 0 && is_publisher_dir(&name, tokens) {
@@ -282,7 +330,7 @@ fn scan_start_menu(dir: &Path, tokens: &Tokens, guard: &FsGuard, items: &mut Vec
                     lnk,
                     None,
                     path.metadata().ok().map(|m| m.len()),
-                    "Başlat menüsü kısayolu",
+                    with_note("Başlat menüsü kısayolu", &stem, tokens),
                 ));
             }
         }
@@ -321,7 +369,7 @@ fn scan_registry(tokens: &Tokens, items: &mut Vec<LeftoverItem>, scanned_roots: 
             for sub in software.enum_keys().filter_map(Result::ok) {
                 if let Some(conf) = match_confidence(&sub, tokens) {
                     push_regkey(items, label, &format!("SOFTWARE\\{sub}"), conf,
-                        "Program adıyla eşleşen registry anahtarı");
+                        &with_note("Program adıyla eşleşen registry anahtarı", &sub, tokens));
                 } else if is_publisher_dir(&sub, tokens) {
                     // Yayıncı anahtarının altında ürün anahtarı ara.
                     if let Ok(pub_key) =
@@ -331,7 +379,7 @@ fn scan_registry(tokens: &Tokens, items: &mut Vec<LeftoverItem>, scanned_roots: 
                             if let Some(conf) = match_confidence(&child, tokens) {
                                 push_regkey(items, label,
                                     &format!("SOFTWARE\\{sub}\\{child}"), conf,
-                                    "Yayıncı altında eşleşen ürün anahtarı");
+                                    &with_note("Yayıncı altında eşleşen ürün anahtarı", &child, tokens));
                             }
                         }
                     }
@@ -353,7 +401,10 @@ fn scan_registry(tokens: &Tokens, items: &mut Vec<LeftoverItem>, scanned_roots: 
                         format!("{label}\\{run_path}"),
                         Some(vname),
                         None,
-                        "Otomatik başlatma (Run) kaydı",
+                        format!(
+                            "Otomatik başlatma (Run) kaydı — değer adı veya komutu '{}' içeriyor",
+                            tokens.product_key
+                        ),
                     ));
                 }
             }

@@ -53,6 +53,10 @@ pub struct UninstallReport {
     pub completed: bool,
     pub exit_code: Option<i32>,
     pub message: String,
+    /// Kaldırıcı döndükten sonra program hâlâ envanterde kayıtlı mı. `true` ise
+    /// kaldırma gerçekleşmemiş (iptal) ya da arka planda sürüyor olabilir.
+    #[serde(default)]
+    pub still_registered: bool,
 }
 
 /// Kalıntı türü.
@@ -108,6 +112,10 @@ pub struct LeftoverScanResult {
     pub scanned_roots: Vec<String>,
     pub registry_hits: usize,
     pub file_hits: usize,
+    /// Tarama sırasında program hâlâ kurulu görünüyordu → hiçbir öğe varsayılan
+    /// seçili gelmez (çalışan programın dosyalarını silmemek için).
+    #[serde(default)]
+    pub program_still_registered: bool,
 }
 
 /// Tek bir kalıntının silinme sonucu.

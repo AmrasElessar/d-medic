@@ -3,7 +3,7 @@
 use crate::error::DMedicError;
 use crate::error::DMedicResult;
 use crate::models::{
-    InstalledProgram, LeftoverItem, LeftoverScanResult, QuarantineEntry, RemovalReport,
+    InstalledProgram, LeftoverScanResult, QuarantineEntry, RemovalReport,
     UninstallReport,
 };
 use crate::uninstall::{self, quarantine};
@@ -34,13 +34,14 @@ pub async fn scan_leftovers(program: InstalledProgram) -> DMedicResult<LeftoverS
     uninstall::scan_leftovers(program).await
 }
 
-/// Seçili kalıntıları karantina + reg-export üzerinden sil.
+/// Seçili kalıntıları karantina + reg-export üzerinden sil. Yalnız son
+/// taramadaki öğe id'leri kabul edilir.
 #[tauri::command]
 pub async fn remove_leftovers(
     program_label: String,
-    items: Vec<LeftoverItem>,
+    item_ids: Vec<String>,
 ) -> DMedicResult<RemovalReport> {
-    uninstall::remove_items(program_label, items).await
+    uninstall::remove_items(program_label, item_ids).await
 }
 
 /// Tüm karantina partilerini listele.
@@ -57,6 +58,14 @@ pub async fn restore_quarantine(id: String) -> DMedicResult<()> {
     tokio::task::spawn_blocking(move || quarantine::restore(&id))
         .await
         .map_err(|e| DMedicError::Other(format!("karantina restore join: {e}")))?
+}
+
+/// Tüm karantina partilerini kalıcı sil; silinen parti sayısını döner.
+#[tauri::command]
+pub async fn purge_all_quarantine() -> DMedicResult<usize> {
+    tokio::task::spawn_blocking(quarantine::purge_all)
+        .await
+        .map_err(|e| DMedicError::Other(format!("karantina purge-all join: {e}")))?
 }
 
 /// Bir karantina partisini kalıcı sil.

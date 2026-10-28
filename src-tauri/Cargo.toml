@@ -50,9 +50,6 @@ dirs = "5.0"
 
 memchr = "2.7"
 blake3 = "1.5"
-# Kalıntı taraması: registry için ergonomik native erişim (reg.exe spawn'a göre
-# çok daha hızlı, enum-derinlikli tarama için uygun).
-winreg = "0.52"
 # Dosya sistemi kalıntı taraması: derinlik-sınırlı recursive yürüyüş.
 walkdir = "2.5"
 
@@ -72,6 +69,9 @@ windows = { version = "0.58", features = [
     "Win32_System_Ioctl",
     "Win32_System_IO",
 ] }
+# Kalıntı taraması: registry için ergonomik native erişim (reg.exe spawn'a göre
+# çok daha hızlı, enum-derinlikli tarama için uygun).
+winreg = "0.52"
 # wmi: windows-rs üzerinde tip-güvenli ergonomik WMI wrapper.
 # PS spawn ilkesini koruyor (native COM), boilerplate'i kısaltıyor.
 wmi = "0.14"

@@ -9,6 +9,8 @@ export interface Snapshot {
   timestamp: string;
   description: string;
   restore_point_created: boolean;
+  /** Nokta oluşturulmadıysa nedeni. */
+  restore_point_note: string | null;
   registry_export_paths: string[];
   service_states: ServiceStateRecord[];
 }

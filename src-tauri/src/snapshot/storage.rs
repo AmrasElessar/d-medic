@@ -48,7 +48,7 @@ pub async fn list_all() -> DMedicResult<Vec<Snapshot>> {
             }
         }
     }
-    out.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
+    out.sort_by_key(|s| std::cmp::Reverse(s.timestamp));
     Ok(out)
 }
 

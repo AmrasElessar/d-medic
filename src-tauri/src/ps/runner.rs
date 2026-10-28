@@ -65,3 +65,20 @@ fn normalize_utf16(bytes: &[u8]) -> String {
         String::from_utf8_lossy(bytes).into_owned()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::normalize_utf16;
+
+    #[test]
+    fn utf16le_with_bom_is_decoded() {
+        let mut bytes = vec![0xFF, 0xFE];
+        bytes.extend("Çalışıyor OK".encode_utf16().flat_map(|u| u.to_le_bytes()));
+        assert_eq!(normalize_utf16(&bytes), "Çalışıyor OK");
+    }
+
+    #[test]
+    fn plain_utf8_passes_through() {
+        assert_eq!(normalize_utf16("OK\r\n".as_bytes()), "OK\r\n");
+    }
+}

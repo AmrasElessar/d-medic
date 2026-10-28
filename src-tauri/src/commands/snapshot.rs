@@ -30,6 +30,12 @@ pub async fn rollback_snapshot(id: String) -> DMedicResult<RollbackReport> {
     snapshot::rollback_full(&id).await
 }
 
+/// Kullanıcı onayıyla System Protection'ı aç (restore point katmanı için).
+#[tauri::command]
+pub async fn enable_system_protection() -> DMedicResult<()> {
+    snapshot::restore_point::enable_protection().await
+}
+
 #[tauri::command]
 pub async fn delete_snapshot(id: String) -> DMedicResult<()> {
     snapshot::storage::delete(&id).await

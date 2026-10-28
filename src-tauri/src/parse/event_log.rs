@@ -44,3 +44,21 @@ pub fn detect_bsod_kind(buffer: &[u8]) -> Option<BsodKind> {
     }
     None
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn detects_known_stop_codes() {
+        let xml = b"<Data Name='BugcheckCode'>26</Data><Data>MEMORY_MANAGEMENT</Data>";
+        assert_eq!(detect_bsod_kind(xml).map(|k| k.as_str()), Some("MEMORY_MANAGEMENT"));
+        let xml = b"...NTFS_FILE_SYSTEM...";
+        assert_eq!(detect_bsod_kind(xml).map(|k| k.as_str()), Some("NTFS_FILE_SYSTEM"));
+    }
+
+    #[test]
+    fn unknown_buffer_yields_none() {
+        assert!(detect_bsod_kind(b"<Event>nothing here</Event>").is_none());
+    }
+}

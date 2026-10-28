@@ -183,7 +183,7 @@ where
     }
     on_progress(total_files, None);
 
-    frag_list.sort_by(|a, b| b.fragments.cmp(&a.fragments));
+    frag_list.sort_by_key(|f| std::cmp::Reverse(f.fragments));
     frag_list.truncate(TOP_N);
 
     let pct = if total_files > 0 {

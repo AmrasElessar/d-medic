@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use serde::Deserialize;
 use serde_json::json;
-use wmi::WMIConnection;
+use super::wmi_compat::WMIConnection;
 
 use super::{wmi as wmi_helper, Check};
 use crate::error::{DMedicError, DMedicResult};
@@ -126,49 +126,42 @@ fn unsupported_reason(name: &str) -> Option<&'static str> {
     let n = name.to_ascii_lowercase();
 
     // Intel — Core 2, Core 1-7. gen, eski Atom/Pentium.
-    if n.contains("core 2") || n.contains("core(tm) 2") {
+    // WMI adı "Intel(R) Core(TM)2 Duo CPU E8400" biçimindedir (boşluksuz).
+    if n.contains("core 2") || n.contains("core(tm)2") || n.contains("core(tm) 2") {
         return Some("Intel Core 2 ailesi (2006-2011)");
     }
-    // i3/i5/i7/i9-1xxx ... -7xxx (1.-7. nesil) — desteklenmiyor.
-    // 8. nesil ve üstü destekleniyor.
-    for gen in ['1', '2', '3', '4', '5', '6', '7'] {
-        let prefixes = [
-            format!("i3-{gen}"),
-            format!("i5-{gen}"),
-            format!("i7-{gen}"),
-            format!("i9-{gen}"),
-        ];
-        for p in &prefixes {
-            // i7-7700 evet, i7-7920 evet, ama i7-10700 (10. nesil) HAYIR.
-            // 4 haneli kontrol: i7-7700 → "i7-7" sonrası ilk char rakam değilse 5 haneli
-            // gibi yanıltıcı olabilir. Daha güvenli: "i*-Xddd" pattern (4 haneli).
-            if let Some(idx) = n.find(p.as_str()) {
-                let after = &n[idx + p.len()..];
-                let rest_digits: String = after.chars().take_while(|c| c.is_ascii_digit()).collect();
-                // i7-7700 → "i7-7" + "700" = 3 rakam sonra → toplam 4 hane → match
-                // i7-10700 → "i7-1" + "0700" = 4 rakam sonra → toplam 5 hane → 10. nesil
-                if rest_digits.len() == 3 {
-                    return Some("Intel Core 1.-7. nesil");
-                }
+    // Core iX model numarası: "i7-920" (1. nesil, 3 hane), "i7-7700HQ"
+    // (7. nesil, 4 hane), "i7-1065G7" / "i7-10700" (10. nesil+). 4 haneli ve 1
+    // ile başlayan modeller 10.-14. nesil mobil serilerdir (desteklenir).
+    for tier in ["i3-", "i5-", "i7-", "i9-"] {
+        let mut rest = n.as_str();
+        while let Some(idx) = rest.find(tier) {
+            let after = &rest[idx + tier.len()..];
+            let digits: String = after.chars().take_while(|c| c.is_ascii_digit()).collect();
+            match (digits.len(), digits.chars().next()) {
+                (3, _) => return Some("Intel Core 1. nesil (Nehalem/Westmere)"),
+                (4, Some('2'..='7')) => return Some("Intel Core 2.-7. nesil"),
+                _ => {}
             }
+            rest = after;
         }
     }
 
     // AMD — FX, Phenom, eski A-series.
-    if n.contains("fx-") && n.contains("amd") {
+    // WMI adı "AMD FX(tm)-8350 Eight-Core Processor" biçimindedir.
+    if n.contains("amd fx") {
         return Some("AMD FX serisi (Bulldozer/Piledriver)");
     }
     if n.contains("phenom") {
         return Some("AMD Phenom serisi");
     }
-    // AMD Ryzen 1xxx (1st gen, Zen) — sadece 4 haneli ve 1 ile başlayan.
+    // AMD Ryzen 1xxx (1st gen, Zen): "ryzen 7 1700", "ryzen 5 1600x".
     if let Some(idx) = n.find("ryzen ") {
         let after = &n[idx + "ryzen ".len()..];
-        // "ryzen 7 1700" → tier "7", boşluk, model "1700"
         let parts: Vec<&str> = after.split_whitespace().collect();
         if parts.len() >= 2 {
-            let model = parts[1];
-            if model.len() == 4 && model.starts_with('1') && model.chars().all(|c| c.is_ascii_digit()) {
+            let digits: String = parts[1].chars().take_while(|c| c.is_ascii_digit()).collect();
+            if digits.len() == 4 && digits.starts_with('1') {
                 return Some("AMD Ryzen 1. nesil (Zen)");
             }
         }
@@ -344,5 +337,39 @@ impl Check for DriverFreshnessCheck {
                 "old_pct": pct,
             }),
         }])
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::unsupported_reason as r;
+
+    #[test]
+    fn old_intel_is_unsupported() {
+        assert!(r("Intel(R) Core(TM)2 Duo CPU E8400").is_some());
+        assert!(r("Intel(R) Core(TM) i7-920 CPU @ 2.67GHz").is_some());
+        assert!(r("Intel(R) Core(TM) i5-2500K CPU @ 3.30GHz").is_some());
+        assert!(r("Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz").is_some());
+    }
+
+    #[test]
+    fn modern_intel_is_supported() {
+        assert!(r("Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz").is_none());
+        assert!(r("Intel(R) Core(TM) i7-10700K CPU @ 3.80GHz").is_none());
+        // 10.-12. nesil mobil: 4 hane, 1 ile başlar — 1. nesil DEĞİL.
+        assert!(r("Intel(R) Core(TM) i7-1065G7 CPU @ 1.30GHz").is_none());
+        assert!(r("11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz").is_none());
+        assert!(r("12th Gen Intel(R) Core(TM) i5-1235U").is_none());
+        assert!(r("13th Gen Intel(R) Core(TM) i9-13900K").is_none());
+    }
+
+    #[test]
+    fn amd_generations() {
+        assert!(r("AMD Ryzen 7 1700 Eight-Core Processor").is_some());
+        assert!(r("AMD Ryzen 5 1600X Six-Core Processor").is_some());
+        assert!(r("AMD Ryzen 7 2700X Eight-Core Processor").is_none());
+        assert!(r("AMD Ryzen 9 5900X 12-Core Processor").is_none());
+        assert!(r("AMD FX(tm)-8350 Eight-Core Processor").is_some());
+        assert!(r("AMD Phenom(tm) II X4 965").is_some());
     }
 }

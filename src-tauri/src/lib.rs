@@ -1,3 +1,7 @@
+// Windows dışı derlemeler (Linux CI testleri) yalnız stub yolları derler;
+// Windows'a özel yardımcıların "kullanılmıyor" uyarıları orada gürültüdür.
+#![cfg_attr(not(windows), allow(dead_code, unused_imports, unused_variables))]
+
 pub mod action;
 pub mod commands;
 pub mod defrag;
@@ -70,6 +74,7 @@ pub fn run() {
             snap_cmd::create_snapshot,
             snap_cmd::rollback_snapshot,
             snap_cmd::delete_snapshot,
+            snap_cmd::enable_system_protection,
             // guide
             guide_cmd::list_guides,
             guide_cmd::get_guide,
@@ -86,6 +91,7 @@ pub fn run() {
             uninstall_cmd::list_quarantine,
             uninstall_cmd::restore_quarantine,
             uninstall_cmd::purge_quarantine,
+            uninstall_cmd::purge_all_quarantine,
             // defrag (özel IOCTL motoru)
             defrag_cmd::list_volumes,
             defrag_cmd::analyze_volume,

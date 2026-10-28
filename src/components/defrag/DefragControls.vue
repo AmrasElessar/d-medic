@@ -21,7 +21,6 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const mode = ref<DefragMode>('quick');
 
-// 'full' ve 'free_space_consolidate' motorda henüz yok (backend reddeder).
 const MODES: DefragMode[] = ['quick'];
 </script>
 

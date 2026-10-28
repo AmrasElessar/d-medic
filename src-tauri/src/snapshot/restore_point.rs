@@ -12,7 +12,13 @@
 use crate::error::DMedicResult;
 use crate::ps;
 
-pub async fn create(description: &str) -> DMedicResult<bool> {
+/// Oluşturma sonucu; `note` yalnız oluşturulmadığında dolu (UI'da gösterilir).
+pub struct Outcome {
+    pub created: bool,
+    pub note: Option<String>,
+}
+
+pub async fn create(description: &str) -> DMedicResult<Outcome> {
     let script = format!(
         "function Get-LastSeq {{ (Get-ComputerRestorePoint -ErrorAction SilentlyContinue | \
              Measure-Object -Property SequenceNumber -Maximum).Maximum }}; \
@@ -25,18 +31,44 @@ pub async fn create(description: &str) -> DMedicResult<bool> {
     );
     let out = ps::runner::run_script(&script).await?;
     let created = out.stdout.lines().any(|l| l.trim() == "CREATED");
-    if !created {
-        let reason = if out.status != 0 {
-            out.stderr.trim().lines().next().unwrap_or("bilinmeyen hata").to_string()
-        } else {
-            out.stdout
-                .lines()
-                .map(str::trim)
-                .find(|l| !l.is_empty() && *l != "SKIPPED")
-                .unwrap_or("son 24 saatte zaten bir geri yükleme noktası var")
-                .to_string()
-        };
-        tracing::warn!(%reason, "Geri yükleme noktası oluşturulmadı");
+    if created {
+        return Ok(Outcome {
+            created,
+            note: None,
+        });
     }
-    Ok(created)
+    let reason = if out.status != 0 {
+        format!(
+            "System Protection kapalı olabilir: {}",
+            out.stderr.trim().lines().next().unwrap_or("bilinmeyen hata")
+        )
+    } else {
+        out.stdout
+            .lines()
+            .map(str::trim)
+            .find(|l| !l.is_empty() && *l != "SKIPPED")
+            .unwrap_or("son 24 saatte zaten bir geri yükleme noktası var")
+            .to_string()
+    };
+    tracing::warn!(%reason, "Geri yükleme noktası oluşturulmadı");
+    Ok(Outcome {
+        created: false,
+        note: Some(reason),
+    })
+}
+
+/// Sistem sürücüsünde System Protection'ı aç. Yalnız kullanıcı UI'da açıkça
+/// onayladığında çağrılır.
+pub async fn enable_protection() -> DMedicResult<()> {
+    let out = ps::runner::run_script(
+        "Enable-ComputerRestore -Drive ($env:SystemDrive + '\\') -ErrorAction Stop; 'OK'",
+    )
+    .await?;
+    if out.stdout.lines().any(|l| l.trim() == "OK") {
+        Ok(())
+    } else {
+        Err(crate::error::DMedicError::PowerShell(
+            out.stderr.trim().lines().next().unwrap_or("bilinmeyen hata").to_string(),
+        ))
+    }
 }
