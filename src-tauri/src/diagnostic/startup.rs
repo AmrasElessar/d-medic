@@ -1,7 +1,7 @@
+use super::wmi_compat::WMIConnection;
 use async_trait::async_trait;
 use serde::Deserialize;
 use serde_json::json;
-use wmi::WMIConnection;
 
 use super::{wmi as wmi_helper, Check};
 use crate::error::{DMedicError, DMedicResult};

@@ -47,7 +47,12 @@ pub async fn import_safe_hives(paths: &[String]) -> DMedicResult<Vec<(String, bo
         );
         let out = ps::runner::run_script(&script).await?;
         let success = out.status == 0
-            && out.stdout.lines().last().map(|s| s.trim() == "0").unwrap_or(false);
+            && out
+                .stdout
+                .lines()
+                .last()
+                .map(|s| s.trim() == "0")
+                .unwrap_or(false);
         results.push((p.clone(), success));
     }
     Ok(results)

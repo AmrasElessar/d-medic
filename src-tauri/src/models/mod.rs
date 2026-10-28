@@ -5,6 +5,9 @@ pub mod profile;
 pub mod snapshot;
 pub mod uninstall;
 
+pub use defrag::{
+    CellState, ClusterMap, DefragMode, DefragProgress, FileFrag, FragmentationReport, VolumeInfo,
+};
 pub use diagnostic::{
     ActionType, Category, EstimatedGain, Finding, LocalizedText, Priority, RiskLevel, ScanKind,
     ScanResult,
@@ -15,7 +18,4 @@ pub use snapshot::{ServiceStateRecord, Snapshot};
 pub use uninstall::{
     InstalledProgram, LeftoverConfidence, LeftoverItem, LeftoverKind, LeftoverScanResult,
     ProgramKind, QuarantineEntry, RemovalItemResult, RemovalReport, UninstallReport,
-};
-pub use defrag::{
-    CellState, ClusterMap, DefragMode, DefragProgress, FileFrag, FragmentationReport, VolumeInfo,
 };

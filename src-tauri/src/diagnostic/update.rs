@@ -79,7 +79,9 @@ impl Check for WindowsUpdateStuckCheck {
                     parsed.state, parsed.size_mb
                 ),
             ),
-            estimated_gain: EstimatedGain::DiskMb { value: parsed.size_mb },
+            estimated_gain: EstimatedGain::DiskMb {
+                value: parsed.size_mb,
+            },
             risk: RiskLevel::Low,
             reboot_required: false,
             action_id: Some("reset-windows-update".to_string()),
@@ -134,10 +136,7 @@ fn pending_reboot_blocking() -> DMedicResult<Vec<Finding>> {
         category: Category::Stability,
         priority: Priority::Medium,
         action_type: ActionType::Reboot,
-        title: LocalizedText::new(
-            "Yeniden başlatma bekliyor",
-            "Reboot pending",
-        ),
+        title: LocalizedText::new("Yeniden başlatma bekliyor", "Reboot pending"),
         description: LocalizedText::new(
             "Bir güncelleme, kurulum veya dosya değişikliği yeniden başlatmayı bekliyor. \
              Bekletmek SFC/DISM ve sonraki kurulumları başarısız kılabilir."

@@ -50,8 +50,7 @@ impl Action for RemoveBloatware {
         );
         let out = ps::runner::run_script(&script).await?;
 
-        let parsed: Option<serde_json::Value> =
-            serde_json::from_str(out.stdout.trim()).ok();
+        let parsed: Option<serde_json::Value> = serde_json::from_str(out.stdout.trim()).ok();
         let removed_count = parsed
             .as_ref()
             .and_then(|v| v.get("removed"))

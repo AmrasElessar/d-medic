@@ -18,7 +18,9 @@ impl Check for BcdHealthCheck {
 
     async fn run(&self) -> DMedicResult<Vec<Finding>> {
         // bcdedit elevated olmayan kullanıcıda kısıtlı çalışır ama enum'a izin verir.
-        let out = crate::ps::runner::run_script("bcdedit /enum 2>&1").await.ok();
+        let out = crate::ps::runner::run_script("bcdedit /enum 2>&1")
+            .await
+            .ok();
         let Some(out) = out else {
             return Ok(Vec::new());
         };

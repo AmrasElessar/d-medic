@@ -10,6 +10,7 @@ import {
   Package,
   ArrowLeft,
   Eraser,
+  AlertTriangle,
 } from 'lucide-vue-next';
 import BaseCard from '@/components/common/BaseCard.vue';
 import BaseButton from '@/components/common/BaseButton.vue';
@@ -39,6 +40,7 @@ const {
   loadQuarantine,
   restoreQuarantine,
   purgeQuarantine,
+  purgeAllQuarantine,
 } = useUninstall();
 
 type Panel = 'programs' | 'quarantine';
@@ -79,8 +81,15 @@ async function uninstallAndClean(): Promise<void> {
   if (!confirm(t('uninstall.confirm_uninstall', { name: p.name }))) return;
 
   flow.value = 'uninstalling';
-  uninstallReport.value = await runUninstaller(p);
-  await doScan(p, true);
+  const report = await runUninstaller(p);
+  if (!report) {
+    // Kaldırıcı başlatılamadı / reddedildi (örn. sistem bileşeni) — tarama yok.
+    flow.value = 'idle';
+    return;
+  }
+  uninstallReport.value = report;
+  // Program hâlâ kayıtlıysa listeden düşürme.
+  await doScan(p, !report.still_registered);
 }
 
 async function scanOnly(): Promise<void> {
@@ -119,6 +128,16 @@ async function doRemove(): Promise<void> {
       t('uninstall.cleaned_title'),
       t('uninstall.cleaned_desc', { removed: rep.removed, freed: formatBytes(rep.freed_bytes) }),
     );
+  }
+}
+
+function confirmPurge(id: string): void {
+  if (confirm(t('uninstall.purge_confirm'))) void purgeQuarantine(id);
+}
+
+function confirmPurgeAll(): void {
+  if (confirm(t('uninstall.purge_all_confirm', { n: store.quarantine.length }))) {
+    void purgeAllQuarantine();
   }
 }
 
@@ -168,7 +187,8 @@ const freedEstimate = computed(() => {
       <QuarantinePanel
         :entries="store.quarantine"
         @restore="restoreQuarantine"
-        @purge="purgeQuarantine"
+        @purge="confirmPurge"
+        @purge-all="confirmPurgeAll"
       />
     </BaseCard>
 
@@ -216,9 +236,18 @@ const freedEstimate = computed(() => {
 
           <!-- IDLE: aksiyonlar -->
           <div v-if="flow === 'idle'" class="flex-1 flex flex-col justify-center gap-3 py-6">
-            <BaseButton :icon="Trash2" variant="danger" full-width @click="uninstallAndClean">
+            <BaseButton
+              :icon="Trash2"
+              variant="danger"
+              full-width
+              :disabled="selected.is_system_component"
+              @click="uninstallAndClean"
+            >
               {{ t('uninstall.action_uninstall') }}
             </BaseButton>
+            <p v-if="selected.is_system_component" class="text-xs text-priority-medium text-center px-4">
+              {{ t('uninstall.system_component_hint') }}
+            </p>
             <BaseButton :icon="ScanSearch" variant="secondary" full-width @click="scanOnly">
               {{ t('uninstall.action_scan_only') }}
             </BaseButton>
@@ -237,6 +266,13 @@ const freedEstimate = computed(() => {
 
           <!-- REVIEW: kalıntılar -->
           <div v-else-if="flow === 'review' && scanResult" class="flex-1 flex flex-col min-h-0">
+            <div
+              v-if="scanResult.program_still_registered"
+              class="flex items-start gap-2 text-xs text-priority-medium px-2.5 py-2 mt-2 rounded bg-priority-medium/10 border border-priority-medium/30"
+            >
+              <AlertTriangle class="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{{ uninstallReport?.message || t('uninstall.still_registered_warn') }}</span>
+            </div>
             <div class="flex items-center gap-2 py-2 text-xs text-fg-muted">
               <BaseBadge variant="info">{{ t('uninstall.found_files', { n: scanResult.file_hits }) }}</BaseBadge>
               <BaseBadge variant="info">{{ t('uninstall.found_regs', { n: scanResult.registry_hits }) }}</BaseBadge>

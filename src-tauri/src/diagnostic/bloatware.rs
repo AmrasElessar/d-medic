@@ -62,14 +62,12 @@ impl Check for UwpBloatwareCheck {
     }
 
     async fn run(&self) -> DMedicResult<Vec<Finding>> {
-        let out = ps::runner::run_script(
-            "Get-AppxPackage | Select-Object -ExpandProperty Name",
-        )
-        .await
-        .map_err(|e| {
-            tracing::warn!(error = %e, "Get-AppxPackage spawn failed");
-            DMedicError::PowerShell(format!("uwp list: {e}"))
-        })?;
+        let out = ps::runner::run_script("Get-AppxPackage | Select-Object -ExpandProperty Name")
+            .await
+            .map_err(|e| {
+                tracing::warn!(error = %e, "Get-AppxPackage spawn failed");
+                DMedicError::PowerShell(format!("uwp list: {e}"))
+            })?;
 
         if out.status != 0 && out.stdout.trim().is_empty() {
             return Ok(Vec::new());

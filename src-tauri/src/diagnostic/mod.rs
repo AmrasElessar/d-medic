@@ -25,6 +25,7 @@ pub mod startup;
 pub mod storage;
 pub mod update;
 pub mod wmi;
+pub mod wmi_compat;
 
 /// Bir tanılama kontrolü. Run sonucunda 0 veya daha fazla [`Finding`] döner.
 /// Birden fazla finding mantıklı olabilir (örn. birden fazla SMART uyarısı).
@@ -45,7 +46,6 @@ pub trait Check: Send + Sync {
 pub fn registry() -> Vec<Box<dyn Check>> {
     vec![
         Box::new(ram::RamVbsConflictCheck),
-        Box::new(storage::SysmainHddCheck),
         Box::new(storage::SmartHealthCheck),
         Box::new(storage::DiskFullCheck),
         Box::new(storage::FragmentationCheck),
@@ -139,7 +139,10 @@ where
             index: idx,
             total,
             check_id: check.id(),
-            kind: ScanEventKind::Finished { success, finding_count: count },
+            kind: ScanEventKind::Finished {
+                success,
+                finding_count: count,
+            },
         });
     }
     Ok(findings)

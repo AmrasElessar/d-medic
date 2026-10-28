@@ -266,7 +266,13 @@
       "rollback_fail_title": "Rollback failed",
       "delete_confirm": "Snapshot \"{desc}\" will be deleted. .reg files remain on disk (delete manually). Continue?",
       "delete_done_title": "Snapshot deleted",
-      "delete_fail_title": "Failed to delete snapshot"
+      "delete_fail_title": "Failed to delete snapshot",
+      "no_restore_point": "No restore point",
+      "enable_protection": "Enable System Protection",
+      "enable_protection_confirm": "System Protection (System Restore) will be enabled on the system drive. Windows reserves disk space for restore points. Continue?",
+      "enable_protection_done": "System Protection enabled",
+      "enable_protection_done_desc": "Restore points can be created on future operations.",
+      "enable_protection_fail": "Failed to enable System Protection"
     },
     "settings": {
       "title": "Settings",
@@ -419,7 +425,14 @@
     "restore_ok_title": "Restored",
     "restore_ok_desc": "Quarantined items returned to their original locations.",
     "restore_fail": "Restore failed",
-    "purge_fail": "Delete failed"
+    "purge_fail": "Delete failed",
+    "still_registered_warn": "The program still appears to be installed — no items were pre-selected. Deleting an installed program’s files will break it.",
+    "purge_confirm": "This quarantine batch will be permanently deleted and cannot be restored. Continue?",
+    "purge_all": "Delete All Permanently",
+    "purge_all_confirm": "All {n} quarantine batches will be permanently deleted and cannot be restored. Continue?",
+    "quarantine_total": "{n} batches · {size} total",
+    "quarantine_large_warn": "Quarantine is using {size} of disk space. You can permanently delete batches you are sure you won’t restore.",
+    "system_component_hint": "This entry is marked as a system component and is managed by another product’s uninstaller. D-Medic will not remove it."
   },
   "defrag": {
     "free": "free",
@@ -440,8 +453,6 @@
     "analyzing_files": "{n} files scanned...",
     "mode": "Defrag mode",
     "mode_quick": "Quick (consolidate fragmented files)",
-    "mode_full": "Full (fragments + free space)",
-    "mode_free_space_consolidate": "Consolidate Free Space",
     "start": "Start Defrag",
     "cancel": "Cancel",
     "preparing": "Preparing...",

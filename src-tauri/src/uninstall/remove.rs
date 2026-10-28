@@ -10,6 +10,7 @@ use crate::error::{DMedicError, DMedicResult};
 use crate::models::{LeftoverItem, LeftoverKind, RemovalItemResult, RemovalReport};
 
 use super::quarantine::Batch;
+use crate::safety::{self, FsGuard};
 
 #[cfg(windows)]
 use winreg::enums::*;
@@ -17,16 +18,24 @@ use winreg::enums::*;
 use winreg::RegKey;
 
 /// Seçili kalıntıları sil. `program_label` karantina partisini etiketler.
+/// Frontend yalnız öğe id'lerini gönderir; yollar son taramanın backend'deki
+/// kaydından çözülür. Ayrıca her öğe [`safety`] kontrolünden geçer; korumalı
+/// yol/anahtar o öğe için hata olarak raporlanır, hiçbir şey silinmez.
 pub async fn remove_items(
     program_label: String,
-    items: Vec<LeftoverItem>,
+    item_ids: Vec<String>,
 ) -> DMedicResult<RemovalReport> {
+    let items = super::leftover::resolve_items(&item_ids);
     tokio::task::spawn_blocking(move || remove_blocking(&program_label, items))
         .await
         .map_err(|e| DMedicError::Other(format!("silme join: {e}")))?
 }
 
-fn remove_blocking(program_label: &str, items: Vec<LeftoverItem>) -> DMedicResult<RemovalReport> {
+fn remove_blocking(
+    program_label: &str,
+    items: Vec<Result<LeftoverItem, String>>,
+) -> DMedicResult<RemovalReport> {
+    let guard = FsGuard::from_env();
     let mut batch = Batch::create(program_label)?;
     let mut results = Vec::with_capacity(items.len());
     let mut removed = 0usize;
@@ -34,7 +43,20 @@ fn remove_blocking(program_label: &str, items: Vec<LeftoverItem>) -> DMedicResul
     let mut freed_bytes = 0u64;
 
     for item in &items {
-        let res = remove_one(&mut batch, item);
+        let item = match item {
+            Ok(item) => item,
+            Err(unknown_id) => {
+                failed += 1;
+                results.push(RemovalItemResult {
+                    item_id: unknown_id.clone(),
+                    path: String::new(),
+                    success: false,
+                    message: Some("Öğe son kalıntı taramasında yok — yeniden tarayın".into()),
+                });
+                continue;
+            }
+        };
+        let res = remove_one(&mut batch, &guard, item);
         match &res {
             Ok(bytes) => {
                 removed += 1;
@@ -77,9 +99,10 @@ fn remove_blocking(program_label: &str, items: Vec<LeftoverItem>) -> DMedicResul
 }
 
 /// Tek bir öğeyi sil; karantinaya alınan byte miktarını döner.
-fn remove_one(batch: &mut Batch, item: &LeftoverItem) -> DMedicResult<u64> {
+fn remove_one(batch: &mut Batch, guard: &FsGuard, item: &LeftoverItem) -> DMedicResult<u64> {
     match item.kind {
         LeftoverKind::File | LeftoverKind::Folder => {
+            guard.check(&item.path).map_err(DMedicError::Validation)?;
             let path = PathBuf::from(&item.path);
             if !path.exists() {
                 return Ok(0); // Zaten yok — başarı say.
@@ -87,14 +110,14 @@ fn remove_one(batch: &mut Batch, item: &LeftoverItem) -> DMedicResult<u64> {
             batch.quarantine_path(&path)
         }
         LeftoverKind::RegKey => {
-            batch.export_reg(&item.path)?;
-            delete_reg_key(&item.path)?;
+            safety::check_reg_key(&item.path).map_err(DMedicError::Validation)?;
+            remove_reg_key(batch, &item.path)?;
             Ok(0)
         }
         LeftoverKind::RegValue => {
-            batch.export_reg(&item.path)?;
             let value_name = item.value_name.as_deref().unwrap_or("");
-            delete_reg_value(&item.path, value_name)?;
+            safety::check_reg_value(&item.path, value_name).map_err(DMedicError::Validation)?;
+            remove_reg_value(batch, &item.path, value_name)?;
             Ok(0)
         }
     }
@@ -104,96 +127,85 @@ fn remove_one(batch: &mut Batch, item: &LeftoverItem) -> DMedicResult<u64> {
 // Registry silme
 // ----------------------------------------------------------------------------
 
-/// "HKLM\\SOFTWARE\\X" → (predef kök, "SOFTWARE\\X").
+/// "HKLM\\SOFTWARE\\X" → (predef kök, "SOFTWARE\\X", HKLM mi).
 #[cfg(windows)]
-fn split_reg_path(full: &str) -> DMedicResult<(RegKey, String)> {
+fn split_reg_path(full: &str) -> DMedicResult<(RegKey, String, bool)> {
     let (label, sub) = full
         .split_once('\\')
         .ok_or_else(|| DMedicError::Validation(format!("geçersiz registry yolu: {full}")))?;
-    let root = match label {
-        "HKCU" => RegKey::predef(HKEY_CURRENT_USER),
-        "HKLM" => RegKey::predef(HKEY_LOCAL_MACHINE),
-        "HKCR" => RegKey::predef(HKEY_CLASSES_ROOT),
-        "HKU" => RegKey::predef(HKEY_USERS),
-        other => {
-            return Err(DMedicError::Validation(format!(
-                "bilinmeyen registry kökü: {other}"
-            )))
-        }
-    };
-    Ok((root, sub.to_string()))
+    match label.to_ascii_uppercase().as_str() {
+        "HKCU" => Ok((RegKey::predef(HKEY_CURRENT_USER), sub.to_string(), false)),
+        "HKLM" => Ok((RegKey::predef(HKEY_LOCAL_MACHINE), sub.to_string(), true)),
+        other => Err(DMedicError::Validation(format!(
+            "bilinmeyen registry kökü: {other}"
+        ))),
+    }
 }
 
-/// Anahtar alt-ağacını sil. 64/32-bit view'ların ikisini de dener (kalıntı
-/// taraması redirection-şeffaf yol kaydeder).
+/// Denenecek registry görünümleri: (erişim bayrağı, reg.exe `/reg:` değeri).
+/// HKLM\\SOFTWARE 32/64-bit ayrıdır; HKCU\\Software paylaşımlıdır.
 #[cfg(windows)]
-fn delete_reg_key(full: &str) -> DMedicResult<()> {
-    let (root, sub) = split_reg_path(full)?;
-    let (parent, leaf) = match sub.rsplit_once('\\') {
-        Some((p, l)) => (p.to_string(), l.to_string()),
-        None => (String::new(), sub.clone()),
-    };
-    let mut last_err: Option<std::io::Error> = None;
-    for view in [KEY_WOW64_64KEY, KEY_WOW64_32KEY] {
-        let parent_key = if parent.is_empty() {
-            // Doğrudan kökün altındaki anahtar.
-            match root.open_subkey_with_flags("", KEY_READ | KEY_WRITE | view) {
-                Ok(k) => k,
-                Err(e) => {
-                    last_err = Some(e);
-                    continue;
-                }
-            }
-        } else {
-            match root.open_subkey_with_flags(&parent, KEY_READ | KEY_WRITE | view) {
-                Ok(k) => k,
-                Err(e) => {
-                    last_err = Some(e);
-                    continue;
-                }
-            }
+fn views(is_hklm: bool) -> &'static [(u32, &'static str)] {
+    if is_hklm {
+        &[(KEY_WOW64_64KEY, "64"), (KEY_WOW64_32KEY, "32")]
+    } else {
+        &[(KEY_WOW64_64KEY, "64")]
+    }
+}
+
+/// Anahtarın bulunduğu HER görünümde: önce o görünümün `.reg` yedeği, sonra
+/// alt-ağaç silme. Yedeklenemeyen görünümde silme yapılmaz.
+#[cfg(windows)]
+fn remove_reg_key(batch: &mut Batch, full: &str) -> DMedicResult<()> {
+    let (root, sub, is_hklm) = split_reg_path(full)?;
+    let (parent, leaf) = sub
+        .rsplit_once('\\')
+        .ok_or_else(|| DMedicError::Validation(format!("geçersiz registry yolu: {full}")))?;
+    for &(flag, view) in views(is_hklm) {
+        // Paylaşımlı anahtar önceki görünümde silinmiş olabilir — yeniden kontrol.
+        if root.open_subkey_with_flags(&sub, KEY_READ | flag).is_err() {
+            continue;
+        }
+        batch.export_reg(full, Some(view))?;
+        let parent_key = root
+            .open_subkey_with_flags(parent, KEY_READ | KEY_WRITE | flag)
+            .map_err(|e| {
+                DMedicError::Other(format!("registry anahtarı açılamadı ({full}): {e}"))
+            })?;
+        parent_key.delete_subkey_all(leaf).map_err(|e| {
+            DMedicError::Other(format!("registry anahtarı silinemedi ({full}): {e}"))
+        })?;
+    }
+    Ok(())
+}
+
+/// Değerin bulunduğu her görünümde: anahtarı yedekle, değeri sil.
+#[cfg(windows)]
+fn remove_reg_value(batch: &mut Batch, full: &str, value_name: &str) -> DMedicResult<()> {
+    let (root, sub, is_hklm) = split_reg_path(full)?;
+    for &(flag, view) in views(is_hklm) {
+        let Ok(key) = root.open_subkey_with_flags(&sub, KEY_READ | KEY_SET_VALUE | flag) else {
+            continue;
         };
-        match parent_key.delete_subkey_all(&leaf) {
-            Ok(()) => return Ok(()),
-            Err(e) => last_err = Some(e),
+        if key.get_raw_value(value_name).is_err() {
+            continue;
         }
+        batch.export_reg(full, Some(view))?;
+        key.delete_value(value_name).map_err(|e| {
+            DMedicError::Other(format!(
+                "registry değeri silinemedi ({full}\\{value_name}): {e}"
+            ))
+        })?;
     }
-    Err(DMedicError::Other(format!(
-        "registry anahtarı silinemedi ({full}): {}",
-        last_err
-            .map(|e| e.to_string())
-            .unwrap_or_else(|| "bilinmeyen".into())
-    )))
-}
-
-/// Tek registry değerini sil (her iki view).
-#[cfg(windows)]
-fn delete_reg_value(full: &str, value_name: &str) -> DMedicResult<()> {
-    let (root, sub) = split_reg_path(full)?;
-    let mut last_err: Option<std::io::Error> = None;
-    for view in [KEY_WOW64_64KEY, KEY_WOW64_32KEY] {
-        match root.open_subkey_with_flags(&sub, KEY_SET_VALUE | view) {
-            Ok(key) => match key.delete_value(value_name) {
-                Ok(()) => return Ok(()),
-                Err(e) => last_err = Some(e),
-            },
-            Err(e) => last_err = Some(e),
-        }
-    }
-    Err(DMedicError::Other(format!(
-        "registry değeri silinemedi ({full}\\{value_name}): {}",
-        last_err
-            .map(|e| e.to_string())
-            .unwrap_or_else(|| "bilinmeyen".into())
-    )))
-}
-
-#[cfg(not(windows))]
-fn delete_reg_key(_full: &str) -> DMedicResult<()> {
     Ok(())
 }
 
 #[cfg(not(windows))]
-fn delete_reg_value(_full: &str, _value_name: &str) -> DMedicResult<()> {
+fn remove_reg_key(_batch: &mut Batch, _full: &str) -> DMedicResult<()> {
+    Ok(())
+}
+
+#[cfg(not(windows))]
+fn remove_reg_value(_batch: &mut Batch, _full: &str, _value_name: &str) -> DMedicResult<()> {
     Ok(())
 }

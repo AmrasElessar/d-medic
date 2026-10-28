@@ -39,9 +39,7 @@ pub fn get_layout(handle: windows::Win32::Foundation::HANDLE) -> Option<FileLayo
     use std::ffi::c_void;
     use windows::core::HRESULT;
     use windows::Win32::Foundation::{ERROR_HANDLE_EOF, ERROR_MORE_DATA};
-    use windows::Win32::System::Ioctl::{
-        FSCTL_GET_RETRIEVAL_POINTERS, STARTING_VCN_INPUT_BUFFER,
-    };
+    use windows::Win32::System::Ioctl::{FSCTL_GET_RETRIEVAL_POINTERS, STARTING_VCN_INPUT_BUFFER};
     use windows::Win32::System::IO::DeviceIoControl;
 
     const BUF: usize = 64 * 1024;
@@ -183,7 +181,7 @@ where
     }
     on_progress(total_files, None);
 
-    frag_list.sort_by(|a, b| b.fragments.cmp(&a.fragments));
+    frag_list.sort_by_key(|f| std::cmp::Reverse(f.fragments));
     frag_list.truncate(TOP_N);
 
     let pct = if total_files > 0 {

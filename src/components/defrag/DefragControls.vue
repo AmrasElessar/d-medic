@@ -21,7 +21,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const mode = ref<DefragMode>('quick');
 
-const MODES: DefragMode[] = ['quick', 'full', 'free_space_consolidate'];
+const MODES: DefragMode[] = ['quick'];
 </script>
 
 <template>

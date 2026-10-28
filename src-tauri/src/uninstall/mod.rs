@@ -9,6 +9,7 @@
 
 pub mod inventory;
 pub mod leftover;
+pub mod matching;
 pub mod quarantine;
 pub mod remove;
 pub mod runner;

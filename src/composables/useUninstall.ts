@@ -29,7 +29,7 @@ export function useUninstall() {
 
   async function runUninstaller(program: InstalledProgram): Promise<UninstallReport | null> {
     try {
-      return await invoke<UninstallReport>('run_uninstaller', { program });
+      return await invoke<UninstallReport>('run_uninstaller', { programId: program.id });
     } catch (e) {
       toast.error(t('uninstall.uninstall_fail'), formatError(e));
       return null;
@@ -50,9 +50,10 @@ export function useUninstall() {
     items: LeftoverItem[],
   ): Promise<RemovalReport | null> {
     try {
+      // Backend yolları son taramanın kendi kaydından çözer — yalnız id gönderilir.
       const report = await invoke<RemovalReport>('remove_leftovers', {
         programLabel,
-        items,
+        itemIds: items.map((i) => i.id),
       });
       void loadQuarantine();
       return report;
@@ -90,6 +91,15 @@ export function useUninstall() {
     }
   }
 
+  async function purgeAllQuarantine(): Promise<void> {
+    try {
+      await invoke<number>('purge_all_quarantine');
+      void loadQuarantine();
+    } catch (e) {
+      toast.error(t('uninstall.purge_fail'), formatError(e));
+    }
+  }
+
   return {
     loadPrograms,
     runUninstaller,
@@ -98,5 +108,6 @@ export function useUninstall() {
     loadQuarantine,
     restoreQuarantine,
     purgeQuarantine,
+    purgeAllQuarantine,
   };
 }

@@ -1,18 +1,25 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { Undo2, Trash2, ShieldCheck } from 'lucide-vue-next';
+import { computed } from 'vue';
+import { Undo2, Trash2, ShieldCheck, AlertTriangle } from 'lucide-vue-next';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseBadge from '@/components/common/BaseBadge.vue';
 import { formatBytes } from '@/utils/format';
 import type { QuarantineEntry } from '@/types';
 
-defineProps<{ entries: QuarantineEntry[] }>();
+const props = defineProps<{ entries: QuarantineEntry[] }>();
 const emit = defineEmits<{
   (e: 'restore', id: string): void;
   (e: 'purge', id: string): void;
+  (e: 'purge-all'): void;
 }>();
 
 const { t } = useI18n();
+
+/** Bu boyutun üzerinde karantina diskte belirgin yer kaplıyor — kullanıcıyı uyar. */
+const LARGE_QUARANTINE_BYTES = 5 * 1024 ** 3;
+
+const totalBytes = computed(() => props.entries.reduce((sum, e) => sum + e.total_bytes, 0));
 </script>
 
 <template>
@@ -22,7 +29,23 @@ const { t } = useI18n();
       {{ t('uninstall.quarantine_empty') }}
     </div>
 
-    <ul v-else class="space-y-2">
+    <template v-else>
+    <div class="flex items-center justify-between gap-3 mb-3">
+      <span class="text-xs text-fg-muted">
+        {{ t('uninstall.quarantine_total', { n: entries.length, size: formatBytes(totalBytes) }) }}
+      </span>
+      <BaseButton size="sm" variant="ghost" :icon="Trash2" @click="emit('purge-all')">
+        {{ t('uninstall.purge_all') }}
+      </BaseButton>
+    </div>
+    <div
+      v-if="totalBytes > LARGE_QUARANTINE_BYTES"
+      class="flex items-start gap-2 text-xs text-priority-medium px-2.5 py-2 mb-3 rounded bg-priority-medium/10 border border-priority-medium/30"
+    >
+      <AlertTriangle class="w-4 h-4 shrink-0 mt-0.5" />
+      <span>{{ t('uninstall.quarantine_large_warn', { size: formatBytes(totalBytes) }) }}</span>
+    </div>
+    <ul class="space-y-2">
       <li
         v-for="e in entries"
         :key="e.id"
@@ -46,5 +69,6 @@ const { t } = useI18n();
         </BaseButton>
       </li>
     </ul>
+    </template>
   </div>
 </template>

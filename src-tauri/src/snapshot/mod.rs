@@ -28,17 +28,23 @@ pub async fn capture_full(description: &str, services: &[&str]) -> DMedicResult<
     let id = Uuid::new_v4().to_string();
     let now = Utc::now();
 
-    let restore_ok = restore_point::create(description).await.unwrap_or(false);
-    let reg_paths = reg_export::export_safe_hives(&id).await.unwrap_or_default();
-    let service_states: Vec<ServiceStateRecord> = service_state::capture(services)
+    let rp = restore_point::create(description)
         .await
-        .unwrap_or_default();
+        .unwrap_or_else(|e| restore_point::Outcome {
+            created: false,
+            note: Some(e.to_string()),
+        });
+    let restore_ok = rp.created;
+    let reg_paths = reg_export::export_safe_hives(&id).await.unwrap_or_default();
+    let service_states: Vec<ServiceStateRecord> =
+        service_state::capture(services).await.unwrap_or_default();
 
     let snap = Snapshot {
         id: id.clone(),
         timestamp: now,
         description: description.to_string(),
         restore_point_created: restore_ok,
+        restore_point_note: rp.note,
         registry_export_paths: reg_paths,
         service_states,
     };

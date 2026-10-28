@@ -84,12 +84,9 @@ pub struct ClusterMap {
 pub enum DefragMode {
     /// Yalnız analiz — hiçbir küme taşınmaz.
     AnalyzeOnly,
-    /// Hızlı: yalnız parçalı dosyaları bütünleştir.
+    /// Hızlı: yalnız parçalı dosyaları bütünleştir. (Tam / boş alan
+    /// konsolidasyonu modları motor yazıldığında eklenecek.)
     Quick,
-    /// Tam: parça birleştirme + boş alan konsolidasyonu.
-    Full,
-    /// Yalnız boş alanı diskin sonuna doğru toparla.
-    FreeSpaceConsolidate,
 }
 
 /// Defrag sırasında yayılan ilerleme event'i (`defrag-progress`).

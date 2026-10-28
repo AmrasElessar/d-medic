@@ -3,6 +3,7 @@
 use crate::error::{DMedicError, DMedicResult};
 use crate::models::Snapshot;
 use crate::paths;
+use crate::safety;
 
 pub async fn save(snapshot: &Snapshot) -> DMedicResult<()> {
     let dir = paths::snapshot_dir().map_err(|e| DMedicError::Other(e.to_string()))?;
@@ -13,7 +14,19 @@ pub async fn save(snapshot: &Snapshot) -> DMedicResult<()> {
     Ok(())
 }
 
+/// IPC'den gelen snapshot id'sini doğrula (path traversal koruması).
+fn validate_id(id: &str) -> DMedicResult<()> {
+    if safety::is_valid_storage_id(id) {
+        Ok(())
+    } else {
+        Err(DMedicError::Validation(format!(
+            "geçersiz snapshot id: {id}"
+        )))
+    }
+}
+
 pub async fn load(id: &str) -> DMedicResult<Snapshot> {
+    validate_id(id)?;
     let dir = paths::snapshot_dir().map_err(|e| DMedicError::Other(e.to_string()))?;
     let path = dir.join(format!("{id}.json"));
     let bytes = std::fs::read(&path)
@@ -29,7 +42,12 @@ pub async fn list_all() -> DMedicResult<Vec<Snapshot>> {
     let mut out = Vec::new();
     for entry in std::fs::read_dir(&dir)? {
         let entry = entry?;
-        if entry.path().extension().map(|e| e == "json").unwrap_or(false) {
+        if entry
+            .path()
+            .extension()
+            .map(|e| e == "json")
+            .unwrap_or(false)
+        {
             if let Ok(bytes) = std::fs::read(entry.path()) {
                 if let Ok(snap) = serde_json::from_slice::<Snapshot>(&bytes) {
                     out.push(snap);
@@ -37,11 +55,12 @@ pub async fn list_all() -> DMedicResult<Vec<Snapshot>> {
             }
         }
     }
-    out.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
+    out.sort_by_key(|s| std::cmp::Reverse(s.timestamp));
     Ok(out)
 }
 
 pub async fn delete(id: &str) -> DMedicResult<()> {
+    validate_id(id)?;
     let dir = paths::snapshot_dir().map_err(|e| DMedicError::Other(e.to_string()))?;
     let path = dir.join(format!("{id}.json"));
     if path.exists() {

@@ -14,9 +14,9 @@ async fn count_events(log: &str, level: u32, ids: Option<&str>, days: u32) -> Op
         Some(i) => format!(
             "@{{LogName='{log}'; Level={level}; Id={i}; StartTime=(Get-Date).AddDays(-{days})}}"
         ),
-        None => format!(
-            "@{{LogName='{log}'; Level={level}; StartTime=(Get-Date).AddDays(-{days})}}"
-        ),
+        None => {
+            format!("@{{LogName='{log}'; Level={level}; StartTime=(Get-Date).AddDays(-{days})}}")
+        }
     };
     let script = format!(
         "try {{ $e = Get-WinEvent -FilterHashtable {filter} -ErrorAction Stop; \
@@ -60,9 +60,7 @@ impl Check for BsodHistoryCheck {
             action_type: ActionType::Guided,
             title: LocalizedText::new(
                 format!("Son 30 günde {count} beklenmedik kapanma ({label_tr})"),
-                format!(
-                    "{count} unexpected shutdowns in last 30 days ({label_en})"
-                ),
+                format!("{count} unexpected shutdowns in last 30 days ({label_en})"),
             ),
             description: LocalizedText::new(
                 "Kernel-Power Event 41 — sistem donma/BSOD/güç kesintisi sonrası yeniden \

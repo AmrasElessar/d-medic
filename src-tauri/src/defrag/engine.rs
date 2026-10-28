@@ -1,9 +1,10 @@
 //! Defrag taşıma motoru — FSCTL_MOVE_FILE ile dosya konsolidasyonu.
 //!
-//! Strateji (Quick/Full): parçalı her dosya için bitmap'te yeterli bitişik boş
-//! aralık bulunur ve dosyanın tüm küme aralığı (VCN 0..N) o hedefe tek çağrıda
-//! taşınır — NTFS bütünleşik yerleştirir. Taşıma `FSCTL_MOVE_FILE` ile yapılır;
-//! NTFS bunu journaller, yarıda kesilse veri kaybı olmaz.
+//! Strateji (Quick; tam / boş alan konsolidasyonu henüz yok): parçalı
+//! her dosya için bitmap'te yeterli bitişik boş aralık bulunur ve dosyanın tüm
+//! küme aralığı (VCN 0..N) o hedefe tek çağrıda taşınır — NTFS bütünleşik
+//! yerleştirir. Taşıma `FSCTL_MOVE_FILE` ile yapılır; NTFS bunu journaller,
+//! yarıda kesilse veri kaybı olmaz.
 //!
 //! Güvenlik: SSD'de full defrag reddedilir; MFT zone hedef alınmaz; iptal her
 //! dosya sınırında kontrol edilir.
@@ -18,28 +19,49 @@ use crate::models::{DefragMode, DefragProgress};
 #[cfg(windows)]
 const MAX_MOVE_CLUSTERS: u64 = 1 << 20;
 
+/// Sıkıştırılmış / sparse dosyalarda VCN aralığı fiziksel kümelerle birebir
+/// örtüşmez; tek parça "VCN 0..N" taşıması bunlar için geçersizdir → atlanır.
+#[cfg(windows)]
+const SKIP_ATTRIBUTES: u32 = 0x0000_0800 /* COMPRESSED */ | 0x0000_0200 /* SPARSE_FILE */;
+
+/// Başarısız bir taşımadan sonra bitmap'i yeniden okumadan önce en az bu kadar
+/// dosya işlenmiş olmalı (bayat bitmap ↔ okuma maliyeti dengesi).
+#[cfg(windows)]
+const BITMAP_REFRESH_MIN_FILES: u64 = 32;
+
 pub async fn run(app: AppHandle, letter: char, mode: DefragMode) -> DMedicResult<()> {
-    super::reset_cancel();
     let job_id = uuid::Uuid::new_v4().to_string();
 
-    // Analiz-only: taşıma yok.
-    if matches!(mode, DefragMode::AnalyzeOnly) {
-        emit(&app, &progress(&job_id, "analyzing", None, 0, 0, 0, 0.0));
-        emit(&app, &progress(&job_id, "done", None, 0, 0, 0, 100.0));
-        return Ok(());
+    match mode {
+        // Analiz-only: taşıma yok.
+        DefragMode::AnalyzeOnly => {
+            emit(&app, &progress(&job_id, "analyzing", None, 0, 0, 0, 0.0));
+            emit(&app, &progress(&job_id, "done", None, 0, 0, 0, 100.0));
+            return Ok(());
+        }
+        DefragMode::Quick => {}
     }
+
+    let guard = super::try_begin()
+        .ok_or_else(|| DMedicError::Validation("Zaten çalışan bir defrag işi var".into()))?;
+    // Bayrak yalnız kilidi alan iş tarafından sıfırlanır — reddedilen ikinci
+    // istek çalışan işin iptalini silmesin.
+    super::reset_cancel();
 
     #[cfg(windows)]
     {
         let app2 = app.clone();
         let job = job_id.clone();
-        tokio::task::spawn_blocking(move || run_blocking(app2, job, letter, mode))
-            .await
-            .map_err(|e| DMedicError::Other(format!("defrag join: {e}")))?
+        tokio::task::spawn_blocking(move || {
+            let _guard = guard;
+            run_blocking(app2, job, letter, mode)
+        })
+        .await
+        .map_err(|e| DMedicError::Other(format!("defrag join: {e}")))?
     }
     #[cfg(not(windows))]
     {
-        let _ = (letter, mode);
+        let _ = (letter, mode, guard);
         emit(&app, &progress(&job_id, "done", None, 0, 0, 0, 100.0));
         Ok(())
     }
@@ -79,6 +101,8 @@ fn run_blocking(
         (geo.mft_zone_end - geo.mft_zone_start).max(0) as u64,
     );
     let mut bm = bitmap::read(letter)?;
+    // Taşıma birim handle'ı üzerinden yapılır — iş boyunca tek handle.
+    let vol_handle = volume::VolumeHandle::open(letter, true)?;
 
     // Pass 1 — parçalı dosya adaylarını topla.
     let root = format!("{}:\\", letter.to_ascii_uppercase());
@@ -91,11 +115,21 @@ fn run_blocking(
         .filter_map(Result::ok)
     {
         if super::is_cancelled() {
-            emit(&app, &progress(&job_id, "cancelled", None, 0, clusters_total, 0, 0.0));
+            emit(
+                &app,
+                &progress(&job_id, "cancelled", None, 0, clusters_total, 0, 0.0),
+            );
             return Ok(());
         }
         if entry.path_is_symlink() || !entry.file_type().is_file() {
             continue;
+        }
+        {
+            use std::os::windows::fs::MetadataExt;
+            match entry.metadata() {
+                Ok(m) if m.file_attributes() & SKIP_ATTRIBUTES == 0 => {}
+                _ => continue,
+            }
         }
         let path = entry.path();
         let Ok(file) = volume::FileRef::open(path) else {
@@ -120,12 +154,21 @@ fn run_blocking(
     // Pass 2 — taşı.
     let mut clusters_moved: u64 = 0;
     let mut files_processed: u64 = 0;
+    let mut last_refresh_at: u64 = 0;
 
     for cand in &candidates {
         if super::is_cancelled() {
             emit(
                 &app,
-                &progress(&job_id, "cancelled", None, clusters_moved, clusters_total, files_processed, pct(clusters_moved, clusters_total)),
+                &progress(
+                    &job_id,
+                    "cancelled",
+                    None,
+                    clusters_moved,
+                    clusters_total,
+                    files_processed,
+                    pct(clusters_moved, clusters_total),
+                ),
             );
             return Ok(());
         }
@@ -156,7 +199,7 @@ fn run_blocking(
         let Ok(file) = volume::FileRef::open(&cand.path) else {
             continue;
         };
-        match move_file(letter, file.raw(), target, cand.total_clusters) {
+        match move_file(&vol_handle, file.raw(), target, cand.total_clusters) {
             Ok(()) => {
                 // Bitmap güncelle: eski extent'leri boşalt, hedefi doldur.
                 for e in &cand.extents {
@@ -171,13 +214,29 @@ fn run_blocking(
             }
             Err(e) => {
                 tracing::debug!(path = %cand.path.display(), error = %e, "taşıma atlandı");
+                // Bitmap tarama başında okundu; arada başka süreçler küme
+                // ayırmış olabilir. Sık başarısızlıkta taze bitmap'e geç.
+                if files_processed - last_refresh_at >= BITMAP_REFRESH_MIN_FILES {
+                    if let Ok(fresh) = bitmap::read(letter) {
+                        bm = fresh;
+                    }
+                    last_refresh_at = files_processed;
+                }
             }
         }
     }
 
     emit(
         &app,
-        &progress(&job_id, "done", None, clusters_moved, clusters_total, files_processed, 100.0),
+        &progress(
+            &job_id,
+            "done",
+            None,
+            clusters_moved,
+            clusters_total,
+            files_processed,
+            100.0,
+        ),
     );
     Ok(())
 }
@@ -185,7 +244,7 @@ fn run_blocking(
 /// FSCTL_MOVE_FILE — dosyanın VCN 0..count aralığını hedef LCN'e taşı.
 #[cfg(windows)]
 fn move_file(
-    letter: char,
+    vol: &super::volume::VolumeHandle,
     file_handle: windows::Win32::Foundation::HANDLE,
     target_lcn: u64,
     count: u64,
@@ -193,9 +252,6 @@ fn move_file(
     use std::ffi::c_void;
     use windows::Win32::System::Ioctl::{FSCTL_MOVE_FILE, MOVE_FILE_DATA};
     use windows::Win32::System::IO::DeviceIoControl;
-
-    // Taşıma birim (volume) handle'ı üzerinden yapılır — yazma erişimi gerekir.
-    let vol = super::volume::VolumeHandle::open(letter, true)?;
 
     let data = MOVE_FILE_DATA {
         FileHandle: file_handle,

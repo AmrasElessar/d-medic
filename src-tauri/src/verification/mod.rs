@@ -10,5 +10,7 @@
 pub mod loader;
 pub mod schema;
 
-pub use loader::{get_record, get_all_records};
-pub use schema::{VerificationLevel, VerificationRecord, VerificationSource, SourceType, SourceStance};
+pub use loader::{get_all_records, get_record};
+pub use schema::{
+    SourceStance, SourceType, VerificationLevel, VerificationRecord, VerificationSource,
+};

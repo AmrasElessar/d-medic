@@ -43,7 +43,7 @@ fn build(letter: char, target_cells: u32) -> DMedicResult<ClusterMap> {
     let cols = COLS;
     let rows = (target_cells / cols).max(1);
     let n_cells = (cols * rows) as u64;
-    let cpc = (total + n_cells - 1) / n_cells; // ceil
+    let cpc = total.div_ceil(n_cells);
     let cpc = cpc.max(1);
 
     let mut cells = Vec::with_capacity(n_cells as usize);

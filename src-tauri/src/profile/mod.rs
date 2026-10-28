@@ -56,7 +56,8 @@ pub fn definitions() -> Vec<ProfileDefinition> {
             kind: ProfileKind::Basic,
             label_tr: "Basit",
             label_en: "Basic",
-            description_tr: "Yalnızca güvenli ve geri alınabilir temizlikler. Yeni nesil donanım için.",
+            description_tr:
+                "Yalnızca güvenli ve geri alınabilir temizlikler. Yeni nesil donanım için.",
             description_en: "Only safe, reversible cleanups. For modern hardware.",
             action_ids: basic_actions,
         },
@@ -64,7 +65,8 @@ pub fn definitions() -> Vec<ProfileDefinition> {
             kind: ProfileKind::Moderate,
             label_tr: "Orta",
             label_en: "Moderate",
-            description_tr: "Çoğu sistem için dengeli. Telemetry ve arka plan servisleri kapatılır.",
+            description_tr:
+                "Çoğu sistem için dengeli. Telemetry ve arka plan servisleri kapatılır.",
             description_en: "Balanced for most systems. Telemetry and bg services disabled.",
             action_ids: moderate_actions,
         },
@@ -72,7 +74,8 @@ pub fn definitions() -> Vec<ProfileDefinition> {
             kind: ProfileKind::Aggressive,
             label_tr: "Agresif",
             label_en: "Aggressive",
-            description_tr: "Eski / düşük RAM'li sistemler için. Bloatware ve VBS kalkar — geri alınamaz.",
+            description_tr:
+                "Eski / düşük RAM'li sistemler için. Bloatware ve VBS kalkar — geri alınamaz.",
             description_en: "For old / low-RAM systems. Bloatware + VBS removed — irreversible.",
             action_ids: aggressive_actions,
         },
@@ -101,8 +104,7 @@ mod tests {
     /// Aksi halde UI "Düzelt" → NotFound hatası verir.
     #[test]
     fn all_profile_actions_exist_in_registry() {
-        let registered: HashSet<&'static str> =
-            action::registry().iter().map(|a| a.id()).collect();
+        let registered: HashSet<&'static str> = action::registry().iter().map(|a| a.id()).collect();
         for prof in definitions() {
             for action_id in &prof.action_ids {
                 assert!(

@@ -76,9 +76,8 @@ pub async fn capture(services: &[&str]) -> DMedicResult<Vec<ServiceStateRecord>>
     if trimmed.is_empty() {
         return Ok(Vec::new());
     }
-    let parsed: GetServiceJson = serde_json::from_str(trimmed).map_err(|e| {
-        DMedicError::Other(format!("service_state parse: {e} | raw: {trimmed}"))
-    })?;
+    let parsed: GetServiceJson = serde_json::from_str(trimmed)
+        .map_err(|e| DMedicError::Other(format!("service_state parse: {e} | raw: {trimmed}")))?;
     let raws = match parsed {
         GetServiceJson::Single(s) => vec![s],
         GetServiceJson::Multi(v) => v,

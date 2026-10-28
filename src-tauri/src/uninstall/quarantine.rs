@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::{DMedicError, DMedicResult};
 use crate::models::QuarantineEntry;
 use crate::paths;
+use crate::safety;
 
 /// Karantina partilerinin saklama süresi.
 pub const RETENTION_DAYS: i64 = 14;
@@ -35,6 +36,9 @@ pub struct QuarantinedReg {
     pub original_path: String,
     /// `registry/` altındaki .reg dosya adı.
     pub reg_file: String,
+    /// reg.exe görünümü ("32" / "64"). Eski manifest'lerde yok → varsayılan görünüm.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub view: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -96,7 +100,20 @@ impl Batch {
         self.file_counter += 1;
         let dest = self.dir.join("files").join(&stored_name);
 
-        move_path(original, &dest)?;
+        if let Err(e) = move_path(original, &dest) {
+            // Birimler arası taşımada kopya tamamlanıp kaynağın silinmesi yarıda
+            // kalmışsa veri artık yalnız karantinada olabilir — kaydı tut ki
+            // geri yüklenebilsin. Kopya başarısızsa move_path hedefi temizler.
+            if dest.exists() {
+                self.manifest.files.push(QuarantinedFile {
+                    original_path: original.display().to_string(),
+                    stored_name,
+                    is_dir,
+                    size_bytes: size,
+                });
+            }
+            return Err(e);
+        }
 
         self.manifest.files.push(QuarantinedFile {
             original_path: original.display().to_string(),
@@ -108,24 +125,24 @@ impl Batch {
     }
 
     /// Bir registry anahtarını .reg export et (silmeden ÖNCE çağrılmalı).
-    /// "HKLM\\SOFTWARE\\X" → registry/NNNN.reg.
-    pub fn export_reg(&mut self, reg_path: &str) -> DMedicResult<()> {
+    /// "HKLM\\SOFTWARE\\X" → registry/NNNN.reg. `view` ("32"/"64") verilirse
+    /// reg.exe o görünümden okur; import da aynı görünüme yazar.
+    pub fn export_reg(&mut self, reg_path: &str, view: Option<&str>) -> DMedicResult<()> {
         let reg_file = format!("{:04}.reg", self.reg_counter);
         self.reg_counter += 1;
         let dest = self.dir.join("registry").join(&reg_file);
-        reg_export(reg_path, &dest)?;
+        reg_export(reg_path, &dest, view)?;
         self.manifest.registry.push(QuarantinedReg {
             original_path: reg_path.to_string(),
             reg_file,
+            view: view.map(str::to_string),
         });
         Ok(())
     }
 
     /// Manifest'i diske yaz, parti özetini döndür.
     pub fn finalize(self) -> DMedicResult<QuarantineManifest> {
-        let manifest_path = self.dir.join("manifest.json");
-        let json = serde_json::to_string_pretty(&self.manifest)?;
-        fs::write(manifest_path, json)?;
+        write_manifest(&self.dir, &self.manifest)?;
         Ok(self.manifest)
     }
 }
@@ -154,44 +171,88 @@ pub fn list() -> DMedicResult<Vec<QuarantineEntry>> {
 }
 
 /// Bir partiyi geri yükle: dosyaları orijinal yerine taşı, .reg'leri import et.
+///
+/// Öğe öğe ilerler: biri başarısız olsa diğerleri yine denenir. Başarılı
+/// öğeler manifest'ten düşülür; kalan varsa parti korunur ve hata döner, böylece
+/// tekrar deneme yalnız eksikleri işler. Hedef yolda zaten bir şey varsa üzerine
+/// yazılmaz.
 pub fn restore(id: &str) -> DMedicResult<()> {
-    let dir = quarantine_root()?.join(id);
-    let manifest = read_manifest(&dir)?;
+    let dir = batch_dir(id)?;
+    let mut manifest = read_manifest(&dir)?;
+    let mut errors: Vec<String> = Vec::new();
 
-    for f in &manifest.files {
+    let mut remaining_files = Vec::new();
+    for f in manifest.files.drain(..) {
         let src = dir.join("files").join(&f.stored_name);
         let dest = PathBuf::from(&f.original_path);
-        if let Some(parent) = dest.parent() {
-            let _ = fs::create_dir_all(parent);
+        let res = if !src.exists() {
+            Ok(()) // Önceki denemede geri yüklenmiş.
+        } else if dest.exists() {
+            Err(DMedicError::Validation(format!(
+                "hedef zaten mevcut, üzerine yazılmadı: {}",
+                f.original_path
+            )))
+        } else {
+            if let Some(parent) = dest.parent() {
+                let _ = fs::create_dir_all(parent);
+            }
+            move_path(&src, &dest)
+        };
+        if let Err(e) = res {
+            errors.push(e.to_string());
+            remaining_files.push(f);
         }
-        move_path(&src, &dest)?;
     }
-    for r in &manifest.registry {
+    manifest.files = remaining_files;
+
+    let mut remaining_regs = Vec::new();
+    for r in manifest.registry.drain(..) {
         let reg = dir.join("registry").join(&r.reg_file);
-        reg_import(&reg)?;
+        if let Err(e) = reg_import(&reg, r.view.as_deref()) {
+            errors.push(e.to_string());
+            remaining_regs.push(r);
+        }
     }
-    // Geri yüklendi → partiyi temizle.
-    purge(id)
+    manifest.registry = remaining_regs;
+
+    if errors.is_empty() {
+        // Tamamı geri yüklendi → partiyi temizle.
+        return purge(id);
+    }
+    write_manifest(&dir, &manifest)?;
+    Err(DMedicError::Other(format!(
+        "{} öğe geri yüklenemedi (parti korunuyor): {}",
+        errors.len(),
+        errors[0]
+    )))
 }
 
 /// Bir partiyi kalıcı sil (geri alınamaz).
 pub fn purge(id: &str) -> DMedicResult<()> {
-    let dir = quarantine_root()?.join(id);
+    let dir = batch_dir(id)?;
     if dir.is_dir() {
         fs::remove_dir_all(dir)?;
     }
     Ok(())
 }
 
-/// Süresi dolmuş partileri temizle (uygulama açılışında çağrılabilir).
+/// Süresi dolmuş partileri temizle (uygulama açılışında çağrılır).
 pub fn purge_expired() -> DMedicResult<usize> {
     let mut removed = 0;
     for e in list()? {
-        if e.expires_in_days <= 0 {
-            if purge(&e.id).is_ok() {
-                removed += 1;
-            }
+        if e.expires_in_days <= 0 && purge(&e.id).is_ok() {
+            removed += 1;
         }
+    }
+    Ok(removed)
+}
+
+/// Tüm partileri kalıcı sil (kullanıcı "Tümünü temizle" dedi).
+pub fn purge_all() -> DMedicResult<usize> {
+    let mut removed = 0;
+    for e in list()? {
+        purge(&e.id)?;
+        removed += 1;
     }
     Ok(removed)
 }
@@ -202,6 +263,22 @@ pub fn purge_expired() -> DMedicResult<usize> {
 
 fn quarantine_root() -> DMedicResult<PathBuf> {
     paths::quarantine_dir().map_err(|e| DMedicError::Other(e.to_string()))
+}
+
+/// IPC'den gelen parti id'sini doğrula ve klasörünü döndür (path traversal koruması).
+fn batch_dir(id: &str) -> DMedicResult<PathBuf> {
+    if !safety::is_valid_storage_id(id) {
+        return Err(DMedicError::Validation(format!(
+            "geçersiz karantina id: {id}"
+        )));
+    }
+    Ok(quarantine_root()?.join(id))
+}
+
+fn write_manifest(dir: &Path, manifest: &QuarantineManifest) -> DMedicResult<()> {
+    let json = serde_json::to_string_pretty(manifest)?;
+    fs::write(dir.join("manifest.json"), json)?;
+    Ok(())
 }
 
 fn read_manifest(dir: &Path) -> DMedicResult<QuarantineManifest> {
@@ -229,7 +306,13 @@ fn to_entry(m: &QuarantineManifest) -> QuarantineEntry {
 
 fn sanitize(name: &str) -> String {
     name.chars()
-        .map(|c| if c.is_alphanumeric() || c == '.' || c == '-' || c == '_' { c } else { '_' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == '.' || c == '-' || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
         .collect::<String>()
         .chars()
         .take(80)
@@ -247,26 +330,50 @@ fn dir_size(path: &Path) -> u64 {
 }
 
 /// Taşıma: önce rename (aynı birim), olmazsa kopyala + sil (birimler arası).
+/// Kopya yarıda kalırsa hedef temizlenir — kaynak hiç silinmeden hata döner.
 fn move_path(src: &Path, dest: &Path) -> DMedicResult<()> {
     if fs::rename(src, dest).is_ok() {
         return Ok(());
     }
-    if src.is_dir() {
-        copy_dir(src, dest)?;
+    let src_is_dir = fs::symlink_metadata(src)?.is_dir();
+    let copied = if src_is_dir {
+        copy_dir(src, dest)
+    } else {
+        fs::copy(src, dest).map(|_| ()).map_err(Into::into)
+    };
+    if let Err(e) = copied {
+        let _ = if src_is_dir {
+            fs::remove_dir_all(dest)
+        } else {
+            fs::remove_file(dest)
+        };
+        return Err(e);
+    }
+    if src_is_dir {
         fs::remove_dir_all(src)?;
     } else {
-        fs::copy(src, dest)?;
         fs::remove_file(src)?;
     }
     Ok(())
 }
 
+/// Özyinelemeli kopya. Junction / symlink (reparse point) takip edilmez:
+/// hedefleri ağacın dışına (örn. `C:\`) işaret edebilir. Böyle bir öğe varsa
+/// birimler arası taşıma reddedilir.
 fn copy_dir(src: &Path, dest: &Path) -> DMedicResult<()> {
     fs::create_dir_all(dest)?;
-    for entry in fs::read_dir(src)?.filter_map(Result::ok) {
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
         let from = entry.path();
         let to = dest.join(entry.file_name());
-        if from.is_dir() {
+        let ft = entry.file_type()?;
+        if ft.is_symlink() {
+            return Err(DMedicError::Validation(format!(
+                "junction/symlink içeren klasör birimler arası taşınamaz: {}",
+                from.display()
+            )));
+        }
+        if ft.is_dir() {
             copy_dir(&from, &to)?;
         } else {
             fs::copy(&from, &to)?;
@@ -275,10 +382,16 @@ fn copy_dir(src: &Path, dest: &Path) -> DMedicResult<()> {
     Ok(())
 }
 
+/// reg.exe `/reg:32` | `/reg:64` bayrağı.
+fn view_flag(view: Option<&str>) -> Option<String> {
+    view.map(|v| format!("/reg:{v}"))
+}
+
 /// reg.exe export — senkron. `.reg` UTF-16 LE BOM ile yazılır (import sorunsuz).
-fn reg_export(reg_path: &str, dest: &Path) -> DMedicResult<()> {
+fn reg_export(reg_path: &str, dest: &Path, view: Option<&str>) -> DMedicResult<()> {
     let output = std::process::Command::new("reg.exe")
         .args(["export", reg_path, &dest.to_string_lossy(), "/y"])
+        .args(view_flag(view))
         .output()
         .map_err(|e| DMedicError::Other(format!("reg export spawn: {e}")))?;
     if !output.status.success() {
@@ -290,9 +403,10 @@ fn reg_export(reg_path: &str, dest: &Path) -> DMedicResult<()> {
     Ok(())
 }
 
-fn reg_import(reg_file: &Path) -> DMedicResult<()> {
+fn reg_import(reg_file: &Path, view: Option<&str>) -> DMedicResult<()> {
     let output = std::process::Command::new("reg.exe")
         .args(["import", &reg_file.to_string_lossy()])
+        .args(view_flag(view))
         .output()
         .map_err(|e| DMedicError::Other(format!("reg import spawn: {e}")))?;
     if !output.status.success() {
@@ -302,4 +416,60 @@ fn reg_import(reg_file: &Path) -> DMedicResult<()> {
         )));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Test başına ayrı geçici klasör.
+    fn temp_dir(name: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("dmedic-q-{name}-{}", uuid::Uuid::new_v4()));
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn copy_dir_copies_tree() {
+        let root = temp_dir("copy");
+        let src = root.join("src");
+        fs::create_dir_all(src.join("sub")).unwrap();
+        fs::write(src.join("a.txt"), b"a").unwrap();
+        fs::write(src.join("sub").join("b.txt"), b"b").unwrap();
+        let dest = root.join("dest");
+        copy_dir(&src, &dest).unwrap();
+        assert_eq!(fs::read(dest.join("sub").join("b.txt")).unwrap(), b"b");
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn copy_dir_refuses_symlinks_and_leaves_source_intact() {
+        let root = temp_dir("link");
+        let outside = root.join("outside");
+        fs::create_dir_all(&outside).unwrap();
+        fs::write(outside.join("precious.txt"), b"x").unwrap();
+        let src = root.join("src");
+        fs::create_dir_all(&src).unwrap();
+        fs::write(src.join("a.txt"), b"a").unwrap();
+        std::os::unix::fs::symlink(&outside, src.join("link")).unwrap();
+
+        let dest = root.join("dest");
+        assert!(copy_dir(&src, &dest).is_err());
+        // Kopya reddedildi; kaynak ve link hedefi dokunulmadan duruyor.
+        assert!(src.join("a.txt").exists());
+        assert!(outside.join("precious.txt").exists());
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn invalid_batch_ids_are_rejected() {
+        assert!(matches!(
+            batch_dir(r"..\..\Windows"),
+            Err(DMedicError::Validation(_))
+        ));
+        assert!(matches!(batch_dir("../x"), Err(DMedicError::Validation(_))));
+        assert!(matches!(purge(".."), Err(DMedicError::Validation(_))));
+        assert!(matches!(restore("a/b"), Err(DMedicError::Validation(_))));
+    }
 }

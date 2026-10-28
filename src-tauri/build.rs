@@ -10,7 +10,9 @@ fn main() {
         .ok()
         .and_then(|o| {
             if o.status.success() {
-                String::from_utf8(o.stdout).ok().map(|s| s.trim().to_string())
+                String::from_utf8(o.stdout)
+                    .ok()
+                    .map(|s| s.trim().to_string())
             } else {
                 None
             }
@@ -21,6 +23,8 @@ fn main() {
     let build_date = chrono::Utc::now().format("%Y-%m-%d").to_string();
     println!("cargo:rustc-env=D_MEDIC_BUILD_DATE={build_date}");
 
+    // `mut` yalnız Windows host'ta (aşağıdaki cfg bloğu) gerekiyor.
+    #[cfg_attr(not(windows), allow(unused_mut))]
     let mut attrs = tauri_build::Attributes::new();
 
     #[cfg(windows)]
@@ -33,10 +37,7 @@ fn main() {
         let raw = include_str!("app.manifest");
         let manifest_owned;
         let manifest_ref: &str = if std::env::var("PROFILE").as_deref() == Ok("debug") {
-            manifest_owned = raw.replace(
-                r#"level="requireAdministrator""#,
-                r#"level="asInvoker""#,
-            );
+            manifest_owned = raw.replace(r#"level="requireAdministrator""#, r#"level="asInvoker""#);
             &manifest_owned
         } else {
             raw

@@ -33,3 +33,19 @@ pub fn get_record(id: &str) -> Option<&'static VerificationRecord> {
 pub fn get_all_records() -> &'static std::collections::HashMap<String, VerificationRecord> {
     &db().records
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Parse hatası çalışma zamanında sessizce boş DB'ye düşer — testte yakala.
+    #[test]
+    fn bundled_verification_db_parses_and_every_record_has_a_source() {
+        let db: VerificationDb =
+            serde_json::from_str(VERIFICATION_JSON).expect("verification.json");
+        assert!(!db.records.is_empty());
+        for (id, rec) in &db.records {
+            assert!(!rec.sources.is_empty(), "{id}: kaynak yok");
+        }
+    }
+}

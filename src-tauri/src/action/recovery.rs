@@ -18,8 +18,7 @@ impl Action for EnableWindowsRe {
         let out = ps::runner::run_script("reagentc /enable 2>&1").await?;
         let stdout_lc = out.stdout.to_lowercase();
         let success = out.status == 0
-            && (stdout_lc.contains("operation successful")
-                || stdout_lc.contains("işlem başarılı"));
+            && (stdout_lc.contains("operation successful") || stdout_lc.contains("işlem başarılı"));
         Ok(ActionOutcome {
             action_id: self.id().to_string(),
             success,

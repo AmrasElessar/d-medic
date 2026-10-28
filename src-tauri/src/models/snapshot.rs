@@ -14,6 +14,9 @@ pub struct Snapshot {
     pub timestamp: DateTime<Utc>,
     pub description: String,
     pub restore_point_created: bool,
+    /// Nokta oluşturulmadıysa nedeni (24 saat sınırı, System Protection kapalı…).
+    #[serde(default)]
+    pub restore_point_note: Option<String>,
     pub registry_export_paths: Vec<String>,
     pub service_states: Vec<ServiceStateRecord>,
 }
