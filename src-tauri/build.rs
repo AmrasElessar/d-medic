@@ -10,7 +10,9 @@ fn main() {
         .ok()
         .and_then(|o| {
             if o.status.success() {
-                String::from_utf8(o.stdout).ok().map(|s| s.trim().to_string())
+                String::from_utf8(o.stdout)
+                    .ok()
+                    .map(|s| s.trim().to_string())
             } else {
                 None
             }
@@ -35,10 +37,7 @@ fn main() {
         let raw = include_str!("app.manifest");
         let manifest_owned;
         let manifest_ref: &str = if std::env::var("PROFILE").as_deref() == Ok("debug") {
-            manifest_owned = raw.replace(
-                r#"level="requireAdministrator""#,
-                r#"level="asInvoker""#,
-            );
+            manifest_owned = raw.replace(r#"level="requireAdministrator""#, r#"level="asInvoker""#);
             &manifest_owned
         } else {
             raw

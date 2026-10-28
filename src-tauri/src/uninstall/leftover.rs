@@ -11,9 +11,9 @@
 //! silme [`super::remove`] içindedir.
 
 use std::path::Path;
-use std::sync::Mutex;
 #[cfg(windows)]
 use std::path::PathBuf;
+use std::sync::Mutex;
 
 #[cfg(windows)]
 use super::matching::is_publisher_dir;
@@ -244,12 +244,10 @@ fn scan_filesystem(
 
     // 3) Başlat menüsü kısayolları (.lnk).
     let start_menus: Vec<PathBuf> = [
-        std::env::var_os("APPDATA").map(|v| {
-            PathBuf::from(v).join(r"Microsoft\Windows\Start Menu\Programs")
-        }),
-        std::env::var_os("ProgramData").map(|v| {
-            PathBuf::from(v).join(r"Microsoft\Windows\Start Menu\Programs")
-        }),
+        std::env::var_os("APPDATA")
+            .map(|v| PathBuf::from(v).join(r"Microsoft\Windows\Start Menu\Programs")),
+        std::env::var_os("ProgramData")
+            .map(|v| PathBuf::from(v).join(r"Microsoft\Windows\Start Menu\Programs")),
     ]
     .into_iter()
     .flatten()
@@ -368,18 +366,29 @@ fn scan_registry(tokens: &Tokens, items: &mut Vec<LeftoverItem>, scanned_roots: 
             scanned_roots.push(format!("{label}\\SOFTWARE"));
             for sub in software.enum_keys().filter_map(Result::ok) {
                 if let Some(conf) = match_confidence(&sub, tokens) {
-                    push_regkey(items, label, &format!("SOFTWARE\\{sub}"), conf,
-                        &with_note("Program adıyla eşleşen registry anahtarı", &sub, tokens));
+                    push_regkey(
+                        items,
+                        label,
+                        &format!("SOFTWARE\\{sub}"),
+                        conf,
+                        &with_note("Program adıyla eşleşen registry anahtarı", &sub, tokens),
+                    );
                 } else if is_publisher_dir(&sub, tokens) {
                     // Yayıncı anahtarının altında ürün anahtarı ara.
-                    if let Ok(pub_key) =
-                        software.open_subkey_with_flags(&sub, KEY_READ | view)
-                    {
+                    if let Ok(pub_key) = software.open_subkey_with_flags(&sub, KEY_READ | view) {
                         for child in pub_key.enum_keys().filter_map(Result::ok) {
                             if let Some(conf) = match_confidence(&child, tokens) {
-                                push_regkey(items, label,
-                                    &format!("SOFTWARE\\{sub}\\{child}"), conf,
-                                    &with_note("Yayıncı altında eşleşen ürün anahtarı", &child, tokens));
+                                push_regkey(
+                                    items,
+                                    label,
+                                    &format!("SOFTWARE\\{sub}\\{child}"),
+                                    conf,
+                                    &with_note(
+                                        "Yayıncı altında eşleşen ürün anahtarı",
+                                        &child,
+                                        tokens,
+                                    ),
+                                );
                             }
                         }
                     }
@@ -422,7 +431,14 @@ fn push_regkey(
 ) {
     let full = format!("{label}\\{subpath}");
     if safety::check_reg_key(&full).is_ok() && !items.iter().any(|i| i.path == full) {
-        items.push(make_item(LeftoverKind::RegKey, conf, full, None, None, reason));
+        items.push(make_item(
+            LeftoverKind::RegKey,
+            conf,
+            full,
+            None,
+            None,
+            reason,
+        ));
     }
 }
 

@@ -8,8 +8,8 @@
 //!   Win32_LogicalDisk
 //! - `ROOT\Microsoft\Windows\Storage` — MSFT_PhysicalDisk (MediaType: HDD/SSD)
 
-use serde::{Deserialize, Serialize};
 use super::wmi_compat::{COMLibrary, WMIConnection};
+use serde::{Deserialize, Serialize};
 
 use crate::error::{DMedicError, DMedicResult};
 
@@ -163,7 +163,8 @@ pub async fn list_physical_disks() -> DMedicResult<Vec<PhysicalDiskInfo>> {
 
 fn list_physical_disks_blocking() -> DMedicResult<Vec<PhysicalDiskInfo>> {
     let com = init_com_lib();
-    let storage = match WMIConnection::with_namespace_path("ROOT\\Microsoft\\Windows\\Storage", com) {
+    let storage = match WMIConnection::with_namespace_path("ROOT\\Microsoft\\Windows\\Storage", com)
+    {
         Ok(s) => s,
         Err(e) => {
             tracing::warn!(error = %e, "list_physical_disks: Storage namespace connect failed");
@@ -181,7 +182,10 @@ fn list_physical_disks_blocking() -> DMedicResult<Vec<PhysicalDiskInfo>> {
                 Some(5) => "SCM".into(),
                 _ => "Unknown".into(),
             },
-            size_gb: d.size.map(|s| (s as f64 / BYTES_PER_GB) as f32).unwrap_or(0.0),
+            size_gb: d
+                .size
+                .map(|s| (s as f64 / BYTES_PER_GB) as f32)
+                .unwrap_or(0.0),
             device_id: d.device_id.unwrap_or_default(),
         })
         .collect())
@@ -196,17 +200,18 @@ fn count_installed_apps_blocking() -> Option<u32> {
 /// Win32_Product YAVAŞ (MSI repair tetikler), bu yöntem ms cinsinden döner.
 #[cfg(windows)]
 fn count_installed_apps_blocking() -> Option<u32> {
+    use crate::diagnostic::registry::{HKCU, HKLM};
     use windows::core::{PCWSTR, PWSTR};
     use windows::Win32::Foundation::ERROR_SUCCESS;
     use windows::Win32::System::Registry::{
         RegCloseKey, RegOpenKeyExW, RegQueryInfoKeyW, HKEY, KEY_READ,
     };
-    use crate::diagnostic::registry::{HKCU, HKLM};
 
     fn count_subkeys(hive: HKEY, subkey: &str) -> u32 {
         let wide: Vec<u16> = subkey.encode_utf16().chain(std::iter::once(0)).collect();
         let mut h: HKEY = HKEY::default();
-        if unsafe { RegOpenKeyExW(hive, PCWSTR(wide.as_ptr()), 0, KEY_READ, &mut h) } != ERROR_SUCCESS
+        if unsafe { RegOpenKeyExW(hive, PCWSTR(wide.as_ptr()), 0, KEY_READ, &mut h) }
+            != ERROR_SUCCESS
         {
             return 0;
         }
@@ -232,9 +237,16 @@ fn count_installed_apps_blocking() -> Option<u32> {
         count
     }
 
-    let n = count_subkeys(HKLM, "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
-        + count_subkeys(HKLM, "Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
-        + count_subkeys(HKCU, "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
+    let n = count_subkeys(
+        HKLM,
+        "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+    ) + count_subkeys(
+        HKLM,
+        "Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+    ) + count_subkeys(
+        HKCU,
+        "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+    );
     Some(n)
 }
 
@@ -338,7 +350,9 @@ fn read_snapshot_blocking() -> DMedicResult<SystemSnapshot> {
             Ok(parts) => {
                 const ESP_GUID: &str = "{c12a7328-f81f-11d2-ba4b-00a0c93ec93b}";
                 for p in parts {
-                    if p.gpt_type.as_deref().map(|g| g.eq_ignore_ascii_case(ESP_GUID))
+                    if p.gpt_type
+                        .as_deref()
+                        .map(|g| g.eq_ignore_ascii_case(ESP_GUID))
                         == Some(true)
                     {
                         let bytes = p.size.unwrap_or(0);

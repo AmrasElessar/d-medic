@@ -139,7 +139,10 @@ where
             index: idx,
             total,
             check_id: check.id(),
-            kind: ScanEventKind::Finished { success, finding_count: count },
+            kind: ScanEventKind::Finished {
+                success,
+                finding_count: count,
+            },
         });
     }
     Ok(findings)

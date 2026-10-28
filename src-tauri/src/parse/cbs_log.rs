@@ -27,8 +27,19 @@ pub fn parse(log: &[u8]) -> SfcResult {
     let cannot_repair = any(log, &[b"Cannot repair", b"cannot repair"]);
     SfcResult {
         corrupt: cannot_repair || any(log, &[b"CORRUPT", b"Corrupt", b"corrupted"]),
-        repaired: any(log, &[b"successfully repaired", b"Repaired file", b"Repairing corrupted"]),
-        failed: cannot_repair || any(log, &[b"could not", b"unable to repair", b"Unable to repair"]),
+        repaired: any(
+            log,
+            &[
+                b"successfully repaired",
+                b"Repaired file",
+                b"Repairing corrupted",
+            ],
+        ),
+        failed: cannot_repair
+            || any(
+                log,
+                &[b"could not", b"unable to repair", b"Unable to repair"],
+            ),
     }
 }
 

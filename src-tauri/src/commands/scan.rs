@@ -30,9 +30,10 @@ fn payload_from_event<'a>(
 ) -> ScanProgressPayload<'a> {
     let (status, success, finding_count) = match evt.kind {
         ScanEventKind::Started => ("started", None, None),
-        ScanEventKind::Finished { success, finding_count } => {
-            ("finished", Some(success), Some(finding_count))
-        }
+        ScanEventKind::Finished {
+            success,
+            finding_count,
+        } => ("finished", Some(success), Some(finding_count)),
     };
     ScanProgressPayload {
         scan_id,

@@ -48,8 +48,7 @@ impl Action for OptimizePagefile {
             && (out.stdout.contains("successful")
                 || out.stdout.to_lowercase().contains("başarıyla"));
 
-        let details: Option<serde_json::Value> =
-            serde_json::from_str(out.stdout.trim()).ok();
+        let details: Option<serde_json::Value> = serde_json::from_str(out.stdout.trim()).ok();
 
         Ok(ActionOutcome {
             action_id: self.id().to_string(),

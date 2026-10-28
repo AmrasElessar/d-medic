@@ -1,7 +1,7 @@
+use super::wmi_compat::WMIConnection;
 use async_trait::async_trait;
 use serde::Deserialize;
 use serde_json::json;
-use super::wmi_compat::WMIConnection;
 
 use super::{registry, wmi as wmi_helper, Check};
 use crate::error::{DMedicError, DMedicResult};
@@ -35,17 +35,15 @@ impl Check for TpmCheck {
 
 fn tpm_blocking() -> DMedicResult<Vec<Finding>> {
     let com = wmi_helper::init_com_lib();
-    let tpm_ns = match WMIConnection::with_namespace_path(
-        "ROOT\\CIMV2\\Security\\MicrosoftTpm",
-        com,
-    ) {
-        Ok(c) => c,
-        Err(e) => {
-            tracing::warn!(error = %e, "MicrosoftTpm namespace bulunamadı");
-            // Namespace yoksa TPM yok varsayalım.
-            return Ok(vec![tpm_missing_finding()]);
-        }
-    };
+    let tpm_ns =
+        match WMIConnection::with_namespace_path("ROOT\\CIMV2\\Security\\MicrosoftTpm", com) {
+            Ok(c) => c,
+            Err(e) => {
+                tracing::warn!(error = %e, "MicrosoftTpm namespace bulunamadı");
+                // Namespace yoksa TPM yok varsayalım.
+                return Ok(vec![tpm_missing_finding()]);
+            }
+        };
 
     let tpms: Vec<Win32Tpm> = tpm_ns.query().unwrap_or_default();
     let Some(tpm) = tpms.into_iter().next() else {

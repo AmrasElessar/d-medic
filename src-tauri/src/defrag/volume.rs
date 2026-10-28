@@ -153,7 +153,9 @@ impl FileRef {
             CreateFileW(
                 PCWSTR(wide.as_ptr()),
                 GENERIC_READ_U32,
-                FILE_SHARE_READ | FILE_SHARE_WRITE | windows::Win32::Storage::FileSystem::FILE_SHARE_MODE(FILE_SHARE_DELETE_U),
+                FILE_SHARE_READ
+                    | FILE_SHARE_WRITE
+                    | windows::Win32::Storage::FileSystem::FILE_SHARE_MODE(FILE_SHARE_DELETE_U),
                 None,
                 OPEN_EXISTING,
                 FILE_FLAGS_AND_ATTRIBUTES(FILE_FLAG_BACKUP_SEMANTICS),

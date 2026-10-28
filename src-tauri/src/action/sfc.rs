@@ -24,13 +24,15 @@ impl Action for SfcRepair {
 
         let no_corrupt = stdout_lc.contains("did not find any integrity")
             || stdout_lc.contains("bütünlük ihlali bulamadı");
-        let fixed = stdout_lc.contains("successfully repaired")
-            || stdout_lc.contains("başarıyla onardı");
-        let cant_fix = stdout_lc.contains("was unable to fix")
-            || stdout_lc.contains("onaramadı");
+        let fixed =
+            stdout_lc.contains("successfully repaired") || stdout_lc.contains("başarıyla onardı");
+        let cant_fix = stdout_lc.contains("was unable to fix") || stdout_lc.contains("onaramadı");
 
         let (success, message) = if no_corrupt {
-            (true, "SFC: bütünlük ihlali bulamadı, sistem dosyaları sağlıklı.")
+            (
+                true,
+                "SFC: bütünlük ihlali bulamadı, sistem dosyaları sağlıklı.",
+            )
         } else if fixed {
             (
                 true,

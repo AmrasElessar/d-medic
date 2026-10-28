@@ -169,10 +169,12 @@ fn remove_reg_key(batch: &mut Batch, full: &str) -> DMedicResult<()> {
         batch.export_reg(full, Some(view))?;
         let parent_key = root
             .open_subkey_with_flags(parent, KEY_READ | KEY_WRITE | flag)
-            .map_err(|e| DMedicError::Other(format!("registry anahtarı açılamadı ({full}): {e}")))?;
-        parent_key
-            .delete_subkey_all(leaf)
-            .map_err(|e| DMedicError::Other(format!("registry anahtarı silinemedi ({full}): {e}")))?;
+            .map_err(|e| {
+                DMedicError::Other(format!("registry anahtarı açılamadı ({full}): {e}"))
+            })?;
+        parent_key.delete_subkey_all(leaf).map_err(|e| {
+            DMedicError::Other(format!("registry anahtarı silinemedi ({full}): {e}"))
+        })?;
     }
     Ok(())
 }

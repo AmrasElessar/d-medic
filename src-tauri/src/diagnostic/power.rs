@@ -1,7 +1,7 @@
+use super::wmi_compat::WMIConnection;
 use async_trait::async_trait;
 use serde::Deserialize;
 use serde_json::json;
-use super::wmi_compat::WMIConnection;
 
 use super::{registry, wmi as wmi_helper, Check};
 use crate::error::{DMedicError, DMedicResult};
@@ -81,10 +81,7 @@ fn power_plan_blocking() -> DMedicResult<Vec<Finding>> {
         category: Category::Performance,
         priority,
         action_type: ActionType::Automatic,
-        title: LocalizedText::new(
-            format!("Güç planı: {name}"),
-            format!("Power plan: {name}"),
-        ),
+        title: LocalizedText::new(format!("Güç planı: {name}"), format!("Power plan: {name}")),
         description: LocalizedText::new(
             "Aktif güç planı CPU performansını sınırlandırıyor. \"Yüksek Performans\" \
              planına geçmek özellikle masaüstü sistemlerde belirgin hızlanma sağlar."
@@ -147,8 +144,7 @@ impl Check for HibernationCheck {
                     "C: sürücüsünde {:.1} GB boş alan ve hiberfil.sys ~{:.1} GB tahsis ediyor. \
                      Masaüstü sistemlerde hibernation'a genelde ihtiyaç yoktur — kapatınca \
                      disk alanı geri kazanılır.",
-                    snap.primary_disk_free_gb,
-                    snap.total_ram_gb
+                    snap.primary_disk_free_gb, snap.total_ram_gb
                 ),
                 format!(
                     "C: has {:.1} GB free and hiberfil.sys takes ~{:.1} GB. Hibernation is \

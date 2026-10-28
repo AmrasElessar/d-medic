@@ -30,8 +30,7 @@ impl Action for DismRestoreHealth {
             action_id: self.id().to_string(),
             success,
             message: if success {
-                "DISM image onarımı başarılı. Şimdi `sfc /scannow` çalıştırılabilir."
-                    .to_string()
+                "DISM image onarımı başarılı. Şimdi `sfc /scannow` çalıştırılabilir.".to_string()
             } else {
                 "DISM onarımı başarısız — internet bağlantısı veya WSUS kaynak sorunu olabilir."
                     .to_string()

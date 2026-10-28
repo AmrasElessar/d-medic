@@ -39,9 +39,7 @@ pub fn get_layout(handle: windows::Win32::Foundation::HANDLE) -> Option<FileLayo
     use std::ffi::c_void;
     use windows::core::HRESULT;
     use windows::Win32::Foundation::{ERROR_HANDLE_EOF, ERROR_MORE_DATA};
-    use windows::Win32::System::Ioctl::{
-        FSCTL_GET_RETRIEVAL_POINTERS, STARTING_VCN_INPUT_BUFFER,
-    };
+    use windows::Win32::System::Ioctl::{FSCTL_GET_RETRIEVAL_POINTERS, STARTING_VCN_INPUT_BUFFER};
     use windows::Win32::System::IO::DeviceIoControl;
 
     const BUF: usize = 64 * 1024;

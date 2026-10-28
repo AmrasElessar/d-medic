@@ -36,9 +36,8 @@ pub async fn capture_full(description: &str, services: &[&str]) -> DMedicResult<
         });
     let restore_ok = rp.created;
     let reg_paths = reg_export::export_safe_hives(&id).await.unwrap_or_default();
-    let service_states: Vec<ServiceStateRecord> = service_state::capture(services)
-        .await
-        .unwrap_or_default();
+    let service_states: Vec<ServiceStateRecord> =
+        service_state::capture(services).await.unwrap_or_default();
 
     let snap = Snapshot {
         id: id.clone(),

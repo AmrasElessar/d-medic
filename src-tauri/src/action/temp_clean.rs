@@ -53,7 +53,10 @@ impl Action for CleanTemp {
             action_id: self.id().to_string(),
             success,
             message: if success {
-                format!("Geçici dosyalar temizlendi (24 saatten eski): ~{} MB serbest bırakıldı.", freed_mb)
+                format!(
+                    "Geçici dosyalar temizlendi (24 saatten eski): ~{} MB serbest bırakıldı.",
+                    freed_mb
+                )
             } else {
                 format!("Temizlik başarısız: {}", out.stderr.trim())
             },

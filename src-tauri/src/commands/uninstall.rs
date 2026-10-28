@@ -3,8 +3,7 @@
 use crate::error::DMedicError;
 use crate::error::DMedicResult;
 use crate::models::{
-    InstalledProgram, LeftoverScanResult, QuarantineEntry, RemovalReport,
-    UninstallReport,
+    InstalledProgram, LeftoverScanResult, QuarantineEntry, RemovalReport, UninstallReport,
 };
 use crate::uninstall::{self, quarantine};
 

@@ -85,7 +85,9 @@ impl VolumeBitmap {
 }
 
 fn in_any(lcn: u64, ranges: &[(u64, u64)]) -> bool {
-    ranges.iter().any(|&(start, len)| lcn >= start && lcn < start + len)
+    ranges
+        .iter()
+        .any(|&(start, len)| lcn >= start && lcn < start + len)
 }
 
 #[cfg(windows)]

@@ -38,8 +38,8 @@ impl Check for SfcCheck {
         let clean = stdout.contains("did not find any integrity")
             || stdout.contains("bütünlük ihlali bulamadı")
             || stdout.contains("herhangi bir bütünlük ihlali");
-        let dirty = stdout.contains("found integrity violations")
-            || stdout.contains("bütünlük ihlal");
+        let dirty =
+            stdout.contains("found integrity violations") || stdout.contains("bütünlük ihlal");
         if clean && !dirty {
             return Ok(Vec::new());
         }
@@ -107,10 +107,9 @@ impl Check for DismCheck {
         //   "the component store cannot be repaired" / "onarılamaz"
         let healthy = stdout.contains("no component store corruption")
             || stdout.contains("bozulma algılanmadı");
-        let repairable = stdout.contains("component store is repairable")
-            || stdout.contains("onarılabilir");
-        let not_repairable = stdout.contains("cannot be repaired")
-            || stdout.contains("onarılamaz");
+        let repairable =
+            stdout.contains("component store is repairable") || stdout.contains("onarılabilir");
+        let not_repairable = stdout.contains("cannot be repaired") || stdout.contains("onarılamaz");
         if healthy {
             return Ok(Vec::new());
         }

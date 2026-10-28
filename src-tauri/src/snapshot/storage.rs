@@ -19,7 +19,9 @@ fn validate_id(id: &str) -> DMedicResult<()> {
     if safety::is_valid_storage_id(id) {
         Ok(())
     } else {
-        Err(DMedicError::Validation(format!("geçersiz snapshot id: {id}")))
+        Err(DMedicError::Validation(format!(
+            "geçersiz snapshot id: {id}"
+        )))
     }
 }
 
@@ -40,7 +42,12 @@ pub async fn list_all() -> DMedicResult<Vec<Snapshot>> {
     let mut out = Vec::new();
     for entry in std::fs::read_dir(&dir)? {
         let entry = entry?;
-        if entry.path().extension().map(|e| e == "json").unwrap_or(false) {
+        if entry
+            .path()
+            .extension()
+            .map(|e| e == "json")
+            .unwrap_or(false)
+        {
             if let Ok(bytes) = std::fs::read(entry.path()) {
                 if let Ok(snap) = serde_json::from_slice::<Snapshot>(&bytes) {
                     out.push(snap);

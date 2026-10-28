@@ -41,7 +41,8 @@ mod tests {
     /// Parse hatası çalışma zamanında sessizce boş DB'ye düşer — testte yakala.
     #[test]
     fn bundled_verification_db_parses_and_every_record_has_a_source() {
-        let db: VerificationDb = serde_json::from_str(VERIFICATION_JSON).expect("verification.json");
+        let db: VerificationDb =
+            serde_json::from_str(VERIFICATION_JSON).expect("verification.json");
         assert!(!db.records.is_empty());
         for (id, rec) in &db.records {
             assert!(!rec.sources.is_empty(), "{id}: kaynak yok");

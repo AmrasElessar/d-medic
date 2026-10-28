@@ -37,7 +37,9 @@ pub async fn list_all(resource_dir: PathBuf) -> DMedicResult<Vec<Guide>> {
 pub async fn load_one(resource_dir: PathBuf, id: &str) -> DMedicResult<Guide> {
     // id IPC'den gelir ve dosya yoluna eklenir — `..\` ile dışarı çıkılmasın.
     if !crate::safety::is_valid_storage_id(id) {
-        return Err(DMedicError::Validation(format!("geçersiz kılavuz id: {id}")));
+        return Err(DMedicError::Validation(format!(
+            "geçersiz kılavuz id: {id}"
+        )));
     }
     let path = resource_dir.join("guides").join(format!("{id}.json"));
     let bytes = std::fs::read(&path)
@@ -76,7 +78,9 @@ mod tests {
 
     #[test]
     fn load_one_rejects_traversal() {
-        let rt = tokio::runtime::Builder::new_current_thread().build().unwrap();
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .unwrap();
         let res = rt.block_on(load_one(guides_dir(), r"..\..\Cargo"));
         assert!(matches!(res, Err(DMedicError::Validation(_))));
     }

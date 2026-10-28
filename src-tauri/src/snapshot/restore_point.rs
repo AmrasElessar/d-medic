@@ -40,7 +40,11 @@ pub async fn create(description: &str) -> DMedicResult<Outcome> {
     let reason = if out.status != 0 {
         format!(
             "System Protection kapalı olabilir: {}",
-            out.stderr.trim().lines().next().unwrap_or("bilinmeyen hata")
+            out.stderr
+                .trim()
+                .lines()
+                .next()
+                .unwrap_or("bilinmeyen hata")
         )
     } else {
         out.stdout
@@ -68,7 +72,12 @@ pub async fn enable_protection() -> DMedicResult<()> {
         Ok(())
     } else {
         Err(crate::error::DMedicError::PowerShell(
-            out.stderr.trim().lines().next().unwrap_or("bilinmeyen hata").to_string(),
+            out.stderr
+                .trim()
+                .lines()
+                .next()
+                .unwrap_or("bilinmeyen hata")
+                .to_string(),
         ))
     }
 }

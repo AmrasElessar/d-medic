@@ -1,6 +1,8 @@
 use serde::Serialize;
 
-use crate::diagnostic::wmi::{list_physical_disks, read_snapshot, PhysicalDiskInfo, SystemSnapshot};
+use crate::diagnostic::wmi::{
+    list_physical_disks, read_snapshot, PhysicalDiskInfo, SystemSnapshot,
+};
 use crate::error::{DMedicError, DMedicResult};
 use crate::paths;
 
@@ -66,8 +68,8 @@ pub async fn list_disks() -> DMedicResult<Vec<PhysicalDiskInfo>> {
 /// koruması).
 #[tauri::command]
 pub fn relaunch_as_admin(app: tauri::AppHandle) -> DMedicResult<()> {
-    let exe = std::env::current_exe()
-        .map_err(|e| DMedicError::Other(format!("current_exe: {e}")))?;
+    let exe =
+        std::env::current_exe().map_err(|e| DMedicError::Other(format!("current_exe: {e}")))?;
     let path = exe.display().to_string();
     // Single-quote escape PowerShell injection için (defansif — exe path'te
     // genelde single-quote olmaz).
@@ -113,7 +115,13 @@ pub fn open_logs_folder() -> DMedicResult<()> {
 pub fn reboot_system(delay_seconds: Option<u32>) -> DMedicResult<()> {
     let delay = delay_seconds.unwrap_or(30).to_string();
     let output = std::process::Command::new("shutdown.exe")
-        .args(["/r", "/t", &delay, "/c", "D-Medic değişiklikleri için yeniden başlatılıyor"])
+        .args([
+            "/r",
+            "/t",
+            &delay,
+            "/c",
+            "D-Medic değişiklikleri için yeniden başlatılıyor",
+        ])
         .output()
         .map_err(|e| DMedicError::Other(format!("shutdown.exe spawn: {e}")))?;
 
@@ -143,7 +151,9 @@ pub fn dev_log(level: String, message: String) {
 #[cfg(windows)]
 fn check_elevated() -> bool {
     use windows::Win32::Foundation::{CloseHandle, HANDLE};
-    use windows::Win32::Security::{GetTokenInformation, TokenElevation, TOKEN_ELEVATION, TOKEN_QUERY};
+    use windows::Win32::Security::{
+        GetTokenInformation, TokenElevation, TOKEN_ELEVATION, TOKEN_QUERY,
+    };
     use windows::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
 
     unsafe {

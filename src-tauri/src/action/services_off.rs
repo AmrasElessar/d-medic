@@ -23,12 +23,16 @@ async fn disable_services(action_id: &str, services: &[&str]) -> DMedicResult<Ac
          $results | ConvertTo-Json -Compress"
     );
     let out = ps::runner::run_script(&script).await?;
-    let success = out.status == 0 && !out.stderr.to_lowercase().contains("access is denied")
+    let success = out.status == 0
+        && !out.stderr.to_lowercase().contains("access is denied")
         && !out.stderr.to_lowercase().contains("erişim engellendi");
 
     let details = serde_json::from_str::<serde_json::Value>(out.stdout.trim()).ok();
     let message = if success {
-        format!("{} servis(ler)i durduruldu ve Disabled olarak ayarlandı.", services.len())
+        format!(
+            "{} servis(ler)i durduruldu ve Disabled olarak ayarlandı.",
+            services.len()
+        )
     } else {
         format!(
             "Bazı işlemler başarısız oldu — yönetici yetkisi gerek olabilir. stderr: {}",

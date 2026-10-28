@@ -32,10 +32,19 @@ pub fn detect_bsod_kind(buffer: &[u8]) -> Option<BsodKind> {
     let patterns: &[(&[u8], BsodKind)] = &[
         (b"MEMORY_MANAGEMENT", BsodKind::MemoryManagement),
         (b"CRITICAL_PROCESS_DIED", BsodKind::CriticalProcessDied),
-        (b"DRIVER_IRQL_NOT_LESS_OR_EQUAL", BsodKind::DriverIrqlNotLessOrEqual),
-        (b"UNEXPECTED_KERNEL_MODE_TRAP", BsodKind::UnexpectedKernelModeTrap),
+        (
+            b"DRIVER_IRQL_NOT_LESS_OR_EQUAL",
+            BsodKind::DriverIrqlNotLessOrEqual,
+        ),
+        (
+            b"UNEXPECTED_KERNEL_MODE_TRAP",
+            BsodKind::UnexpectedKernelModeTrap,
+        ),
         (b"NTFS_FILE_SYSTEM", BsodKind::NtfsFileSystem),
-        (b"PAGE_FAULT_IN_NONPAGED_AREA", BsodKind::PageFaultInNonpagedArea),
+        (
+            b"PAGE_FAULT_IN_NONPAGED_AREA",
+            BsodKind::PageFaultInNonpagedArea,
+        ),
     ];
     for (pat, kind) in patterns {
         if memmem::find(buffer, pat).is_some() {
@@ -52,9 +61,15 @@ mod tests {
     #[test]
     fn detects_known_stop_codes() {
         let xml = b"<Data Name='BugcheckCode'>26</Data><Data>MEMORY_MANAGEMENT</Data>";
-        assert_eq!(detect_bsod_kind(xml).map(|k| k.as_str()), Some("MEMORY_MANAGEMENT"));
+        assert_eq!(
+            detect_bsod_kind(xml).map(|k| k.as_str()),
+            Some("MEMORY_MANAGEMENT")
+        );
         let xml = b"...NTFS_FILE_SYSTEM...";
-        assert_eq!(detect_bsod_kind(xml).map(|k| k.as_str()), Some("NTFS_FILE_SYSTEM"));
+        assert_eq!(
+            detect_bsod_kind(xml).map(|k| k.as_str()),
+            Some("NTFS_FILE_SYSTEM")
+        );
     }
 
     #[test]

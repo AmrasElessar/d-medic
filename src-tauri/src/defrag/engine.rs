@@ -42,9 +42,8 @@ pub async fn run(app: AppHandle, letter: char, mode: DefragMode) -> DMedicResult
         DefragMode::Quick => {}
     }
 
-    let guard = super::try_begin().ok_or_else(|| {
-        DMedicError::Validation("Zaten çalışan bir defrag işi var".into())
-    })?;
+    let guard = super::try_begin()
+        .ok_or_else(|| DMedicError::Validation("Zaten çalışan bir defrag işi var".into()))?;
     // Bayrak yalnız kilidi alan iş tarafından sıfırlanır — reddedilen ikinci
     // istek çalışan işin iptalini silmesin.
     super::reset_cancel();
@@ -57,8 +56,8 @@ pub async fn run(app: AppHandle, letter: char, mode: DefragMode) -> DMedicResult
             let _guard = guard;
             run_blocking(app2, job, letter, mode)
         })
-            .await
-            .map_err(|e| DMedicError::Other(format!("defrag join: {e}")))?
+        .await
+        .map_err(|e| DMedicError::Other(format!("defrag join: {e}")))?
     }
     #[cfg(not(windows))]
     {
@@ -116,7 +115,10 @@ fn run_blocking(
         .filter_map(Result::ok)
     {
         if super::is_cancelled() {
-            emit(&app, &progress(&job_id, "cancelled", None, 0, clusters_total, 0, 0.0));
+            emit(
+                &app,
+                &progress(&job_id, "cancelled", None, 0, clusters_total, 0, 0.0),
+            );
             return Ok(());
         }
         if entry.path_is_symlink() || !entry.file_type().is_file() {
@@ -158,7 +160,15 @@ fn run_blocking(
         if super::is_cancelled() {
             emit(
                 &app,
-                &progress(&job_id, "cancelled", None, clusters_moved, clusters_total, files_processed, pct(clusters_moved, clusters_total)),
+                &progress(
+                    &job_id,
+                    "cancelled",
+                    None,
+                    clusters_moved,
+                    clusters_total,
+                    files_processed,
+                    pct(clusters_moved, clusters_total),
+                ),
             );
             return Ok(());
         }
@@ -218,7 +228,15 @@ fn run_blocking(
 
     emit(
         &app,
-        &progress(&job_id, "done", None, clusters_moved, clusters_total, files_processed, 100.0),
+        &progress(
+            &job_id,
+            "done",
+            None,
+            clusters_moved,
+            clusters_total,
+            files_processed,
+            100.0,
+        ),
     );
     Ok(())
 }

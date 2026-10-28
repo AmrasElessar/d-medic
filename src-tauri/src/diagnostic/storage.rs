@@ -1,7 +1,7 @@
+use super::wmi_compat::WMIConnection;
 use async_trait::async_trait;
 use serde::Deserialize;
 use serde_json::json;
-use super::wmi_compat::WMIConnection;
 
 use super::{wmi as wmi_helper, Check};
 use crate::error::{DMedicError, DMedicResult};
@@ -41,10 +41,8 @@ impl Check for SmartHealthCheck {
 
 fn smart_health_blocking() -> DMedicResult<Vec<Finding>> {
     let com = wmi_helper::init_com_lib();
-    let storage = match WMIConnection::with_namespace_path(
-        "ROOT\\Microsoft\\Windows\\Storage",
-        com,
-    ) {
+    let storage = match WMIConnection::with_namespace_path("ROOT\\Microsoft\\Windows\\Storage", com)
+    {
         Ok(s) => s,
         Err(e) => {
             tracing::warn!(error = %e, "Storage namespace connect failed");
@@ -64,7 +62,9 @@ fn smart_health_blocking() -> DMedicResult<Vec<Finding>> {
             2 => (Priority::Critical, "Sağlıksız", "Unhealthy"),
             _ => continue, // Unknown — bulgu üretme
         };
-        let name = disk.friendly_name.unwrap_or_else(|| "Bilinmeyen disk".into());
+        let name = disk
+            .friendly_name
+            .unwrap_or_else(|| "Bilinmeyen disk".into());
         let size_gb = disk
             .size
             .map(|s| s as f64 / (1024.0 * 1024.0 * 1024.0))
@@ -193,9 +193,7 @@ impl Check for FragmentationCheck {
         }
 
         // defrag /A /V çıktısı: "Total fragmented space = X%" veya "Toplam parçalanmış alan".
-        let out = crate::ps::runner::run_script("defrag C: /A /V")
-            .await
-            .ok();
+        let out = crate::ps::runner::run_script("defrag C: /A /V").await.ok();
         let Some(out) = out else {
             return Ok(Vec::new());
         };

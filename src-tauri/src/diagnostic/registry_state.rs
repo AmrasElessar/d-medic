@@ -1,7 +1,7 @@
+use super::wmi_compat::WMIConnection;
 use async_trait::async_trait;
 use serde::Deserialize;
 use serde_json::json;
-use super::wmi_compat::WMIConnection;
 
 use super::{wmi as wmi_helper, Check};
 use crate::error::{DMedicError, DMedicResult};
@@ -22,7 +22,9 @@ impl Check for WindowsReCheck {
         // reagentc /info çıktısı locale-bağımlı: "Windows RE status: Enabled" veya
         // "Windows RE durumu: Etkin". İngilizce "Enabled" ve Türkçe "Etkin" anahtar
         // kelimelerine birden bak; başarısızsa devre dışı varsayma.
-        let out = crate::ps::runner::run_script("reagentc /info 2>&1").await.ok();
+        let out = crate::ps::runner::run_script("reagentc /info 2>&1")
+            .await
+            .ok();
         let Some(out) = out else {
             return Ok(Vec::new());
         };
@@ -40,10 +42,7 @@ impl Check for WindowsReCheck {
             category: Category::Stability,
             priority: Priority::Medium,
             action_type: ActionType::Guided,
-            title: LocalizedText::new(
-                "Windows Recovery devre dışı",
-                "Windows Recovery disabled",
-            ),
+            title: LocalizedText::new("Windows Recovery devre dışı", "Windows Recovery disabled"),
             description: LocalizedText::new(
                 "Windows RE pasif görünüyor. Sistem geri yükleme noktası açma, başlangıç \
                  onarımı ve sıfırlama gibi recovery yetenekleri çalışmaz. \
@@ -160,7 +159,10 @@ fn unsupported_reason(name: &str) -> Option<&'static str> {
         let after = &n[idx + "ryzen ".len()..];
         let parts: Vec<&str> = after.split_whitespace().collect();
         if parts.len() >= 2 {
-            let digits: String = parts[1].chars().take_while(|c| c.is_ascii_digit()).collect();
+            let digits: String = parts[1]
+                .chars()
+                .take_while(|c| c.is_ascii_digit())
+                .collect();
             if digits.len() == 4 && digits.starts_with('1') {
                 return Some("AMD Ryzen 1. nesil (Zen)");
             }
@@ -212,8 +214,7 @@ fn activation_blocking() -> DMedicResult<Vec<Finding>> {
 
     // Windows ürünü olan ve LicenseStatus != 1 (Licensed) olan ilk kayıt.
     let problem = products.into_iter().find(|p| {
-        p.application_id.as_deref() == Some(WINDOWS_APP_ID)
-            && p.license_status.unwrap_or(0) != 1
+        p.application_id.as_deref() == Some(WINDOWS_APP_ID) && p.license_status.unwrap_or(0) != 1
     });
 
     let Some(p) = problem else {

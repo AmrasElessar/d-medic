@@ -117,9 +117,7 @@ async fn run_uwp(program: &InstalledProgram) -> DMedicResult<UninstallReport> {
     tracing::info!(package = %program.id, "UWP paketi kaldırılıyor");
     // PackageFullName tek tırnak içinde — defansif escape.
     let safe = program.id.replace('\'', "''");
-    let script = format!(
-        "Remove-AppxPackage -Package '{safe}' -ErrorAction Stop; $LASTEXITCODE"
-    );
+    let script = format!("Remove-AppxPackage -Package '{safe}' -ErrorAction Stop; $LASTEXITCODE");
     let out = ps::runner::run_script(&script).await?;
     let completed = out.status == 0 && out.stderr.trim().is_empty();
     Ok(UninstallReport {
@@ -132,7 +130,11 @@ async fn run_uwp(program: &InstalledProgram) -> DMedicResult<UninstallReport> {
         } else {
             format!(
                 "UWP kaldırma başarısız: {}",
-                out.stderr.trim().lines().next().unwrap_or("bilinmeyen hata")
+                out.stderr
+                    .trim()
+                    .lines()
+                    .next()
+                    .unwrap_or("bilinmeyen hata")
             )
         },
         still_registered: false,
@@ -150,7 +152,10 @@ mod tests {
             "MsiExec.exe /X{1234-ABCD}"
         );
         assert_eq!(norm("msiexec /i{1234}"), "msiexec /X{1234}");
-        assert_eq!(norm("MsiExec.exe /I {1234} /qn"), "MsiExec.exe /X {1234} /qn");
+        assert_eq!(
+            norm("MsiExec.exe /I {1234} /qn"),
+            "MsiExec.exe /X {1234} /qn"
+        );
     }
 
     #[test]
@@ -161,6 +166,9 @@ mod tests {
             r#""C:\Program Files\Acme\unins000.exe" /SILENT"#
         );
         // /i ile başlayan başka bir argüman (örn. /iAgree) GUID değilse dokunulmaz.
-        assert_eq!(norm("MsiExec.exe /X{1} /iAgree"), "MsiExec.exe /X{1} /iAgree");
+        assert_eq!(
+            norm("MsiExec.exe /X{1} /iAgree"),
+            "MsiExec.exe /X{1} /iAgree"
+        );
     }
 }

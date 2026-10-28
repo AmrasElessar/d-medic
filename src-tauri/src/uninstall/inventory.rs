@@ -100,12 +100,11 @@ fn list_win32() -> DMedicResult<Vec<InstalledProgram>> {
         (HKEY_CURRENT_USER, KEY_WOW64_64KEY),
     ];
     for (root, view) in sources {
-        let base = match RegKey::predef(root)
-            .open_subkey_with_flags(UNINSTALL_PATH, KEY_READ | view)
-        {
-            Ok(k) => k,
-            Err(_) => continue,
-        };
+        let base =
+            match RegKey::predef(root).open_subkey_with_flags(UNINSTALL_PATH, KEY_READ | view) {
+                Ok(k) => k,
+                Err(_) => continue,
+            };
         for sub_name in base.enum_keys().filter_map(Result::ok) {
             let Ok(sub) = base.open_subkey_with_flags(&sub_name, KEY_READ | view) else {
                 continue;
@@ -196,7 +195,8 @@ struct AppxRaw {
 async fn list_uwp() -> DMedicResult<Vec<InstalledProgram>> {
     // Framework / sistem-kritik (NonRemovable) paketleri ele. ConvertTo-Json
     // tek öğede dizi değil obje döndürür → çıktıyı her zaman diziye sar.
-    let script = "$p = Get-AppxPackage | Where-Object { -not $_.IsFramework -and -not $_.NonRemovable } | \
+    let script =
+        "$p = Get-AppxPackage | Where-Object { -not $_.IsFramework -and -not $_.NonRemovable } | \
          Select-Object Name, PackageFullName, Publisher, Version, InstallLocation; \
          @($p) | ConvertTo-Json -Depth 3 -Compress";
     let out = ps::runner::run_script(script).await?;

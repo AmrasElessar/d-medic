@@ -1,7 +1,7 @@
+use super::wmi_compat::WMIConnection;
 use async_trait::async_trait;
 use serde::Deserialize;
 use serde_json::json;
-use super::wmi_compat::WMIConnection;
 
 use super::{wmi as wmi_helper, Check};
 use crate::error::{DMedicError, DMedicResult};
@@ -27,9 +27,8 @@ fn query_services(names: &[&str]) -> Vec<Win32Service> {
         .map(|n| format!("'{n}'"))
         .collect::<Vec<_>>()
         .join(",");
-    let query = format!(
-        "SELECT Name, State, StartMode FROM Win32_Service WHERE Name IN ({in_list})"
-    );
+    let query =
+        format!("SELECT Name, State, StartMode FROM Win32_Service WHERE Name IN ({in_list})");
     cimv2.raw_query::<Win32Service>(&query).unwrap_or_default()
 }
 
@@ -149,11 +148,10 @@ impl Check for TelemetryCheck {
     }
 
     async fn run(&self) -> DMedicResult<Vec<Finding>> {
-        let svcs = tokio::task::spawn_blocking(|| {
-            query_services(&["DiagTrack", "dmwappushservice"])
-        })
-        .await
-        .map_err(|e| DMedicError::Other(format!("telemetry join: {e}")))?;
+        let svcs =
+            tokio::task::spawn_blocking(|| query_services(&["DiagTrack", "dmwappushservice"]))
+                .await
+                .map_err(|e| DMedicError::Other(format!("telemetry join: {e}")))?;
 
         let running: Vec<String> = svcs
             .iter()

@@ -26,8 +26,7 @@ impl Action for BcdRebuild {
             [PSCustomObject]@{ scan = ($scan | Out-String); rebuild = ($rebuild | Out-String); exit = $LASTEXITCODE } | ConvertTo-Json -Compress";
         let out = ps::runner::run_script(script).await?;
 
-        let parsed: Option<serde_json::Value> =
-            serde_json::from_str(out.stdout.trim()).ok();
+        let parsed: Option<serde_json::Value> = serde_json::from_str(out.stdout.trim()).ok();
         let rebuild_text = parsed
             .as_ref()
             .and_then(|v| v.get("rebuild"))
@@ -42,8 +41,7 @@ impl Action for BcdRebuild {
             action_id: self.id().to_string(),
             success,
             message: if success {
-                "BCD store yeniden oluşturuldu. Yeniden başlatma sonrası test edin."
-                    .to_string()
+                "BCD store yeniden oluşturuldu. Yeniden başlatma sonrası test edin.".to_string()
             } else {
                 "bootrec /rebuildbcd başarısız — sistem partition kilitli olabilir. \
                  Recovery ortamından (WinRE) tekrar deneyin."

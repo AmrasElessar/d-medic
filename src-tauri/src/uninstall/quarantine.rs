@@ -268,7 +268,9 @@ fn quarantine_root() -> DMedicResult<PathBuf> {
 /// IPC'den gelen parti id'sini doğrula ve klasörünü döndür (path traversal koruması).
 fn batch_dir(id: &str) -> DMedicResult<PathBuf> {
     if !safety::is_valid_storage_id(id) {
-        return Err(DMedicError::Validation(format!("geçersiz karantina id: {id}")));
+        return Err(DMedicError::Validation(format!(
+            "geçersiz karantina id: {id}"
+        )));
     }
     Ok(quarantine_root()?.join(id))
 }
@@ -304,7 +306,13 @@ fn to_entry(m: &QuarantineManifest) -> QuarantineEntry {
 
 fn sanitize(name: &str) -> String {
     name.chars()
-        .map(|c| if c.is_alphanumeric() || c == '.' || c == '-' || c == '_' { c } else { '_' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == '.' || c == '-' || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
         .collect::<String>()
         .chars()
         .take(80)
@@ -456,7 +464,10 @@ mod tests {
 
     #[test]
     fn invalid_batch_ids_are_rejected() {
-        assert!(matches!(batch_dir(r"..\..\Windows"), Err(DMedicError::Validation(_))));
+        assert!(matches!(
+            batch_dir(r"..\..\Windows"),
+            Err(DMedicError::Validation(_))
+        ));
         assert!(matches!(batch_dir("../x"), Err(DMedicError::Validation(_))));
         assert!(matches!(purge(".."), Err(DMedicError::Validation(_))));
         assert!(matches!(restore("a/b"), Err(DMedicError::Validation(_))));
