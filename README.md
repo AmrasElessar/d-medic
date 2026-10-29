@@ -353,10 +353,12 @@ D-Medic, D Brand ailesinin Windows bakım ayağıdır. Aile üyeleri "Denizhan" 
 | Ürün / Product | Platform | Açıklama / Description |
 |---|---|---|
 | **D-Medic** | Windows | Tanı koyan sistem optimizasyon aracı / diagnose-first system optimizer *(this project, pre-alpha)* |
-| **D-Terminal** | Windows | Agent-aware terminal *(pre-alpha)* |
+| **[D-Terminal](https://github.com/AmrasElessar/d-terminal)** | Windows | Agent-aware terminal *(v0.12.0)* |
+| **[Admin PDF Toolkit](https://github.com/AmrasElessar/adminpdftoolkit)** | Windows · macOS · Linux | Çevrimdışı, LAN içi PDF platformu / offline, LAN-first PDF platform *(v2.1.0)* |
+| **[D-Transfer](https://github.com/AmrasElessar/d-transfer)** | Windows · Linux | SFTP / S3 / WebDAV dosya aktarım istemcisi / file-transfer client *(pre-alpha)* |
 | **D-Player** | Android | Kişisel müzik çalar, DSP motoru / personal music player with DSP engine *(in development)* |
 | **DCar Launcher** | Android (Auto) | Head Unit araç içi OS katmanı / Head Unit in-car OS layer *(in development)* |
-| **D-Watchtower** | — | Gözetim ve izleme platformu / surveillance & monitoring platform *(in development)* |
+| **D-Watchtower** | Android | Yerel HIDS / local-first host intrusion detection *(in development)* |
 
 ---
 
